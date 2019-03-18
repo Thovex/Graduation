@@ -83,9 +83,9 @@ public class WFCInputMatrix : SerializedMonoBehaviour
         }
     }
 
-    public List<Vector2Int> ValidDirs(Vector2Int matrixCoordinate, Vector2Int matrixSize)
+    public List<Vector3Int> ValidDirs(Vector2Int matrixCoordinate, Vector2Int matrixSize)
     {
-        List<Vector2Int> directions = new List<Vector2Int>();
+        List<Vector3Int> directions = new List<Vector3Int>();
         if (matrixCoordinate.x > 0)                 directions.Add(Directions.Left);
         if (matrixCoordinate.x < matrixSize.x - 1)  directions.Add(Directions.Right);
         if (matrixCoordinate.y > 0)                 directions.Add(Directions.Down);

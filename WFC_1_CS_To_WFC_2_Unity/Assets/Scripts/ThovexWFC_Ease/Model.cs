@@ -8,21 +8,33 @@ namespace Thovex.WFC
 {
     public static class Directions
     {
-        public static readonly Vector2Int Up = new Vector2Int(0, 1);
-        public static readonly Vector2Int Left = new Vector2Int(-1, 0);
-        public static readonly Vector2Int Down = new Vector2Int(0, -1);
-        public static readonly Vector2Int Right = new Vector2Int(1, 0);
-        public static readonly List<Vector2Int> Dirs = new List<Vector2Int>() { Up, Left, Down, Right };
+        public static readonly Vector3Int Up = Vector3Int.up;
+
+        public static readonly Vector3Int Left = Vector3Int.left;
+        public static readonly Vector3Int Down = Vector3Int.down;
+        public static readonly Vector3Int Right = Vector3Int.right;
+        public static readonly Vector3Int Forward = new Vector3Int(
+            Mathf.RoundToInt(Vector3.forward.x),
+            Mathf.RoundToInt(Vector3.forward.y),
+            Mathf.RoundToInt(Vector3.forward.z)
+        );
+        public static readonly Vector3Int Backward = new Vector3Int(
+            Mathf.RoundToInt(Vector3.back.x),
+            Mathf.RoundToInt(Vector3.back.y),
+            Mathf.RoundToInt(Vector3.back.z)
+        );
+
+        public static readonly List<Vector3Int> Dirs = new List<Vector3Int>() { Up, Left, Down, Right };
     }
 
     class Model
     {
-        private Vector2Int outputSize;
+        private Vector3Int outputSize;
         private Dictionary<string, int> weights;
         private CompatibilityOracle compatibilityOracle;
         private Wavefunction wavefunction;
 
-        public Model(Vector2Int _outputSize, Dictionary<string, int> _weights, CompatibilityOracle _compatibilityOracle)
+        public Model(Vector3Int _outputSize, Dictionary<string, int> _weights, CompatibilityOracle _compatibilityOracle)
         {
             outputSize = _outputSize;
             weights = _weights;
@@ -31,7 +43,7 @@ namespace Thovex.WFC
             wavefunction = Wavefunction.Mk(outputSize, weights);
         }
 
-        public List<List<string>> Run()
+        public List<List<List<string>>> Run()
         {
             while (!wavefunction.IsFullyCollapsed())
             {
@@ -42,17 +54,17 @@ namespace Thovex.WFC
 
         private void Iterate()
         {
-            Vector2Int coords = MinEntropyCoords();
+            Vector3Int coords = MinEntropyCoords();
 
             wavefunction.Collapse(coords);
             Propagate(coords);
 
         }
 
-        private Vector2Int MinEntropyCoords()
+        private Vector3Int MinEntropyCoords()
         {
             float minEntropy = 0;
-            Vector2Int minEntropyCoords = new Vector2Int();
+            Vector3Int minEntropyCoords = new Vector3Int();
 
             System.Random random = new System.Random(Mathf.RoundToInt(UnityEngine.Random.Range(0, 5000000)));
 
@@ -60,39 +72,41 @@ namespace Thovex.WFC
             {
                 for (int y = 0; y < outputSize.y; y++)
                 {
-
-                    Vector2Int currentCoordinates = new Vector2Int(x, y);
-                    if (wavefunction.Get(currentCoordinates).Keys.Length == 1)
+                    for (int z = 0; z < outputSize.z; z++)
                     {
-                        continue;
-                    }
+                        Vector3Int currentCoordinates = new Vector3Int(x, y, z);
+                        if (wavefunction.Get(currentCoordinates).Keys.Length == 1)
+                        {
+                            continue;
+                        }
 
-                    float entropy = wavefunction.ShannonEntropy(currentCoordinates);
-                    float entropyPlusNoise = entropy - (float)random.NextDouble() / 1000;
+                        float entropy = wavefunction.ShannonEntropy(currentCoordinates);
+                        float entropyPlusNoise = entropy - (float)random.NextDouble() / 1000;
 
-                    if (minEntropy == 0 || entropyPlusNoise < minEntropy)
-                    {
-                        minEntropy = entropyPlusNoise;
-                        minEntropyCoords = new Vector2Int(x, y);
+                        if (minEntropy == 0 || entropyPlusNoise < minEntropy)
+                        {
+                            minEntropy = entropyPlusNoise;
+                            minEntropyCoords = new Vector3Int(x, y, z);
+                        }
                     }
                 }
             }
             return minEntropyCoords;
         }
 
-        private void Propagate(Vector2Int coords)
+        private void Propagate(Vector3Int coords)
         {
-            Stack<Vector2Int> stack = new Stack<Vector2Int>(new Vector2Int[] { coords });
+            Stack<Vector3Int> stack = new Stack<Vector3Int>(new Vector3Int[] { coords });
 
             while (stack.Count > 0)
             {
-                Vector2Int currentCoords = stack.Pop();
+                Vector3Int currentCoords = stack.Pop();
                 Coefficient currentPossibleTiles = wavefunction.Get(currentCoords);
 
 
-                foreach (Vector2Int dir in Initializer.ValidDirs(currentCoords, outputSize))
+                foreach (Vector3Int dir in Initializer.ValidDirs(currentCoords, outputSize))
                 {
-                    Vector2Int otherCoords = new Vector2Int(currentCoords.x + dir.x, currentCoords.y + dir.y);
+                    Vector3Int otherCoords = new Vector3Int(currentCoords.x + dir.x, currentCoords.y + dir.y, currentCoords.z + dir.z);
 
 
                     foreach (string other in wavefunction.Get(otherCoords).Keys)

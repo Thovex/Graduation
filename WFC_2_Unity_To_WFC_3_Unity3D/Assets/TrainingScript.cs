@@ -1,18 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class TrainingScript : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+    public void TrainNeighbours() {
+        Debug.Log("test");
+    }
+}
+
+[CustomEditor(typeof(TrainingScript))]
+public class TrainingScriptInspector : Editor {
+
+    public override void OnInspectorGUI() {
+        TrainingScript training = (TrainingScript)target;
+            
+        if (GUILayout.Button("Training")) {
+            training.TrainNeighbours();
+        }
     }
 }
