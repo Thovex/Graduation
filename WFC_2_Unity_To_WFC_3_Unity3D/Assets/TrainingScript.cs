@@ -3,14 +3,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public class TrainingScript : MonoBehaviour
-{
-
-    public void TrainNeighbours() {
-        Debug.Log("test");
-    }
-}
-
 [CustomEditor(typeof(TrainingScript))]
 public class TrainingScriptInspector : Editor {
 
@@ -20,5 +12,15 @@ public class TrainingScriptInspector : Editor {
         if (GUILayout.Button("Training")) {
             training.TrainNeighbours();
         }
+    }
+}
+
+public class TrainingScript : MonoBehaviour
+{
+    
+    //public List<Rules>
+
+    public void TrainNeighbours() {
+        Debug.Log("test");
     }
 }
