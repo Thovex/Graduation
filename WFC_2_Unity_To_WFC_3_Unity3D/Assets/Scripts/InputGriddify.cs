@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -6,12 +8,13 @@ using UnityEditor;
 [ExecuteInEditMode]
 public class InputGriddify : MonoBehaviour
 {
-    [SerializeField] private Vector3Int _inputSize = new Vector3Int(5, 5, 5);
+    public Vector3Int inputSize = new Vector3Int(5, 5, 5);
     [SerializeField] private int _nValue = 2;
     
-    private int[,,] _inputMatrix;
+    private GameObject[,,] _inputMatrix;
     private bool[,,] _inputMatrixSet;
     private bool[,,] _inputMatrixWarnings;
+    
 
     private void OnEnable()
     {
@@ -19,15 +22,14 @@ public class InputGriddify : MonoBehaviour
         EditorApplication.update += SnapToGrid;
         EditorApplication.update += CheckGridAvailability;
 #endif
-
     }
+    
     private void OnDisable()
     {
 #if UNITY_EDITOR
         EditorApplication.update -= SnapToGrid;
         EditorApplication.update -= CheckGridAvailability;
-        #endif
-
+#endif
     }
 
     private void Update()
@@ -35,13 +37,12 @@ public class InputGriddify : MonoBehaviour
         SnapToGrid();
         CheckGridAvailability();
     }
-
     private void CheckGridAvailability()
     {
-        _inputMatrix = new int[_inputSize.x, _inputSize.y, _inputSize.z];
-        _inputMatrixSet = new bool[_inputSize.x, _inputSize.y, _inputSize.z];
-        _inputMatrixWarnings = new bool[_inputSize.x, _inputSize.y, _inputSize.z];
-
+        _inputMatrix = new GameObject[inputSize.x, inputSize.y, inputSize.z];
+        _inputMatrixSet = new bool[inputSize.x, inputSize.y, inputSize.z];
+        _inputMatrixWarnings = new bool[inputSize.x, inputSize.y, inputSize.z];
+        
         for (int i = 0; i < transform.childCount; i++)
         {
             GameObject childObject = transform.GetChild(i).gameObject;
@@ -53,7 +54,7 @@ public class InputGriddify : MonoBehaviour
                 Mathf.RoundToInt(childLocalPosition.z)
              );
             
-            if ( _inputMatrixSet[childLocalPositionRounded.x, childLocalPositionRounded.y, childLocalPositionRounded.z] ){
+            if ( _inputMatrixSet[childLocalPositionRounded.x, childLocalPositionRounded.y, childLocalPositionRounded.z] ) {
                 _inputMatrixWarnings[childLocalPositionRounded.x, childLocalPositionRounded.y, childLocalPositionRounded.z] = true;
             }
             
@@ -106,11 +107,11 @@ public class InputGriddify : MonoBehaviour
     {
         Gizmos.color = new Color(.75f, .75f, .75f, .15f);
         
-        for (int x = 0; x < _inputSize.x; x++)
+        for (int x = 0; x < inputSize.x; x++)
         {
-            for (int y = 0; y < _inputSize.y; y++)
+            for (int y = 0; y < inputSize.y; y++)
             {
-                for (int z = 0; z < _inputSize.z; z++)
+                for (int z = 0; z < inputSize.z; z++)
                 {
                     if (_inputMatrixSet[x, y, z])
                     {
@@ -134,14 +135,14 @@ public class InputGriddify : MonoBehaviour
 
         Gizmos.color = new Color(1F, 1F, 0F, .5f);
 
-        Gizmos.DrawWireCube(transform.position + new Vector3(_inputSize.x - 1, _inputSize.y - 1, _inputSize.z - 1) / 2, new Vector3(_inputSize.x, _inputSize.y, _inputSize.z));
+        Gizmos.DrawWireCube(transform.position + new Vector3(inputSize.x - 1, inputSize.y - 1, inputSize.z - 1) / 2, new Vector3(inputSize.x, inputSize.y, inputSize.z));
 
         Gizmos.color = new Color(1F, 0F, 0F, .1f);
 
         if ( _nValue > 0 ){
-            for ( int x = 0; x < _inputSize.x / _nValue; x++ ){
-                for ( int y = 0; y < _inputSize.y / _nValue; y++ ){
-                    for ( int z = 0; z < _inputSize.z / _nValue; z++ ){
+            for ( int x = 0; x < inputSize.x / _nValue; x++ ){
+                for ( int y = 0; y < inputSize.y / _nValue; y++ ){
+                    for ( int z = 0; z < inputSize.z / _nValue; z++ ){
                         // Only optimized for N == 2 in current state.
                         Gizmos.DrawWireCube(transform.position + new Vector3(x * _nValue + .5F, y * _nValue + .5F, z * _nValue + .5F), new Vector3(_nValue, _nValue, _nValue));
                     }

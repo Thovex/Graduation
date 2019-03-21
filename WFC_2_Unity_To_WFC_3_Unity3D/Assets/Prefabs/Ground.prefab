@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4783574193108205825}
   - component: {fileID: 4783574193108205830}
   - component: {fileID: 2197411856634434108}
+  - component: {fileID: 8551925126277191699}
   m_Layer: 0
   m_Name: Ground
   m_TagString: Untagged
@@ -90,54 +91,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0190473c6512d40429874cad17698e21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Probability: 1
-  Spawn: 1
-  IsInterior: 0
-  Left:
-    Walkable: 1
-    Connector: 0
-    ExcludedNeighbours: []
-    EnforceWalkableNeighbor: 0
-    IsOcclusionPortal: 0
-    Symmetric: 1
-    Flipped: 0
-  Down:
-    Walkable: 0
-    Connector: 0
-    ExcludedNeighbours: []
-    EnforceWalkableNeighbor: 0
-    IsOcclusionPortal: 0
-    Invariant: 0
-    Rotation: 0
-  Back:
-    Walkable: 1
-    Connector: 0
-    ExcludedNeighbours: []
-    EnforceWalkableNeighbor: 0
-    IsOcclusionPortal: 0
-    Symmetric: 1
-    Flipped: 0
-  Right:
-    Walkable: 1
-    Connector: 0
-    ExcludedNeighbours: []
-    EnforceWalkableNeighbor: 0
-    IsOcclusionPortal: 0
-    Symmetric: 1
-    Flipped: 0
-  Up:
-    Walkable: 0
-    Connector: 0
-    ExcludedNeighbours: []
-    EnforceWalkableNeighbor: 0
-    IsOcclusionPortal: 0
-    Invariant: 0
-    Rotation: 0
-  Forward:
-    Walkable: 1
-    Connector: 0
-    ExcludedNeighbours: []
-    EnforceWalkableNeighbor: 0
-    IsOcclusionPortal: 0
-    Symmetric: 1
-    Flipped: 0
+  _moduleIndex: 0
+  _directions: 
+--- !u!114 &8551925126277191699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4783574193108205828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 653661fdbb6e4bccbeca0b802ccd9594, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uniquePrefabId: 1

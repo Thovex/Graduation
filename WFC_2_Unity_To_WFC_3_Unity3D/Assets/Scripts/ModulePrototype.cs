@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using Sirenix.OdinInspector;
 using UnityEngine.SceneManagement;
 
 [ExecuteInEditMode]
-public class ModulePrototype : SerializedMonoBehaviour {
+public class ModulePrototype : MonoBehaviour {
     [SerializeField] private int _moduleIndex;
     [SerializeField] private List < EDirections > _directions = new List < EDirections >();
 

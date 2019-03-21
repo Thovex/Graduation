@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4855072776200740095}
   - component: {fileID: 4855072776200740094}
   - component: {fileID: 7378894738811579564}
+  - component: {fileID: 4470241038038611869}
   m_Layer: 0
   m_Name: Ground_Window
   m_TagString: Untagged
@@ -93,3 +94,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _moduleIndex: 0
+  _directions: 
+--- !u!114 &4470241038038611869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4855072776200740093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 653661fdbb6e4bccbeca0b802ccd9594, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uniquePrefabId: 3

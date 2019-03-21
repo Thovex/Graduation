@@ -48,6 +48,7 @@
 **/ShaderCache/**
 **/StateCache/**
 **/metadata/**
+**Library/metadata/*
 
 # Precompiled Assets
 SourceArt/**/*.png
