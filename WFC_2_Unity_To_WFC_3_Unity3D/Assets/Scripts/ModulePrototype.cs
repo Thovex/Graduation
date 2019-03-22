@@ -1,13 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 [ExecuteInEditMode]
-public class ModulePrototype : MonoBehaviour {
+public class ModulePrototype : SerializedMonoBehaviour {
     [SerializeField] private int _moduleIndex;
-    [SerializeField] private List < EDirections > _directions = new List < EDirections >();
+    [SerializeField] private Dictionary < EOrientations, TrainingNeighbourData> _moduleOrientations = new Dictionary < EOrientations, TrainingNeighbourData >();
+
+    public Dictionary < EOrientations, TrainingNeighbourData > ModuleOrientations{
+        get{ return _moduleOrientations; }
+        set{ _moduleOrientations = value; }
+    }
 
     void Update()
     {
@@ -27,18 +33,12 @@ public class ModulePrototype : MonoBehaviour {
         }
     }
 
-    private void OnDrawGizmos(){
-        if ( SceneManager.GetActiveScene().name == "Modules" ){
-            GUIStyle moduleStyle = new GUIStyle();
-            moduleStyle.alignment = TextAnchor.MiddleCenter;
-            moduleStyle.normal.textColor = Color.black;
-            Handles.Label(transform.position + Vector3.up, "Module: " + _moduleIndex.ToString(), moduleStyle);
+    private void OnDrawGizmosSelected(){
 
-            Gizmos.color = Color.red;
+        Gizmos.color = Color.red;
 
-            foreach ( EDirections direction in _directions ){
-                Gizmos.DrawLine(transform.position, transform.position + Orientations.ReturnDirectionVal(direction));
-            }
+        foreach ( KeyValuePair <EOrientations, TrainingNeighbourData> pair in ModuleOrientations ){
+            Gizmos.DrawLine(transform.position, transform.position + Orientations.ReturnDirectionVal(pair.Key));
         }
     }
 }
