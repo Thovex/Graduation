@@ -6,13 +6,18 @@
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
         <e p="Scripts" t="Include">
-          <e p="InputGriddify.cs" t="Include" />
-          <e p="ModulePrototype.cs" t="Include" />
-          <e p="Orientations.cs" t="Include" />
-          <e p="Pattern.cs" t="Include" />
-          <e p="Rules.cs" t="Include" />
-          <e p="TrainingScript.cs" t="Include" />
-          <e p="UniqueId.cs" t="Include" />
+          <e p="Input" t="Include">
+            <e p="InputGriddify.cs" t="Include" />
+            <e p="Matrix.cs" t="Include" />
+            <e p="ModulePrototype.cs" t="Include" />
+            <e p="Orientations.cs" t="Include" />
+            <e p="Pattern.cs" t="Include" />
+            <e p="TrainingScript.cs" t="Include" />
+            <e p="UniqueId.cs" t="Include" />
+          </e>
+          <e p="Wfc" t="Include">
+            <e p="Initializer.cs" t="Include" />
+          </e>
         </e>
       </e>
       <e p="Library" t="ExcludeRecursive" />

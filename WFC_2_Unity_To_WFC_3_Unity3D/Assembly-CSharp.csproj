@@ -57,13 +57,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\InputGriddify.cs" />
-    <Compile Include="Assets\Scripts\ModulePrototype.cs" />
-    <Compile Include="Assets\Scripts\Orientations.cs" />
-    <Compile Include="Assets\Scripts\Pattern.cs" />
-    <Compile Include="Assets\Scripts\Rules.cs" />
-    <Compile Include="Assets\Scripts\TrainingScript.cs" />
-    <Compile Include="Assets\Scripts\UniqueId.cs" />
+    <Compile Include="Assets\Scripts\Input\InputGriddify.cs" />
+    <Compile Include="Assets\Scripts\Input\Matrix.cs" />
+    <Compile Include="Assets\Scripts\Input\ModulePrototype.cs" />
+    <Compile Include="Assets\Scripts\Input\Orientations.cs" />
+    <Compile Include="Assets\Scripts\Input\Pattern.cs" />
+    <Compile Include="Assets\Scripts\Input\TrainingScript.cs" />
+    <Compile Include="Assets\Scripts\Input\UniqueId.cs" />
+    <Compile Include="Assets\Scripts\Wfc\Initializer.cs" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>C:/Users/Thovex Personal/Desktop/Graduation/WFC_2_Unity_To_WFC_3_Unity3D/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
