@@ -5,8 +5,7 @@ using Sirenix.Serialization;
 
 [System.Serializable]
 public class Matrix<T> {
-
-	public Matrix(){}
+	protected Matrix(){}
 
 	public Matrix(Vector3Int matrixSize){
 		MatrixData = new T[matrixSize.x, matrixSize.y, matrixSize.z];
@@ -14,11 +13,8 @@ public class Matrix<T> {
 
 	public T[,,] MatrixData{ get; protected set; }
 	
-	[SerializeField, HideInInspector, ExcludeDataFromInspector]
-	private SerializationData serializationData;
-
 	// assuming N == 2 initially.
-	public void RotatePatternRight(){
+	public void RotatePatternCounterClockwise(){
 		T[,,] originalData = MatrixData;
 
 		for ( int y = 0; y < MatrixData.GetLength(1); y++ ){

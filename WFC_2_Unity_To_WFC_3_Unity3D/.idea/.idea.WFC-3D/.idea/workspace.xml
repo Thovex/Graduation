@@ -11,11 +11,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="TrainingScript.cs" pinned="false" current-in-tab="true">
+      <file leaf-file-name="TrainingScript.cs" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Assets/Scripts/Input/TrainingScript.cs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="544">
-              <caret line="483" column="0" lean-forward="true" selection-start-line="483" selection-start-column="0" selection-end-line="483" selection-end-column="0" />
+            <state relative-caret-position="384">
+              <caret line="473" column="35" lean-forward="false" selection-start-line="473" selection-start-column="35" selection-end-line="473" selection-end-column="35" />
               <folding>
                 <marker date="1553521673311" expanded="false" signature="6:210" ph="..." />
                 <marker date="1553521673311" expanded="true" signature="300:669" ph="{...}" />
@@ -131,18 +131,18 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Matrix.cs" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Matrix.cs" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Assets/Scripts/Input/Matrix.cs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="64">
-              <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
+            <state relative-caret-position="336">
+              <caret line="21" column="56" lean-forward="false" selection-start-line="21" selection-start-column="56" selection-end-line="21" selection-end-column="56" />
               <folding>
-                <marker date="1553516631382" expanded="true" signature="6:95" ph="..." />
-                <marker date="1553516631382" expanded="true" signature="142:865" ph="{...}" />
-                <marker date="1553516631382" expanded="true" signature="202:270" ph="{...}" />
-                <marker date="1553516631382" expanded="true" signature="494:785" ph="{...}" />
-                <marker date="1553516631382" expanded="true" signature="585:782" ph="{...}" />
-                <marker date="1553516631382" expanded="true" signature="819:862" ph="{...}" />
+                <marker date="1553522598019" expanded="true" signature="6:95" ph="..." />
+                <marker date="1553522598019" expanded="true" signature="142:770" ph="{...}" />
+                <marker date="1553522598019" expanded="true" signature="204:272" ph="{...}" />
+                <marker date="1553522598019" expanded="true" signature="399:690" ph="{...}" />
+                <marker date="1553522598019" expanded="true" signature="490:687" ph="{...}" />
+                <marker date="1553522598019" expanded="true" signature="724:767" ph="{...}" />
               </folding>
             </state>
           </provider>
@@ -197,10 +197,10 @@
         <option value="$PROJECT_DIR$/Assets/Scripts/Output/Initializer.cs" />
         <option value="$PROJECT_DIR$/Assets/Scripts/Wfc/OverlappingModel.cs" />
         <option value="$PROJECT_DIR$/Assets/Scripts/Wfc/Model.cs" />
-        <option value="$PROJECT_DIR$/Assets/Scripts/Input/Matrix.cs" />
         <option value="$PROJECT_DIR$/Assets/Scripts/Input/Pattern.cs" />
         <option value="$PROJECT_DIR$/Assets/Scripts/Wfc/Initializer.cs" />
         <option value="$PROJECT_DIR$/Assets/Scripts/Input/TrainingScript.cs" />
+        <option value="$PROJECT_DIR$/Assets/Scripts/Input/Matrix.cs" />
       </list>
     </option>
   </component>
@@ -312,12 +312,12 @@
       <option name="presentableId" value="Default" />
       <updated>1553254766979</updated>
       <workItem from="1553254768133" duration="8156000" />
-      <workItem from="1553510608444" duration="10809000" />
+      <workItem from="1553510608444" duration="11808000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="18965000" />
+    <option name="totallyTimeSpent" value="19964000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -330,7 +330,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Errors In Solution" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -340,7 +339,7 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="NuGet" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -504,25 +503,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Assets/Scripts/Input/Matrix.cs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="64">
-          <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
-          <folding>
-            <marker date="1553516631382" expanded="true" signature="6:95" ph="..." />
-            <marker date="1553516631382" expanded="true" signature="142:865" ph="{...}" />
-            <marker date="1553516631382" expanded="true" signature="202:270" ph="{...}" />
-            <marker date="1553516631382" expanded="true" signature="494:785" ph="{...}" />
-            <marker date="1553516631382" expanded="true" signature="585:782" ph="{...}" />
-            <marker date="1553516631382" expanded="true" signature="819:862" ph="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Assets/Scripts/Input/TrainingScript.cs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="544">
-          <caret line="483" column="0" lean-forward="true" selection-start-line="483" selection-start-column="0" selection-end-line="483" selection-end-column="0" />
+        <state relative-caret-position="384">
+          <caret line="473" column="35" lean-forward="false" selection-start-line="473" selection-start-column="35" selection-end-line="473" selection-end-column="35" />
           <folding>
             <marker date="1553521673311" expanded="false" signature="6:210" ph="..." />
             <marker date="1553521673311" expanded="true" signature="300:669" ph="{...}" />
@@ -614,6 +598,21 @@
             <marker date="1553521673311" expanded="true" signature="17702:17892" ph="{...}" />
             <marker date="1553521673311" expanded="true" signature="17960:18007" ph="{...}" />
             <marker date="1553521673311" expanded="true" signature="18062:18113" ph="{...}" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Assets/Scripts/Input/Matrix.cs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="336">
+          <caret line="21" column="56" lean-forward="false" selection-start-line="21" selection-start-column="56" selection-end-line="21" selection-end-column="56" />
+          <folding>
+            <marker date="1553522598019" expanded="true" signature="6:95" ph="..." />
+            <marker date="1553522598019" expanded="true" signature="142:770" ph="{...}" />
+            <marker date="1553522598019" expanded="true" signature="204:272" ph="{...}" />
+            <marker date="1553522598019" expanded="true" signature="399:690" ph="{...}" />
+            <marker date="1553522598019" expanded="true" signature="490:687" ph="{...}" />
+            <marker date="1553522598019" expanded="true" signature="724:767" ph="{...}" />
           </folding>
         </state>
       </provider>
