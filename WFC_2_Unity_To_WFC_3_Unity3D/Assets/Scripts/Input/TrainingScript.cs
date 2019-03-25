@@ -19,6 +19,10 @@ public class TrainingScriptInspector : OdinEditor
         if (GUILayout.Button("Start WFC")){
             training.WaveFunctionCollapse();
         }
+        
+        if (GUILayout.Button("Draw Patterns")){
+            training.DrawPatterns();
+        }
     }
 }
 
@@ -89,6 +93,8 @@ public class TrainingScript : SerializedMonoBehaviour{
     [SerializeField] private Dictionary<Vector3Int, TrainingChild> _children = new Dictionary<Vector3Int, TrainingChild>();
     [SerializeField] private List<Pattern> _patterns;
 
+    [SerializeField] private GameObject patternsDisplay;
+
 
     private InputGriddify _input;
 
@@ -157,7 +163,7 @@ public class TrainingScript : SerializedMonoBehaviour{
         DefineMatrixSize();
         DefineConversion();
 
-        ReinitializeMatrixValuesTEMP();
+        ReinitializeMatrixValues();
         
         CreatePatterns();
         ClearNullPatterns();
@@ -166,20 +172,6 @@ public class TrainingScript : SerializedMonoBehaviour{
         
         RemoveNullValues();
 
-    }
-
-    private void RemoveNullValues(){
-        List < Vector3Int > indexValuesToRemove = new List < Vector3Int >();
-
-        foreach ( KeyValuePair < Vector3Int, TrainingChild > pair in _children ){
-            if ( pair.Value.GameObject == _resources[0].gameObject ){
-                indexValuesToRemove.Add(pair.Key);
-            }
-        }
-
-        foreach ( Vector3Int index in indexValuesToRemove ){
-            _children.Remove(index);
-        }
     }
 
     private void InitializeMatrixValues()
@@ -243,7 +235,7 @@ public class TrainingScript : SerializedMonoBehaviour{
         }
     }
 
-    private void ReinitializeMatrixValuesTEMP(){
+    private void ReinitializeMatrixValues(){
         _children.Clear();
         
         for (int i = 0; i < transform.childCount; i++)
@@ -338,21 +330,17 @@ public class TrainingScript : SerializedMonoBehaviour{
         }
         
         foreach ( KeyValuePair < Vector3Int, TrainingChild > pair in _children ){
-
             if ( pair.Value.GameObject != _resources[0].gameObject ){
-
                 Dictionary < EOrientations, TrainingNeighbourData > neighbourData = new Dictionary < EOrientations, TrainingNeighbourData >();
-
+                
                 foreach ( Vector3Int orientation in Orientations.Dirs ){
                     Vector3Int neighbourCoordinate = pair.Key + orientation;
 
                     if ( _children.ContainsKey(neighbourCoordinate) ){
-
                         TrainingChild trainingChild;
                         _children.TryGetValue(neighbourCoordinate, out trainingChild);
 
                         if ( trainingChild.GameObject != _resources[0].gameObject ){
-
                             TrainingNeighbourData trainingNeighbourData = new TrainingNeighbourData(
                                 trainingChild.LocalRotation, 
                                 PrefabToId(IdToPrefab(trainingChild.GameObject.GetComponent<UniqueId>().uniquePrefabId)));
@@ -450,6 +438,54 @@ public class TrainingScript : SerializedMonoBehaviour{
             }
         }
     }
+    
+    private void RemoveNullValues(){
+        List < Vector3Int > indexValuesToRemove = new List < Vector3Int >();
+
+        foreach ( KeyValuePair < Vector3Int, TrainingChild > pair in _children ){
+            if ( pair.Value.GameObject == _resources[0].gameObject ){
+                indexValuesToRemove.Add(pair.Key);
+            }
+        }
+
+        foreach ( Vector3Int index in indexValuesToRemove ){
+            _children.Remove(index);
+        }
+    }
+
+    public void DrawPatterns(){
+
+        if ( patternsDisplay ){
+
+            for ( int i = patternsDisplay.transform.childCount; i > 0; --i ){
+                DestroyImmediate(patternsDisplay.transform.GetChild(0).gameObject);
+            }
+        }
+
+        int index = 0;
+        
+        foreach ( Pattern pattern in _patterns ){
+            GameObject newPattern = new GameObject("Pattern");
+            newPattern.transform.localPosition = Vector3.zero + (index * 3) * Vector3.left;
+            newPattern.transform.parent = patternsDisplay.transform;
+
+            TrainingData[,,] data = pattern.MatrixData;
+
+            for ( int x = 0; x < data.GetLength(0); x++ ){
+                for ( int y = 0; y < data.GetLength(1); y++ ){
+                    for ( int z = 0; z < data.GetLength(2); z++ ){
+                        if ( data[x, y, z].GameObject != null ){
+                            GameObject patternData = Instantiate(data[x, y, z].GameObject, new Vector3(x, y, z), Quaternion.Euler(data[x, y, z].LocalRotation), newPattern.transform);
+                            patternData.transform.localPosition = new Vector3(x, y, z);
+                        }
+                    }
+                }
+            }
+
+            index++;
+        }
+    }
+
 
     private void OnDrawGizmos(){
         
