@@ -24,7 +24,7 @@ public class Matrix<T> {
 		//}
 	//}
 	
-	public void RotatePatternCounterClockwise(bool bClockwise = false){
+	public void RotatePatternCounterClockwise(){
 		T[,,] originalData = MatrixData;
 		T[,,] copyMatrix = new T[originalData.GetLength(0), originalData.GetLength(1), originalData.GetLength(2)];
 
@@ -59,6 +59,10 @@ public class Matrix<T> {
 		}
 
 		MatrixData = copyMatrix;
+	}
+	
+	public void RotatePatternClockwise(){
+		throw new NotImplementedException();
 	}
 
 

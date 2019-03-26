@@ -23,7 +23,11 @@ public class MatrixTestInspector : OdinEditor
         }
         
         if (GUILayout.Button("Rotate 90 counter-clockwise Matrix")){
-            matrixTest.Rotate();
+            matrixTest.Rotate(false);
+        }
+        
+        if (GUILayout.Button("Rotate 90 clockwise Matrix")){
+            matrixTest.Rotate(true);
         }
     }
 }
@@ -61,9 +65,16 @@ public class MatrixTest : SerializedMonoBehaviour
         }
     }
 
-    public void Rotate()
+    public void Rotate(bool bClockwise)
     {
-        vectorMatrix.RotatePatternCounterClockwise();
+        if (bClockwise)
+        {
+            vectorMatrix.RotatePatternClockwise();
+        } 
+        else 
+        {
+            vectorMatrix.RotatePatternCounterClockwise();
+        }
     }
 
     private void OnDrawGizmos()
