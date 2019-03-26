@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ContentModelStore">
-    <e p="C:\Users\Thovex Personal\.Rider2017.3\system\resharper-host\local\Transient\ReSharperHost\v11\SolutionCaches\_WFC_2_Unity_To_WFC_3_Unity3D.-1724988603.00" t="ExcludeRecursive" />
-    <e p="C:\Users\Thovex Personal\Desktop\Graduation\WFC_2_Unity_To_WFC_3_Unity3D" t="IncludeRecursive">
+    <e p="C:\Users\Student\.Rider2018.3\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\Student\.Rider2018.3\system\resharper-host\local\Transient\ReSharperHost\v183\SolutionCaches\_WFC_2_Unity_To_WFC_3_Unity3D.457717443.00" t="ExcludeRecursive" />
+    <e p="C:\Users\Student\Documents\GitHubGraduation\WFC_2_Unity_To_WFC_3_Unity3D" t="IncludeRecursive">
       <e p="Assembly-CSharp-Editor-firstpass.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp-firstpass.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />

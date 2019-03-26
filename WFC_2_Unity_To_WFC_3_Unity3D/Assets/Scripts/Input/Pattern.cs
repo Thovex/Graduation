@@ -37,4 +37,41 @@ public class Pattern : Matrix<TrainingData> {
             }
         }
     }
+
+    public override bool IsEqualToMatrix(Matrix<TrainingData> otherMatrix)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (MatrixData.GetLength(i) != otherMatrix.MatrixData.GetLength(i)) return false;
+        }
+
+        bool bIsEqual = true;
+        
+        for (int x = 0; x < MatrixData.GetLength(0); x++)
+        {
+            for (int y= 0; y < MatrixData.GetLength(1); y++)
+            {
+                for (int z = 0; z < MatrixData.GetLength(2); z++)
+                {
+                    TrainingData original = MatrixData[x, y, z];
+                    TrainingData comparison = otherMatrix.MatrixData[x, y, z];
+
+                    if (original.GameObjectIndex != comparison.GameObjectIndex)
+                    {
+                        bIsEqual = false;
+                        break;
+                    }
+
+                    if (original.LocalRotation != comparison.LocalRotation)
+                    {
+                        bIsEqual = false;
+                        break;
+                    }
+
+                }
+            }
+        }
+
+        return bIsEqual;
+    }
 }

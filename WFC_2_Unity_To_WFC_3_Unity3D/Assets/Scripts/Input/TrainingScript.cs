@@ -169,9 +169,38 @@ public class TrainingScript : SerializedMonoBehaviour{
         ClearNullPatterns();
         
         ManipulateModuleData();
+
+        FindEqualPatterns();
         
         RemoveNullValues();
 
+    }
+
+    private void FindEqualPatterns()
+    {
+        while (LoopEquals()) { }
+    }
+
+    private bool LoopEquals()
+    {
+        for (int i = 0; i < _patterns.Count; i++)
+        {
+            Pattern pattern = _patterns[i];
+
+            for (int j = 0; j < _patterns.Count; j++)
+            {
+                if (j != i)
+                {
+                    if (_patterns[i].IsEqualToMatrix(_patterns[j]))
+                    {
+                        _patterns.RemoveAt(j);
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     private void InitializeMatrixValues()
