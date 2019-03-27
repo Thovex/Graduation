@@ -6,24 +6,24 @@ using UnityEngine;
 [System.Serializable]
 public struct ViewDict{
     
-    public ViewDict(Vector3Int coordinate, TrainingData trainingData){
+    public ViewDict(Vector3Int coordinate, Module trainingData){
         _coordinate = coordinate;
         _trainingData = trainingData;
     }
     
     [SerializeField] private Vector3Int _coordinate;
-    [SerializeField] private TrainingData _trainingData;
+    [SerializeField] private Module _trainingData;
 }
 
 [System.Serializable]
-public class Pattern : Matrix<TrainingData> {
+public class Pattern : Matrix<Module> {
     
     private int _patternSizeN;
     [SerializeField] private Vector3Int _patternCoordinate;
 
     [SerializeField] private List < ViewDict> _patternDictionary = new List<ViewDict>();
 
-    public Pattern(int patternSizeN, TrainingData[,,] patternData, Vector3Int patternCoordinate){        
+    public Pattern(int patternSizeN, Module[,,] patternData, Vector3Int patternCoordinate){        
         MatrixData = patternData;
 
         _patternSizeN = patternSizeN;
@@ -37,8 +37,23 @@ public class Pattern : Matrix<TrainingData> {
             }
         }
     }
+    
+    public override void RotatePatternCounterClockwise(int times)
+    {
+        base.RotatePatternCounterClockwise(times);
+        
+        for ( int i = 0; i < times; i++ ){
+            for ( int x = 0; x < MatrixData.GetLength(0); x++ ){
+                for ( int y = 0; y < MatrixData.GetLength(1); y++ ){
+                    for ( int z = 0; z < MatrixData.GetLength(2); z++ ){
+                        MatrixData[x, y, z].RotationEuler += new Vector3Int(0, -90, 0);
+                    }
+                }
+            }
+        }
+    }
 
-    public override bool IsEqualToMatrix(Matrix<TrainingData> otherMatrix)
+    public override bool IsEqualToMatrix(Matrix<Module> otherMatrix)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -53,16 +68,16 @@ public class Pattern : Matrix<TrainingData> {
             {
                 for (int z = 0; z < MatrixData.GetLength(2); z++)
                 {
-                    TrainingData original = MatrixData[x, y, z];
-                    TrainingData comparison = otherMatrix.MatrixData[x, y, z];
+                    Module original = MatrixData[x, y, z];
+                    Module comparison = otherMatrix.MatrixData[x, y, z];
 
-                    if (original.GameObjectIndex != comparison.GameObjectIndex)
+                    if (original.Prefab != comparison.Prefab)
                     {
                         bIsEqual = false;
                         break;
                     }
 
-                    if (original.LocalRotation != comparison.LocalRotation)
+                    if (original.RotationEuler != comparison.RotationEuler)
                     {
                         bIsEqual = false;
                         break;

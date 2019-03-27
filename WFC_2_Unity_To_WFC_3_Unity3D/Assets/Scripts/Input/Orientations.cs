@@ -31,22 +31,16 @@ public static class Orientations {
 		switch ( orientation ){
 			case EOrientations.FORWARD:
 				return FORWARD;
-				break;
 			case EOrientations.BACK:
 				return BACK;
-				break;
 			case EOrientations.RIGHT:
 				return RIGHT;
-				break;
 			case EOrientations.LEFT:
 				return LEFT;
-				break;
 			case EOrientations.UP:
 				return UP;
-				break;
 			case EOrientations.DOWN:
 				return DOWN;
-				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(orientation), orientation, null);
 		}

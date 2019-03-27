@@ -6,12 +6,12 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class ModulePrototype : SerializedMonoBehaviour {
-    [SerializeField] private Dictionary < EOrientations, TrainingNeighbourData> _moduleOrientations = new Dictionary < EOrientations, TrainingNeighbourData >();
+    //[SerializeField] private Dictionary < EOrientations, TrainingNeighbourData> _moduleOrientations = new Dictionary < EOrientations, TrainingNeighbourData >();
 
-    public Dictionary < EOrientations, TrainingNeighbourData > ModuleOrientations{
-        get{ return _moduleOrientations; }
-        set{ _moduleOrientations = value; }
-    }
+   // public Dictionary < EOrientations, TrainingNeighbourData > ModuleOrientations{
+    //    get{ return _moduleOrientations; }
+     //   set{ _moduleOrientations = value; }
+    //}
 
     private void OnDrawGizmosSelected(){
 

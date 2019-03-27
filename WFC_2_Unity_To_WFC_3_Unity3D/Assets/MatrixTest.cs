@@ -73,7 +73,7 @@ public class MatrixTest : SerializedMonoBehaviour
         } 
         else 
         {
-            vectorMatrix.RotatePatternCounterClockwise();
+            vectorMatrix.RotatePatternCounterClockwise(1);
         }
     }
 

@@ -5,6 +5,7 @@ using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 
+/*
 [CustomEditor(typeof(PatternAllowanceTest))]
 public class PatternAllowanceTestInspector : OdinEditor
 {
@@ -136,4 +137,5 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         }
     }
 }
+*/
 
