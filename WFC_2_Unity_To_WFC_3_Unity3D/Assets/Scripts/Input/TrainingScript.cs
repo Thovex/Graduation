@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Linq.Expressions;
 using Sirenix.OdinInspector;
+using Sirenix.OdinInspector.Demos;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Experimental.UIElements;
+using UnityEngine.Tilemaps;
+using Vector3Int = UnityEngine.Vector3Int;
 
 // ReSharper disable All
 
@@ -31,6 +32,8 @@ public struct Module{
 
     [SerializeField] private GameObject prefab;
     [SerializeField] private Vector3Int rotationEuler;
+    [SerializeField] private List<OrientationModule> moduleNeighbours;
+
     
     public GameObject Prefab{
         get{ return prefab; }
@@ -42,9 +45,37 @@ public struct Module{
         set{ rotationEuler = value; }
     }
 
+    public List < OrientationModule > ModuleNeighbours{
+        get{ return moduleNeighbours; }
+        set{ moduleNeighbours = value; }
+    }
+
     public Module(GameObject prefab, Vector3Int rotationEuler){
         this.prefab = prefab;
         this.rotationEuler = rotationEuler;
+        this.moduleNeighbours = new List<OrientationModule >();
+    }
+}
+
+
+[System.Serializable]
+public struct OrientationModule{
+    [SerializeField] private EOrientations orientation;
+    [SerializeField] private Module neighbourModule;
+    
+    public EOrientations Orientation{
+        get{ return orientation; }
+        set{ orientation = value; }
+    }
+
+    public Module NeighbourModule{
+        get{ return neighbourModule; }
+        set{ neighbourModule = value; }
+    }
+
+    public OrientationModule(EOrientations orientation, Module neighbourModule){
+        this.orientation = orientation;
+        this.neighbourModule = neighbourModule;
     }
 }
 
@@ -74,6 +105,8 @@ public class TrainingScript : SerializedMonoBehaviour{
         Input = GetComponent<InputGriddify>();
 
         AssignCoordinateToChildren();
+
+        CalculateNeighbours();
         
         InitializeMatrix();
 
@@ -109,7 +142,34 @@ public class TrainingScript : SerializedMonoBehaviour{
                     V3toV3I(childTransform.localEulerAngles)
                 )
             );
+            
+            childTransform.name = V3toV3I(childTransform.localPosition).ToString()  + " " +((GameObject)PrefabUtility.GetPrefabParent(childTransform.gameObject)).name ;
         }
+    }
+
+    private void CalculateNeighbours(){
+        Dictionary <Vector3Int, Module> ChildrenByCoordinateWithNeighbours = new Dictionary < Vector3Int, Module >();
+        
+        foreach ( KeyValuePair < Vector3Int, Module > Pair in ChildrenByCoordinate ){
+            List < OrientationModule > Neighbours = new List < OrientationModule >();
+            
+            foreach ( Vector3Int orientation in Orientations.Dirs ){
+                Vector3Int neighbourCoordinate = Pair.Key + orientation;
+
+                if ( ChildrenByCoordinate.ContainsKey(neighbourCoordinate) ){
+                    Module neighbourModule;
+                    if (ChildrenByCoordinate.TryGetValue(neighbourCoordinate, out neighbourModule) ) {
+                        Neighbours.Add(new OrientationModule(Orientations.ReturnOrientationVal(orientation), neighbourModule));
+                    }
+                }
+            }
+
+            Module updatedModule = Pair.Value;
+            updatedModule.ModuleNeighbours = Neighbours;
+            ChildrenByCoordinateWithNeighbours.Add(Pair.Key, updatedModule);
+        }
+
+        ChildrenByCoordinate = ChildrenByCoordinateWithNeighbours;
     }
 
     static Vector3Int V3toV3I(Vector3 Input){
