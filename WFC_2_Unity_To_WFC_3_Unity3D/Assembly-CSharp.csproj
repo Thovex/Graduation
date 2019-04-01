@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\MatrixTest.cs" />
+    <Compile Include="Assets\ModuleDebug.cs" />
     <Compile Include="Assets\PatternAllowanceTest.cs" />
     <Compile Include="Assets\Scripts\Input\InputGriddify.cs" />
     <Compile Include="Assets\Scripts\Input\Matrix.cs" />

@@ -88,8 +88,10 @@ public class TrainingScript : SerializedMonoBehaviour{
     private InputGriddify _input;
 
     private void Update(){
-        TranslatePrefabsToId();
 
+        
+        TranslatePrefabsToId();
+        
     }
 
     private void TranslatePrefabsToId(){
@@ -119,10 +121,10 @@ public class TrainingScript : SerializedMonoBehaviour{
     }
 
     private void GetResources(){
-        GameObject[] Prefabs = Resources.LoadAll<GameObject>("Wfc");
+        GameObject[] prefabs = Resources.LoadAll<GameObject>("Wfc");
 
-        for ( int i = 0; i < Prefabs.Length; i++ ){
-            _prefabAndId.Add(i, Prefabs[i]);
+        for ( int i = 0; i < prefabs.Length; i++ ){
+            _prefabAndId.Add(i, prefabs[i]);
         }
     }
 
@@ -143,28 +145,28 @@ public class TrainingScript : SerializedMonoBehaviour{
     }
 
     private void CalculateNeighbours(){
-        Dictionary <Vector3Int, Module> ChildrenByCoordinateWithNeighbours = new Dictionary < Vector3Int, Module >();
+        Dictionary <Vector3Int, Module> childrenByCoordinateWithNeighbours = new Dictionary < Vector3Int, Module >();
         
-        foreach ( KeyValuePair < Vector3Int, Module > Pair in _childrenByCoordinate ){
-            List < OrientationModule > Neighbours = new List < OrientationModule >();
+        foreach ( KeyValuePair < Vector3Int, Module > pair in _childrenByCoordinate ){
+            List < OrientationModule > neighbours = new List < OrientationModule >();
             
             foreach ( Vector3Int orientation in Orientations.Dirs ){
-                Vector3Int neighbourCoordinate = Pair.Key + orientation;
+                Vector3Int neighbourCoordinate = pair.Key + orientation;
 
                 if ( _childrenByCoordinate.ContainsKey(neighbourCoordinate) ){
                     Module neighbourModule;
                     if (_childrenByCoordinate.TryGetValue(neighbourCoordinate, out neighbourModule) ) {
-                        Neighbours.Add(new OrientationModule(Orientations.ReturnOrientationVal(orientation), neighbourModule));
+                        neighbours.Add(new OrientationModule(Orientations.ReturnOrientationVal(orientation), neighbourModule));
                     }
                 }
             }
 
-            Module updatedModule = Pair.Value;
-            updatedModule.ModuleNeighbours = Neighbours;
-            ChildrenByCoordinateWithNeighbours.Add(Pair.Key, updatedModule);
+            Module updatedModule = pair.Value;
+            updatedModule.ModuleNeighbours = neighbours;
+            childrenByCoordinateWithNeighbours.Add(pair.Key, updatedModule);
         }
 
-        _childrenByCoordinate = ChildrenByCoordinateWithNeighbours;
+        _childrenByCoordinate = childrenByCoordinateWithNeighbours;
     }
 
     private void InitializeMatrix(){
@@ -195,6 +197,13 @@ public class TrainingScript : SerializedMonoBehaviour{
                     if ( _childrenByCoordinate.TryGetValue(new Vector3Int(x + nx, y + ny, z + nz), out module) ){
                         newTrainingData[nx, ny, nz] = module;
                         bIsNull = false;
+                    }
+                    else{
+                        GameObject emptyPrefab;
+
+                        if ( _prefabAndId.TryGetValue(0, out emptyPrefab) ){
+                            newTrainingData[nx, ny, nz] = new Module(emptyPrefab, Vector3Int.zero);
+                        }
                     }
                 });
                         

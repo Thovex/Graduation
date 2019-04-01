@@ -21,30 +21,34 @@ public class Matrix<T> {
 	public int SizeZ{ get; protected set; }
 
 	public virtual void RotatePatternCounterClockwise(int times){
-		for ( int i = 0; i < times; i++ ){
-
-			T[,,] originalData = MatrixData;
-			T[,,] copyMatrix = new T[originalData.GetLength(0), originalData.GetLength(1), originalData.GetLength(2)];
+		for ( int i = 0; i < times; i++ ){	
 			
-			Nested3(this, (x, y, z) => {
-				if ( x < SizeX - 1 && z == 0 ){
-					copyMatrix[x + 1, y, z] = originalData[x, y, z];
-				}
-				else if ( x == SizeX - 1 && z < SizeZ - 1 ){
-					copyMatrix[x, y, z + 1] = originalData[x, y, z];
-				}
-				else if ( z == SizeZ - 1 && x > 0 ){
-					copyMatrix[x - 1, y, z] = originalData[x, y, z];
-				}
-				else if ( z > 0 && x == 0 ){
-					copyMatrix[x, y, z - 1] = originalData[x, y, z];
-				}
-				else{
-					copyMatrix[x, y, z] = originalData[x, y, z];
-				}
-			});
+			// Todo: Replace with Quaternion rotation
+			for ( int n = 0; n < SizeX - 1; n++ ){
 
-			MatrixData = copyMatrix;
+				T[,,] originalData = MatrixData;
+				T[,,] copyMatrix = new T[originalData.GetLength(0), originalData.GetLength(1), originalData.GetLength(2)];
+
+				Nested3(this, (x, y, z) => {
+					if ( x < SizeX - 1 && z == 0 ){
+						copyMatrix[x + 1, y, z] = originalData[x, y, z];
+					}
+					else if ( x == SizeX - 1 && z < SizeZ - 1 ){
+						copyMatrix[x, y, z + 1] = originalData[x, y, z];
+					}
+					else if ( z == SizeZ - 1 && x > 0 ){
+						copyMatrix[x - 1, y, z] = originalData[x, y, z];
+					}
+					else if ( z > 0 && x == 0 ){
+						copyMatrix[x, y, z - 1] = originalData[x, y, z];
+					}
+					else{
+						copyMatrix[x, y, z] = originalData[x, y, z];
+					}
+				});
+
+				MatrixData = copyMatrix;
+			}
 		}
 	}
 	
