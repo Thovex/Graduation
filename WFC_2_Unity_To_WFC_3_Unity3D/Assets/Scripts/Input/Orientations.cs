@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using UnityEngine;
 // ReSharper disable InconsistentNaming
 
@@ -14,6 +15,15 @@ public enum EOrientations{
 	DOWN,
 	NULL
 };
+
+[System.Serializable]
+public enum EDirection{
+	FORWARD,
+	RIGHT,
+	BACK,
+	LEFT,
+	NULL
+}
 
 public static class Orientations {
 	private static readonly Vector3Int FORWARD =  new Vector3Int(0, 0, 1);
@@ -55,5 +65,29 @@ public static class Orientations {
 		if ( directionVector == DOWN ) return EOrientations.DOWN;
 		
 		return EOrientations.NULL;
+	}
+
+	public static EDirection ReturnDirectionVal(Vector3Int rotationVector){
+		int rotationValue = rotationVector.y;
+		
+		if ( rotationValue % 360 == 0){
+			return EDirection.FORWARD;
+		}
+
+		if ( rotationValue % 180 == 0 ){
+			return EDirection.BACK;
+		}
+
+		if ( rotationValue % 90 == 0 ){
+			if ( rotationValue == -90 || rotationValue == 270 ){
+				return EDirection.LEFT;
+			}
+
+			if ( rotationValue == 90 | rotationValue == -270 ){
+				return EDirection.RIGHT;
+			}
+		}
+
+		return EDirection.NULL;
 	}
 }

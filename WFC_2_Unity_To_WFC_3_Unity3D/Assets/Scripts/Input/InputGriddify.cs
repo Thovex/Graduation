@@ -100,6 +100,14 @@ public class InputGriddify : MonoBehaviour
     {
         float[] angles = new float[] { 0, 90, 180, 270, 360 };
 
+        if ( value > 360 ){
+            value = 0;
+        }
+
+        if ( value < -360 ){
+            value = 0;
+        }
+
         for (int i = 0; i < angles.Length - 1; i++)
         {
             if (value > angles[i] && value < angles[i] + 45) value = angles[i];

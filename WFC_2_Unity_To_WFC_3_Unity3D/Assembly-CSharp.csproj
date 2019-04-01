@@ -57,16 +57,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\MatrixTest.cs" />
-    <Compile Include="Assets\ModuleDebug.cs" />
-    <Compile Include="Assets\PatternAllowanceTest.cs" />
+    <Compile Include="Assets\ModulePrototype.cs" />
     <Compile Include="Assets\Scripts\Input\InputGriddify.cs" />
     <Compile Include="Assets\Scripts\Input\Matrix.cs" />
-    <Compile Include="Assets\Scripts\Input\ModulePrototype.cs" />
+    <Compile Include="Assets\Scripts\Input\Module.cs" />
+    <Compile Include="Assets\Scripts\Input\OrientationModule.cs" />
     <Compile Include="Assets\Scripts\Input\Orientations.cs" />
     <Compile Include="Assets\Scripts\Input\Pattern.cs" />
     <Compile Include="Assets\Scripts\Input\TrainingScript.cs" />
-    <Compile Include="Assets\Scripts\Input\UniqueId.cs" />
+    <Compile Include="Assets\Scripts\Testing\Bitsplay.cs" />
+    <Compile Include="Assets\Scripts\Testing\MatrixTest.cs" />
+    <Compile Include="Assets\Scripts\Testing\ModuleDebug.cs" />
+    <Compile Include="Assets\Scripts\Testing\PatternAllowanceTest.cs" />
     <Compile Include="Assets\Scripts\Utility.cs" />
     <Compile Include="Assets\Scripts\Wfc\Initializer.cs" />
     <Reference Include="UnityEngine.AIModule">

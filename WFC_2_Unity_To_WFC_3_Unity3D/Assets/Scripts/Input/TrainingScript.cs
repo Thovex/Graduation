@@ -23,57 +23,6 @@ public class TrainingScriptInspector : OdinEditor
     }
 }
 
-[Serializable]
-public struct Module{
-    [SerializeField] private GameObject prefab;
-    [SerializeField] private Vector3Int rotationEuler;
-    [SerializeField] private List < OrientationModule > moduleNeighbours;
-
-
-    public GameObject Prefab{
-        get{ return prefab; }
-        set{ prefab = value; }
-    }
-
-    public Vector3Int RotationEuler{
-        get{ return rotationEuler; }
-        set{ rotationEuler = value; }
-    }
-
-    public List < OrientationModule > ModuleNeighbours{
-        get{ return moduleNeighbours; }
-        set{ moduleNeighbours = value; }
-    }
-
-    public Module(GameObject prefab, Vector3Int rotationEuler){
-        this.prefab = prefab;
-        this.rotationEuler = rotationEuler;
-        this.moduleNeighbours = new List < OrientationModule >();
-    }
-}
-
-
-[Serializable]
-public struct OrientationModule{
-    [SerializeField] private EOrientations orientation;
-    [SerializeField] private Module neighbourModule;
-    
-    public EOrientations Orientation{
-        get{ return orientation; }
-        set{ orientation = value; }
-    }
-
-    public Module NeighbourModule{
-        get{ return neighbourModule; }
-        set{ neighbourModule = value; }
-    }
-
-    public OrientationModule(EOrientations orientation, Module neighbourModule){
-        this.orientation = orientation;
-        this.neighbourModule = neighbourModule;
-    }
-}
-
 [ExecuteInEditMode]
 public class TrainingScript : SerializedMonoBehaviour{
 
@@ -86,37 +35,55 @@ public class TrainingScript : SerializedMonoBehaviour{
     private Matrix < Module > _moduleMatrix;
 
     private InputGriddify _input;
+    
+    public Dictionary < Vector3Int, Module > ChildrenByCoordinate{
+        get{ return _childrenByCoordinate; }
+        set{ _childrenByCoordinate = value; }
+    }
+    
+    public Dictionary < int, GameObject > PrefabAndId{
+        get{ return _prefabAndId; }
+        set{ _prefabAndId = value; }
+    }
+
+    public List < Pattern > Patterns{
+        get{ return _patterns; }
+        set{ _patterns = value; }
+    }
+
+    public int PrefabToId(GameObject prefab){
+        foreach ( KeyValuePair < int, GameObject > pair in PrefabAndId ){
+            if ( prefab == pair.Value ) return pair.Key;
+        }
+
+        // Something went wrong?
+        return -1;
+    }
 
     private void Update(){
-
-        
         TranslatePrefabsToId();
-        
     }
 
     private void TranslatePrefabsToId(){
         ClearPreviousData();
-        
         GetResources();
         
         _input = GetComponent<InputGriddify>();
 
         AssignCoordinateToChildren();
-
         CalculateNeighbours();
-        
+   
         InitializeMatrix();
 
         DefinePatterns();
-        
         DisplayPatterns();
     }
     
     private void ClearPreviousData(){
-        _childrenByCoordinate = new Dictionary<Vector3Int, Module>();
-        _prefabAndId = new Dictionary < int, GameObject >();
+        ChildrenByCoordinate = new Dictionary<Vector3Int, Module>();
+        PrefabAndId = new Dictionary < int, GameObject >();
         _moduleMatrix = new Matrix < Module >(Vector3Int.zero);
-        _patterns = new List < Pattern >();
+        Patterns = new List < Pattern >();
 
     }
 
@@ -124,7 +91,7 @@ public class TrainingScript : SerializedMonoBehaviour{
         GameObject[] prefabs = Resources.LoadAll<GameObject>("Wfc");
 
         for ( int i = 0; i < prefabs.Length; i++ ){
-            _prefabAndId.Add(i, prefabs[i]);
+            PrefabAndId.Add(i, prefabs[i]);
         }
     }
 
@@ -132,7 +99,7 @@ public class TrainingScript : SerializedMonoBehaviour{
         for ( int i = 0; i < transform.childCount; i++ ){
             Transform childTransform = transform.GetChild(i);
             
-            _childrenByCoordinate.Add(
+            ChildrenByCoordinate.Add(
                 V3ToV3I(childTransform.localPosition), 
                 new Module(
                     (GameObject)PrefabUtility.GetCorrespondingObjectFromSource(childTransform.gameObject),
@@ -147,15 +114,15 @@ public class TrainingScript : SerializedMonoBehaviour{
     private void CalculateNeighbours(){
         Dictionary <Vector3Int, Module> childrenByCoordinateWithNeighbours = new Dictionary < Vector3Int, Module >();
         
-        foreach ( KeyValuePair < Vector3Int, Module > pair in _childrenByCoordinate ){
+        foreach ( KeyValuePair < Vector3Int, Module > pair in ChildrenByCoordinate ){
             List < OrientationModule > neighbours = new List < OrientationModule >();
             
             foreach ( Vector3Int orientation in Orientations.Dirs ){
                 Vector3Int neighbourCoordinate = pair.Key + orientation;
 
-                if ( _childrenByCoordinate.ContainsKey(neighbourCoordinate) ){
+                if ( ChildrenByCoordinate.ContainsKey(neighbourCoordinate) ){
                     Module neighbourModule;
-                    if (_childrenByCoordinate.TryGetValue(neighbourCoordinate, out neighbourModule) ) {
+                    if (ChildrenByCoordinate.TryGetValue(neighbourCoordinate, out neighbourModule) ) {
                         neighbours.Add(new OrientationModule(Orientations.ReturnOrientationVal(orientation), neighbourModule));
                     }
                 }
@@ -166,7 +133,7 @@ public class TrainingScript : SerializedMonoBehaviour{
             childrenByCoordinateWithNeighbours.Add(pair.Key, updatedModule);
         }
 
-        _childrenByCoordinate = childrenByCoordinateWithNeighbours;
+        ChildrenByCoordinate = childrenByCoordinateWithNeighbours;
     }
 
     private void InitializeMatrix(){
@@ -175,7 +142,7 @@ public class TrainingScript : SerializedMonoBehaviour{
         Nested3(_moduleMatrix, (x, y, z) => {
             Module module;
                     
-            if (_childrenByCoordinate.TryGetValue(new Vector3Int(x,y,z), out module)){
+            if (ChildrenByCoordinate.TryGetValue(new Vector3Int(x,y,z), out module)){
                 _moduleMatrix.MatrixData[x, y, z] = module;
             }
         });
@@ -194,14 +161,14 @@ public class TrainingScript : SerializedMonoBehaviour{
                 Nested3(new Vector3Int(n, n, n), (nx, ny, nz) => {
                     Module module;
 
-                    if ( _childrenByCoordinate.TryGetValue(new Vector3Int(x + nx, y + ny, z + nz), out module) ){
+                    if ( ChildrenByCoordinate.TryGetValue(new Vector3Int(x + nx, y + ny, z + nz), out module) ){
                         newTrainingData[nx, ny, nz] = module;
                         bIsNull = false;
                     }
                     else{
                         GameObject emptyPrefab;
 
-                        if ( _prefabAndId.TryGetValue(0, out emptyPrefab) ){
+                        if ( PrefabAndId.TryGetValue(0, out emptyPrefab) ){
                             newTrainingData[nx, ny, nz] = new Module(emptyPrefab, Vector3Int.zero);
                         }
                     }
@@ -209,12 +176,12 @@ public class TrainingScript : SerializedMonoBehaviour{
                         
                 if ( !bIsNull ){
                     Pattern newPattern = new Pattern(n, newTrainingData, new Vector3Int(x, y, z));
-                    _patterns.Add(newPattern);
+                    Patterns.Add(newPattern);
 
                     for ( int i = 1; i < 4; i++ ){
                         Pattern rotatedPattern = new Pattern(n, newTrainingData, new Vector3Int(x, y, z));
                         rotatedPattern.RotatePatternCounterClockwise(i);
-                        _patterns.Add(rotatedPattern);
+                        Patterns.Add(rotatedPattern);
                     }
                 }
             });
@@ -231,8 +198,12 @@ public class TrainingScript : SerializedMonoBehaviour{
 
             int index = 0;
 
-            foreach ( Pattern pattern in _patterns ){
+            foreach ( Pattern pattern in Patterns ){
                 GameObject newPattern = new GameObject("Pattern");
+
+                Bitsplay newBitsplay = newPattern.AddComponent < Bitsplay >();
+                newBitsplay.Training = this;
+                newBitsplay.Pattern = pattern;
 
                 newPattern.transform.localPosition = Vector3.zero + ( index * 3 ) * Vector3.left;
                 newPattern.transform.parent = _displayPatternObject.transform;
