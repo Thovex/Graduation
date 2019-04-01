@@ -66,6 +66,7 @@
     <Compile Include="Assets\Scripts\Input\Pattern.cs" />
     <Compile Include="Assets\Scripts\Input\TrainingScript.cs" />
     <Compile Include="Assets\Scripts\Input\UniqueId.cs" />
+    <Compile Include="Assets\Scripts\Utility.cs" />
     <Compile Include="Assets\Scripts\Wfc\Initializer.cs" />
     <Reference Include="UnityEngine.AIModule">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2018.3.5f1/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>

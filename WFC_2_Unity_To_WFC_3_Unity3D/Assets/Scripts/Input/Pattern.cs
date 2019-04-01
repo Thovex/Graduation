@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using static Thovex.Utility;
 using UnityEngine;
 
 [System.Serializable]
@@ -20,36 +21,31 @@ public class Pattern : Matrix<Module> {
     
     private int _patternSizeN;
     [SerializeField] private Vector3Int _patternCoordinate;
+    [SerializeField] private readonly List < ViewDict> _patternDictionary = new List<ViewDict>();
 
-    [SerializeField] private List < ViewDict> _patternDictionary = new List<ViewDict>();
-
-    public Pattern(int patternSizeN, Module[,,] patternData, Vector3Int patternCoordinate){        
+    public Pattern(int patternSizeN, Module[,,] patternData, Vector3Int patternCoordinate){
         MatrixData = patternData;
 
-        _patternSizeN = patternSizeN;
-        _patternCoordinate = patternCoordinate;
+        patternSizeN = patternSizeN;
+        patternCoordinate = patternCoordinate;
 
-        for ( int x = 0; x < MatrixData.GetLength(0); x++ ){
-            for ( int y = 0; y < MatrixData.GetLength(1); y++ ){
-                for ( int z = 0; z < MatrixData.GetLength(2); z++ ){
-                    _patternDictionary.Add(new ViewDict(new Vector3Int(x,y,z), MatrixData[x,y,z]) );
-                }
-            }
-        }
+        SizeX = MatrixData.GetLength(0);
+        SizeY = MatrixData.GetLength(1);
+        SizeZ = MatrixData.GetLength(2);
+
+        Nested3(this, (x, y, z) => {
+            _patternDictionary.Add(new ViewDict(new Vector3Int(x, y, z), MatrixData[x, y, z]));
+        });
     }
-    
+
     public override void RotatePatternCounterClockwise(int times)
     {
         base.RotatePatternCounterClockwise(times);
         
         for ( int i = 0; i < times; i++ ){
-            for ( int x = 0; x < MatrixData.GetLength(0); x++ ){
-                for ( int y = 0; y < MatrixData.GetLength(1); y++ ){
-                    for ( int z = 0; z < MatrixData.GetLength(2); z++ ){
-                        MatrixData[x, y, z].RotationEuler += new Vector3Int(0, -90, 0);
-                    }
-                }
-            }
+            Nested3(this, (x, y, z) => {
+                MatrixData[x, y, z].RotationEuler += new Vector3Int(0, -90, 0);
+            });
         }
     }
 
@@ -62,30 +58,15 @@ public class Pattern : Matrix<Module> {
 
         bool bIsEqual = true;
         
-        for (int x = 0; x < MatrixData.GetLength(0); x++)
-        {
-            for (int y= 0; y < MatrixData.GetLength(1); y++)
-            {
-                for (int z = 0; z < MatrixData.GetLength(2); z++)
-                {
-                    Module original = MatrixData[x, y, z];
-                    Module comparison = otherMatrix.MatrixData[x, y, z];
+        Nested3(this, (x, y, z) => {
+            Module original = MatrixData[x, y, z];
+            Module comparison = otherMatrix.MatrixData[x, y, z];
 
-                    if (original.Prefab != comparison.Prefab)
-                    {
-                        bIsEqual = false;
-                        break;
-                    }
+            if (original.Prefab != comparison.Prefab) bIsEqual = false;
+            if ( original.RotationEuler != comparison.RotationEuler ) bIsEqual = false;
+        });
+        
 
-                    if (original.RotationEuler != comparison.RotationEuler)
-                    {
-                        bIsEqual = false;
-                        break;
-                    }
-
-                }
-            }
-        }
 
         return bIsEqual;
     }

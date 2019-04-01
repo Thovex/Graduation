@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
-using Sirenix.OdinInspector.Demos;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Tilemaps;
+using static Thovex.Utility;
 using Vector3Int = UnityEngine.Vector3Int;
-
-// ReSharper disable All
 
 [CustomEditor(typeof(TrainingScript))]
 public class TrainingScriptInspector : OdinEditor
@@ -17,24 +15,21 @@ public class TrainingScriptInspector : OdinEditor
         
         TrainingScript training = (TrainingScript)target;
             
-        if (GUILayout.Button("Start WFC")){
-            //training.WaveFunctionCollapse();
-        }
-        
-        if (GUILayout.Button("Draw Patterns")){
-           // training.DrawPatterns();
-        }
+//        if (GUILayout.Button("For1")){
+//        }
+//        
+//        if (GUILayout.Button("For2")){
+//        }
     }
 }
 
-[System.Serializable]
+[Serializable]
 public struct Module{
-
     [SerializeField] private GameObject prefab;
     [SerializeField] private Vector3Int rotationEuler;
-    [SerializeField] private List<OrientationModule> moduleNeighbours;
+    [SerializeField] private List < OrientationModule > moduleNeighbours;
 
-    
+
     public GameObject Prefab{
         get{ return prefab; }
         set{ prefab = value; }
@@ -53,12 +48,12 @@ public struct Module{
     public Module(GameObject prefab, Vector3Int rotationEuler){
         this.prefab = prefab;
         this.rotationEuler = rotationEuler;
-        this.moduleNeighbours = new List<OrientationModule >();
+        this.moduleNeighbours = new List < OrientationModule >();
     }
 }
 
 
-[System.Serializable]
+[Serializable]
 public struct OrientationModule{
     [SerializeField] private EOrientations orientation;
     [SerializeField] private Module neighbourModule;
@@ -82,27 +77,27 @@ public struct OrientationModule{
 [ExecuteInEditMode]
 public class TrainingScript : SerializedMonoBehaviour{
 
-    [SerializeField] private Dictionary<Vector3Int, Module> ChildrenByCoordinate = new Dictionary<Vector3Int, Module>();
-    [SerializeField] private Dictionary<int, GameObject> PrefabAndId = new Dictionary<int, GameObject>();
-    [SerializeField] private List<Pattern> Patterns = new List< Pattern>();
+    [SerializeField] private Dictionary<Vector3Int, Module> _childrenByCoordinate = new Dictionary<Vector3Int, Module>();
+    [SerializeField] private Dictionary<int, GameObject> _prefabAndId = new Dictionary<int, GameObject>();
+    [SerializeField] private List<Pattern> _patterns = new List< Pattern>();
 
-    [SerializeField] private GameObject DisplayPatternObject;
+    [SerializeField] private GameObject _displayPatternObject;
 
-    private Matrix < Module > ModuleMatrix;
+    private Matrix < Module > _moduleMatrix;
 
-    private InputGriddify Input;
+    private InputGriddify _input;
 
     private void Update(){
         TranslatePrefabsToId();
 
     }
 
-    public void TranslatePrefabsToId(){
+    private void TranslatePrefabsToId(){
         ClearPreviousData();
         
         GetResources();
         
-        Input = GetComponent<InputGriddify>();
+        _input = GetComponent<InputGriddify>();
 
         AssignCoordinateToChildren();
 
@@ -116,10 +111,10 @@ public class TrainingScript : SerializedMonoBehaviour{
     }
     
     private void ClearPreviousData(){
-        ChildrenByCoordinate = new Dictionary<Vector3Int, Module>();
-        PrefabAndId = new Dictionary < int, GameObject >();
-        ModuleMatrix = new Matrix < Module >(Vector3Int.zero);
-        Patterns = new List < Pattern >();
+        _childrenByCoordinate = new Dictionary<Vector3Int, Module>();
+        _prefabAndId = new Dictionary < int, GameObject >();
+        _moduleMatrix = new Matrix < Module >(Vector3Int.zero);
+        _patterns = new List < Pattern >();
 
     }
 
@@ -127,7 +122,7 @@ public class TrainingScript : SerializedMonoBehaviour{
         GameObject[] Prefabs = Resources.LoadAll<GameObject>("Wfc");
 
         for ( int i = 0; i < Prefabs.Length; i++ ){
-            PrefabAndId.Add(i, Prefabs[i]);
+            _prefabAndId.Add(i, Prefabs[i]);
         }
     }
 
@@ -135,30 +130,30 @@ public class TrainingScript : SerializedMonoBehaviour{
         for ( int i = 0; i < transform.childCount; i++ ){
             Transform childTransform = transform.GetChild(i);
             
-            ChildrenByCoordinate.Add(
-                V3toV3I(childTransform.localPosition), 
+            _childrenByCoordinate.Add(
+                V3ToV3I(childTransform.localPosition), 
                 new Module(
-                    (GameObject)PrefabUtility.GetPrefabParent(childTransform.gameObject),
-                    V3toV3I(childTransform.localEulerAngles)
+                    (GameObject)PrefabUtility.GetCorrespondingObjectFromSource(childTransform.gameObject),
+                    V3ToV3I(childTransform.localEulerAngles)
                 )
             );
             
-            childTransform.name = V3toV3I(childTransform.localPosition).ToString()  + " " +((GameObject)PrefabUtility.GetPrefabParent(childTransform.gameObject)).name ;
+            childTransform.name = V3ToV3I(childTransform.localPosition).ToString()  + " " +((GameObject)PrefabUtility.GetCorrespondingObjectFromSource(childTransform.gameObject)).name ;
         }
     }
 
     private void CalculateNeighbours(){
         Dictionary <Vector3Int, Module> ChildrenByCoordinateWithNeighbours = new Dictionary < Vector3Int, Module >();
         
-        foreach ( KeyValuePair < Vector3Int, Module > Pair in ChildrenByCoordinate ){
+        foreach ( KeyValuePair < Vector3Int, Module > Pair in _childrenByCoordinate ){
             List < OrientationModule > Neighbours = new List < OrientationModule >();
             
             foreach ( Vector3Int orientation in Orientations.Dirs ){
                 Vector3Int neighbourCoordinate = Pair.Key + orientation;
 
-                if ( ChildrenByCoordinate.ContainsKey(neighbourCoordinate) ){
+                if ( _childrenByCoordinate.ContainsKey(neighbourCoordinate) ){
                     Module neighbourModule;
-                    if (ChildrenByCoordinate.TryGetValue(neighbourCoordinate, out neighbourModule) ) {
+                    if (_childrenByCoordinate.TryGetValue(neighbourCoordinate, out neighbourModule) ) {
                         Neighbours.Add(new OrientationModule(Orientations.ReturnOrientationVal(orientation), neighbourModule));
                     }
                 }
@@ -169,103 +164,80 @@ public class TrainingScript : SerializedMonoBehaviour{
             ChildrenByCoordinateWithNeighbours.Add(Pair.Key, updatedModule);
         }
 
-        ChildrenByCoordinate = ChildrenByCoordinateWithNeighbours;
-    }
-
-    static Vector3Int V3toV3I(Vector3 Input){
-        return new Vector3Int(Mathf.RoundToInt(Input.x), Mathf.RoundToInt(Input.y), Mathf.RoundToInt(Input.z));
+        _childrenByCoordinate = ChildrenByCoordinateWithNeighbours;
     }
 
     private void InitializeMatrix(){
-        ModuleMatrix = new Matrix < Module >(Input.inputSize);
+        _moduleMatrix = new Matrix < Module >(_input.inputSize);
 
-        for ( int x = 0; x < ModuleMatrix.SizeX; x++ ){
-            for ( int y = 0; y < ModuleMatrix.SizeY; y++ ){
-                for ( int z = 0; z < ModuleMatrix.SizeZ; z++ ){
+        Nested3(_moduleMatrix, (x, y, z) => {
+            Module module;
                     
-                    Module module;
-                    
-                    if (ChildrenByCoordinate.TryGetValue(new Vector3Int(x,y,z), out module)){
-                        ModuleMatrix.MatrixData[x, y, z] = module;
-                    }
-                }
+            if (_childrenByCoordinate.TryGetValue(new Vector3Int(x,y,z), out module)){
+                _moduleMatrix.MatrixData[x, y, z] = module;
             }
-        }
+        });
     }
     
     private void DefinePatterns(){
-        int n = Input.NValue;
+        int n = _input.NValue;
         
         if ( n > 0 ){
             
-            for ( int x = 0; x < Input.inputSize.x; x+=n ){
-                for ( int y = 0; y < Input.inputSize.y ; y+=n ){
-                    for ( int z = 0; z < Input.inputSize.z; z+=n ){
-                        Module[,,] newTrainingData = new Module[n,n,n];
+            Nested3(_input.inputSize, n, (x, y, z) => {
+                Module[,,] newTrainingData = new Module[n,n,n];
 
-                        bool bIsNull = true;
+                bool bIsNull = true;
+
+                Nested3(new Vector3Int(n, n, n), (nx, ny, nz) => {
+                    Module module;
+
+                    if ( _childrenByCoordinate.TryGetValue(new Vector3Int(x + nx, y + ny, z + nz), out module) ){
+                        newTrainingData[nx, ny, nz] = module;
+                        bIsNull = false;
+                    }
+                });
                         
-                        for ( int nx = 0; nx < n; nx++ ){
-                            for ( int ny = 0; ny < n; ny++ ){
-                                for ( int nz = 0; nz < n; nz++ ){
-                                    Module module;
+                if ( !bIsNull ){
+                    Pattern newPattern = new Pattern(n, newTrainingData, new Vector3Int(x, y, z));
+                    _patterns.Add(newPattern);
 
-                                    if ( ChildrenByCoordinate.TryGetValue(new Vector3Int(x + nx, y + ny, z + nz), out module) ){
-                                        newTrainingData[nx, ny, nz] = module;
-                                        bIsNull = false;
-                                    }
-                                }
-                            }
-                        }
-
-                        if ( !bIsNull ){
-                            Pattern newPattern = new Pattern(n, newTrainingData, new Vector3Int(x, y, z));
-                            Patterns.Add(newPattern);
-
-                            for ( int i = 1; i < 4; i++ ){
-                                Pattern rotatedPattern = new Pattern(n, newTrainingData, new Vector3Int(x, y, z));
-                                rotatedPattern.RotatePatternCounterClockwise(i);
-                                Patterns.Add(rotatedPattern);
-                            }
-                        }
+                    for ( int i = 1; i < 4; i++ ){
+                        Pattern rotatedPattern = new Pattern(n, newTrainingData, new Vector3Int(x, y, z));
+                        rotatedPattern.RotatePatternCounterClockwise(i);
+                        _patterns.Add(rotatedPattern);
                     }
                 }
-            }
+            });
         }
     }
 
     private void DisplayPatterns(){
 
-        if ( DisplayPatternObject ){
+        if ( _displayPatternObject ){
 
-            for ( int i = DisplayPatternObject.transform.childCount; i > 0; --i ){
-                DestroyImmediate(DisplayPatternObject.transform.GetChild(0).gameObject);
+            for ( int i = _displayPatternObject.transform.childCount; i > 0; --i ){
+                DestroyImmediate(_displayPatternObject.transform.GetChild(0).gameObject);
             }
 
             int index = 0;
-            int patternCount = 0;
 
-            foreach ( Pattern pattern in Patterns ){
+            foreach ( Pattern pattern in _patterns ){
                 GameObject newPattern = new GameObject("Pattern");
 
                 newPattern.transform.localPosition = Vector3.zero + ( index * 3 ) * Vector3.left;
-                newPattern.transform.parent = DisplayPatternObject.transform;
+                newPattern.transform.parent = _displayPatternObject.transform;
 
                 Module[,,] data = pattern.MatrixData;
+                
+                Nested3(pattern, (x, y, z) => {
+                    if ( data[x, y, z].Prefab != null ){
+                        GameObject patternData = Instantiate(data[x, y, z].Prefab, newPattern.transform);
+                        patternData.transform.localPosition = new Vector3(x, y, z );
+                        patternData.transform.localEulerAngles = data[x, y, z].RotationEuler;
 
-                for ( int x = 0; x < data.GetLength(0); x++ ){
-                    for ( int y = 0; y < data.GetLength(1); y++ ){
-                        for ( int z = 0; z < data.GetLength(2); z++ ){
-                            if ( data[x, y, z].Prefab != null ){
-                                GameObject patternData = Instantiate(data[x, y, z].Prefab, newPattern.transform);
-                                patternData.transform.localPosition = new Vector3(x, y, z );
-                                patternData.transform.localEulerAngles = data[x, y, z].RotationEuler;
-
-                            }
-                        }
-                    }
-                }
-
+                    }   
+                });
                 index++;
             }
         }
