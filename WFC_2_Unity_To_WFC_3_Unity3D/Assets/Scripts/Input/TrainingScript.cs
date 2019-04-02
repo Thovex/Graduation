@@ -38,6 +38,8 @@ public class TrainingScript : SerializedMonoBehaviour{
     private Matrix < Module > _moduleMatrix;
 
     private InputGriddify _input;
+
+    private int _n = 2;
     
     public Dictionary < Vector3Int, Module > ChildrenByCoordinate{
         get{ return _childrenByCoordinate; }
@@ -67,6 +69,11 @@ public class TrainingScript : SerializedMonoBehaviour{
     public Dictionary < Pattern, Matrix < string > > PatternBits{
         get{ return _patternBits; }
         set{ _patternBits = value; }
+    }
+
+    public int N{
+        get{ return _n; }
+        set{ _n = value; }
     }
 
     public int PrefabToId(GameObject prefab){
@@ -183,16 +190,16 @@ public class TrainingScript : SerializedMonoBehaviour{
     }
     
     private void DefinePatterns(){
-        int n = _input.NValue;
+        N = _input.NValue;
         
-        if ( n > 0 ){
+        if ( N > 0 ){
             
-            Nested3(_input.inputSize, n, (x, y, z) => {
-                Module[,,] newTrainingData = new Module[n,n,n];
+            Nested3(_input.inputSize, N, (x, y, z) => {
+                Module[,,] newTrainingData = new Module[N,N,N];
 
                 bool bIsNull = true;
 
-                Nested3(new Vector3Int(n, n, n), (nx, ny, nz) => {
+                Nested3(new Vector3Int(N, N, N), (nx, ny, nz) => {
                     Module module;
 
                     if ( ChildrenByCoordinate.TryGetValue(new Vector3Int(x + nx, y + ny, z + nz), out module) ){
@@ -209,7 +216,7 @@ public class TrainingScript : SerializedMonoBehaviour{
                 });
                         
                 if ( !bIsNull ){
-                    Pattern newPattern = new Pattern(n, newTrainingData, new Vector3Int(x, y, z));
+                    Pattern newPattern = new Pattern(N, newTrainingData, new Vector3Int(x, y, z));
 
                     bool isEqual = false;                    
                     foreach (Pattern pattern in Patterns)
@@ -223,7 +230,7 @@ public class TrainingScript : SerializedMonoBehaviour{
                         Patterns.Add(newPattern);
                         
                         for ( int i = 1; i < 4; i++ ){
-                            Pattern rotatedPattern = new Pattern(n, newTrainingData, new Vector3Int(x, y, z));
+                            Pattern rotatedPattern = new Pattern(N, newTrainingData, new Vector3Int(x, y, z));
                             rotatedPattern.RotatePatternCounterClockwise(i);
                             Patterns.Add(rotatedPattern);
                         }

@@ -5,6 +5,7 @@ using System.Linq;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
+using UnityEditor.Profiling.Memory.Experimental;
 using UnityEngine;
 using static Thovex.Utility;
 
@@ -48,6 +49,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
     [SerializeField] private Vector3Int _outputSize = new Vector3Int(6, 6, 6);
     private Matrix < bool > _wave = new Matrix < bool >(Vector3Int.zero);
+    private Matrix <Vector3Int> _coordinateMatrix = new Matrix < Vector3Int >(Vector3Int.zero);
 
     private Vector3Int _collapsingCoordinate = Vector3Int.zero;
     private string _bitToSpawn = "";
@@ -97,80 +99,63 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
         Nested3(_wave, (x, y, z) => {
             if ( !_wave.MatrixData[x, y, z] ){
-                possibleCoordinates.Add(new Vector3Int(x, y, z));
+                if ( y == 1 ){
+                    possibleCoordinates.Add(new Vector3Int(x, y, z));
+                }
             }
         });
 
-        Vector3Int coordinate = possibleCoordinates[UnityEngine.Random.Range(0, possibleCoordinates.Count - 1)];
-        Vector3Int newCoordinate = coordinate;
 
-
-        while( possibleCoordinates.Contains(newCoordinate) ){
+        if ( possibleCoordinates.Count > 0 ){
             int tries = 0;
-
-            Vector3Int adding = Vector3Int.zero;
-
-            bool useX = UnityEngine.Random.value > 0.5f;
-
-            if ( useX )
-                adding.x = ( UnityEngine.Random.value > 0.5f ) ? 1 : -1;
-            else
-                adding.z = ( UnityEngine.Random.value > 0.5f ) ? 1 : -1;
-
-            if ( newCoordinate.x + adding.x > 0 && newCoordinate.x + adding.x < _wave.SizeX ){
-                newCoordinate.x += adding.x;
-            }
-
-            if ( newCoordinate.z + adding.z > 0 && newCoordinate.z + adding.z < _wave.SizeZ ){
-                newCoordinate.z += adding.z;
-            }
-
-            _collapsingCoordinate = newCoordinate;
-            tries++;
-
-            if ( tries > 25 ){
-                coordinate = possibleCoordinates[UnityEngine.Random.Range(0, possibleCoordinates.Count - 1)];
-                newCoordinate = coordinate;
-            }
-
-            if ( tries > 500 ){
-                break;
-            }
-        }
-        
-        Module module;
-        if ( _training.ChildrenByCoordinate.TryGetValue(coordinate, out module) ){
-
-            EOrientations selectedDir = EOrientations.NULL;
-
-            foreach ( Vector3Int orientationVector in Orientations.Dirs ){
-                if ( coordinate - orientationVector == _collapsingCoordinate ){
-                    selectedDir = Orientations.ReturnOrientationVal(orientationVector);
-                }
-            }
-
-            List < Possibility > possibilities;
-            if ( _training.NeighbourPossibilitiesPerBit.TryGetValue(module.GenerateBit(_training), out possibilities) ){
-                foreach ( Possibility possibility in possibilities ){
-                    if ( possibility.Orientation == selectedDir ){
-
-                        List < string > possibilitiesStringList = possibility.Possibilities.ToList();
-
-                        int randomIndex = UnityEngine.Random.Range(0, possibility.Possibilities.Count - 1);
-                        _bitToSpawn = possibilitiesStringList[randomIndex];
-                    }
-                }
-            }
-        }
-
-        _patternToSpawn = null;
-        List<Pattern> newPattern;
-
-        if ( _training.GetPatternByBit(_bitToSpawn, out newPattern) ){
             
-            int randomIndex = UnityEngine.Random.Range(0, newPattern.Count - 1);
-            _patternToSpawn = newPattern[randomIndex];
+            while( true ){
+                Vector3Int coordinate = possibleCoordinates[UnityEngine.Random.Range(0, possibleCoordinates.Count - 1)];
+
+                _coordinateMatrix = new Matrix < Vector3Int >(new Vector3Int(_training.N, _training.N, _training.N));
+                _coordinateMatrix.MatrixData[0, 0, 0] = coordinate;
+
+                Nested3(_coordinateMatrix, (x, y, z) => {
+                    bool randDir = UnityEngine.Random.Range(0, .5F) > 0.5;
+
+                    if ( randDir ){
+                        _coordinateMatrix.MatrixData[x, y, z] = coordinate + new Vector3Int(x, y, z);
+                    }
+                    else{
+                        _coordinateMatrix.MatrixData[x, y, z] = coordinate - new Vector3Int(x, y, z);
+ 
+                    }
+                });
+
+                int overlapCount = 0;
+
+                List < Vector3Int > closedCoordinates = new List < Vector3Int >();
+                
+                Nested3(_wave, (x, y, z) => {
+                    if ( !_wave.MatrixData[x, y, z] ){
+                        closedCoordinates.Add(new Vector3Int(x,y,z));
+                    }
+                });
+
+                Nested3(_coordinateMatrix, (x, y, z) => {
+                    if ( closedCoordinates.Contains(_coordinateMatrix.MatrixData[x,y,z]) ){
+                        overlapCount++;
+                    }
+                });
+                
+                if ( overlapCount == 2 ){
+                    break;
+                }
+
+                tries++;
+
+                if ( tries > 100 ){
+                    Debug.LogError("Blyad");
+                    break;
+                }
+            }
         }
+
     }
 
     private void OnDrawGizmos()
@@ -191,22 +176,13 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
             magentaColor.a = 0.75F;
             
             Gizmos.color = magentaColor;
-            Gizmos.DrawSphere(transform.position + V3ToV3I(_collapsingCoordinate), 0.25F);
             
-            Handles.Label(transform.position + V3ToV3I(_collapsingCoordinate), _bitToSpawn);
-
-            if ( _patternToSpawn != null){
-                Matrix < string > bits;
-
-                if ( _training.PatternBits.TryGetValue(_patternToSpawn, out bits) ){
-                    Nested3(_patternToSpawn, (x, y, z) => {
-                        Handles.Label(
-                            transform.position + new Vector3(x, y, z) - ( Vector3.right * ( _outputSize.x / 2 ) ), 
-                            bits.MatrixData[x,y,z]
-                        );
-                    });
-                }
-            }
+            
+            Nested3( _coordinateMatrix, (x, y, z) => {
+                Gizmos.DrawSphere(transform.position + _coordinateMatrix.MatrixData[x,y,z], 0.25F);
+               // Handles.Label(transform.position + new Vector3(x,y,z), _bitToSpawn);
+            });
+            
         }
         catch ( Exception e ){
             InitWave();
