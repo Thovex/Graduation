@@ -13,44 +13,24 @@ public class Bitsplay : MonoBehaviour{
         get{ return _pattern; }
         set{
             _pattern = value;
-            _bits3D = new Matrix < string >(new Vector3Int(value.SizeX, value.SizeY, value.SizeZ));
 
-            Nested3(_bits3D, (x, y, z) => {
-
-                if ( _training ){
-                    int id = _training.PrefabToId(_pattern.MatrixData[x, y, z].Prefab);
-
-
-                    ModulePrototype modulePrototype = _pattern.MatrixData[x, y, z].Prefab.GetComponent < ModulePrototype >();
-
-                    string bitString = id.ToString();
-
-                    if ( modulePrototype ){
-                        if ( modulePrototype.IsSymmetrical ){
-                            bitString += "S";
-                        }
-                    }
-                    else{
-                        bitString += _pattern.MatrixData[x, y, z].RotationDir.ToString()[0];
-                    }
-
-                    _bits3D.MatrixData[x, y, z] = bitString;
-                }
-            });
+            if ( _training ){
+                _bits = value.GenerateBits(Training);
+            }
         }
     }
 
     public TrainingScript Training{
-        get{ return _training; }
+        private get{ return _training; }
         set{ _training = value; }
     }
 
-    private Matrix<string> _bits3D;
+    private Matrix<string> _bits;
 
     private void OnDrawGizmos(){
 
-        Nested3(_bits3D, (x, y, z) => {
-            Handles.Label(transform.position + new Vector3(x,y,z), _bits3D.MatrixData[x,y,z]); 
+        Nested3(_bits, (x, y, z) => {
+            Handles.Label(transform.position + new Vector3(x,y,z), _bits.MatrixData[x,y,z]); 
         });
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using static Thovex.Utility;
 
@@ -51,7 +52,7 @@ public class Matrix<T> {
 			}
 		}
 	}
-	
+
 	public void RotatePatternClockwise(){
 		throw new NotImplementedException();
 	}

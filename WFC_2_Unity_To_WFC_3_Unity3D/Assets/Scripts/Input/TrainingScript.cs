@@ -15,20 +15,23 @@ public class TrainingScriptInspector : OdinEditor
         
         TrainingScript training = (TrainingScript)target;
             
-//        if (GUILayout.Button("For1")){
-//        }
-//        
-//        if (GUILayout.Button("For2")){
-//        }
+        if (GUILayout.Button("Update")){
+            training.TranslatePrefabsToId();
+        }
+        
+        if (GUILayout.Button("For2")){
+        }
     }
 }
 
 [ExecuteInEditMode]
 public class TrainingScript : SerializedMonoBehaviour{
 
-    [SerializeField] private Dictionary<Vector3Int, Module> _childrenByCoordinate = new Dictionary<Vector3Int, Module>();
+    private Dictionary<Vector3Int, Module> _childrenByCoordinate = new Dictionary<Vector3Int, Module>();
     [SerializeField] private Dictionary<int, GameObject> _prefabAndId = new Dictionary<int, GameObject>();
-    [SerializeField] private List<Pattern> _patterns = new List< Pattern>();
+    [SerializeField] private Dictionary < string, List<Possibility>>_neighbourPossibilitiesPerBit  = new Dictionary < string, List<Possibility> >();
+    private Dictionary <Pattern, Matrix<string>> _patternBits = new Dictionary < Pattern, Matrix < string > >();
+    private HashSet<Pattern> _patterns = new HashSet< Pattern>();
 
     [SerializeField] private GameObject _displayPatternObject;
 
@@ -46,17 +49,30 @@ public class TrainingScript : SerializedMonoBehaviour{
         set{ _prefabAndId = value; }
     }
 
-    public List < Pattern > Patterns{
+    public HashSet < Pattern > Patterns{
         get{ return _patterns; }
         set{ _patterns = value; }
+    }
+
+    public Matrix < Module > ModuleMatrix{
+        get{ return _moduleMatrix; }
+        set{ _moduleMatrix = value; }
+    }
+
+    public Dictionary < string, List < Possibility > > NeighbourPossibilitiesPerBit{
+        get{ return _neighbourPossibilitiesPerBit; }
+        set{ _neighbourPossibilitiesPerBit = value; }
+    }
+
+    public Dictionary < Pattern, Matrix < string > > PatternBits{
+        get{ return _patternBits; }
+        set{ _patternBits = value; }
     }
 
     public int PrefabToId(GameObject prefab){
         foreach ( KeyValuePair < int, GameObject > pair in PrefabAndId ){
             if ( prefab == pair.Value ) return pair.Key;
         }
-
-        // Something went wrong?
         return -1;
     }
 
@@ -64,26 +80,37 @@ public class TrainingScript : SerializedMonoBehaviour{
         TranslatePrefabsToId();
     }
 
-    private void TranslatePrefabsToId(){
-        ClearPreviousData();
-        GetResources();
-        
-        _input = GetComponent<InputGriddify>();
+    public void TranslatePrefabsToId(){
+        try{
 
-        AssignCoordinateToChildren();
-        CalculateNeighbours();
-   
-        InitializeMatrix();
+            ClearPreviousData();
+            GetResources();
 
-        DefinePatterns();
-        DisplayPatterns();
+            _input = GetComponent < InputGriddify >();
+
+            AssignCoordinateToChildren();
+            CalculateNeighbours();
+
+            InitializeMatrix();
+
+            DefinePatterns();
+            DisplayPatterns();
+            
+            PatternToBits();
+
+            FillNeighbourPossibilities();
+        }
+        catch ( Exception e ){}
+
     }
-    
+
     private void ClearPreviousData(){
         ChildrenByCoordinate = new Dictionary<Vector3Int, Module>();
         PrefabAndId = new Dictionary < int, GameObject >();
-        _moduleMatrix = new Matrix < Module >(Vector3Int.zero);
-        Patterns = new List < Pattern >();
+        ModuleMatrix = new Matrix < Module >(Vector3Int.zero);
+        Patterns = new HashSet < Pattern >();
+        NeighbourPossibilitiesPerBit = new Dictionary < string, List < Possibility > >();
+        PatternBits = new Dictionary < Pattern, Matrix < string > >();
 
     }
 
@@ -126,6 +153,13 @@ public class TrainingScript : SerializedMonoBehaviour{
                         neighbours.Add(new OrientationModule(Orientations.ReturnOrientationVal(orientation), neighbourModule));
                     }
                 }
+                else{
+                    GameObject emptyPrefab;
+
+                    if ( PrefabAndId.TryGetValue(0, out emptyPrefab) ){
+                        neighbours.Add(new OrientationModule(Orientations.ReturnOrientationVal(orientation), new Module(emptyPrefab, neighbourCoordinate)));
+                    }
+                }
             }
 
             Module updatedModule = pair.Value;
@@ -137,13 +171,13 @@ public class TrainingScript : SerializedMonoBehaviour{
     }
 
     private void InitializeMatrix(){
-        _moduleMatrix = new Matrix < Module >(_input.inputSize);
+        ModuleMatrix = new Matrix < Module >(_input.inputSize);
 
-        Nested3(_moduleMatrix, (x, y, z) => {
+        Nested3(ModuleMatrix, (x, y, z) => {
             Module module;
                     
             if (ChildrenByCoordinate.TryGetValue(new Vector3Int(x,y,z), out module)){
-                _moduleMatrix.MatrixData[x, y, z] = module;
+                ModuleMatrix.MatrixData[x, y, z] = module;
             }
         });
     }
@@ -176,12 +210,23 @@ public class TrainingScript : SerializedMonoBehaviour{
                         
                 if ( !bIsNull ){
                     Pattern newPattern = new Pattern(n, newTrainingData, new Vector3Int(x, y, z));
-                    Patterns.Add(newPattern);
 
-                    for ( int i = 1; i < 4; i++ ){
-                        Pattern rotatedPattern = new Pattern(n, newTrainingData, new Vector3Int(x, y, z));
-                        rotatedPattern.RotatePatternCounterClockwise(i);
-                        Patterns.Add(rotatedPattern);
+                    bool isEqual = false;                    
+                    foreach (Pattern pattern in Patterns)
+                    {
+                        if ( newPattern.IsEqualToMatrix(pattern) ){
+                            isEqual = true;
+                        }
+                    }
+
+                    if ( !isEqual ){
+                        Patterns.Add(newPattern);
+                        
+                        for ( int i = 1; i < 4; i++ ){
+                            Pattern rotatedPattern = new Pattern(n, newTrainingData, new Vector3Int(x, y, z));
+                            rotatedPattern.RotatePatternCounterClockwise(i);
+                            Patterns.Add(rotatedPattern);
+                        }
                     }
                 }
             });
@@ -205,7 +250,7 @@ public class TrainingScript : SerializedMonoBehaviour{
                 newBitsplay.Training = this;
                 newBitsplay.Pattern = pattern;
 
-                newPattern.transform.localPosition = Vector3.zero + ( index * 3 ) * Vector3.left;
+                newPattern.transform.localPosition = Vector3.zero + ( index * (_input.NValue+_input.NValue) ) * Vector3.left;
                 newPattern.transform.parent = _displayPatternObject.transform;
 
                 Module[,,] data = pattern.MatrixData;
@@ -220,6 +265,77 @@ public class TrainingScript : SerializedMonoBehaviour{
                 });
                 index++;
             }
+        }
+    }
+
+    private void PatternToBits(){
+        foreach ( Pattern pattern in Patterns ){
+            Matrix<string> patternInBits = new Matrix <string>(new Vector3Int(pattern.SizeX,pattern.SizeY,pattern.SizeZ));
+            
+            Nested3(pattern, (x, y, z) => {
+                patternInBits.MatrixData[x, y, z] = pattern.MatrixData[x, y, z].GenerateBit(this);
+            });
+
+            PatternBits.Add(pattern, patternInBits);
+        }
+    }
+
+    public bool GetPatternByBit(string bit, out List<Pattern> outPattern){
+
+        // need to be sure its on ze bottom and shit 
+        outPattern = new List < Pattern >();
+        List<Pattern> tempPatterns = new List < Pattern >();
+        
+        foreach ( Pattern pattern in Patterns ){
+
+            Matrix < string > patternBits;
+            
+            if (PatternBits.TryGetValue(pattern, out patternBits)){
+                Nested3(pattern, (x, y, z) => {
+                    if ( pattern.MatrixData[x, y, z].GenerateBit(this) == patternBits.MatrixData[x, y, z] ){
+                        tempPatterns.Add(pattern);
+                    }
+                });
+            }
+        }
+
+        outPattern = tempPatterns;
+
+        if ( outPattern.Count > 0 ){
+            return true;
+        }
+
+        return false;
+    }
+    
+    private void FillNeighbourPossibilities(){
+        foreach ( KeyValuePair < Vector3Int, Module > pair in _childrenByCoordinate ){
+
+            string bit = pair.Value.GenerateBit(this);
+           
+            if (! NeighbourPossibilitiesPerBit.ContainsKey(bit) ){
+                List<Possibility> newPossibilities = new List < Possibility >();
+
+                foreach ( Vector3Int orientationVector in Orientations.Dirs ){
+                    newPossibilities.Add(new Possibility(Orientations.ReturnOrientationVal(orientationVector), new HashSet < string >()));
+                }
+                
+                _neighbourPossibilitiesPerBit.Add(bit, newPossibilities);
+            }
+
+            List < Possibility > currentPossibilities;
+
+            if ( _neighbourPossibilitiesPerBit.TryGetValue(bit, out currentPossibilities) ){
+                foreach ( OrientationModule orientationModule in pair.Value.ModuleNeighbours ){
+                    foreach ( Possibility possibilities in currentPossibilities ){
+                        if ( orientationModule.Orientation == possibilities.Orientation ){
+                            possibilities.Possibilities.Add(orientationModule.NeighbourModule.GenerateBit(this));
+                        }
+                    }
+                }
+            }
+
+            NeighbourPossibilitiesPerBit[bit] = currentPossibilities;
         }
     }
 }

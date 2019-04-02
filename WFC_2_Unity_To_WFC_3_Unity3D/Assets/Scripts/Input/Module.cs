@@ -39,4 +39,23 @@ public struct Module{
 		this._rotationDir = Orientations.ReturnDirectionVal(rotationEuler);
 		this._moduleNeighbours = new List < OrientationModule >();
 	}
+
+	public string GenerateBit(TrainingScript training){
+
+		int id = training.PrefabToId(this.Prefab);
+		ModulePrototype modulePrototype = this.Prefab.GetComponent < ModulePrototype >();
+
+		string bitString = id.ToString();
+
+		if ( modulePrototype ){
+			if ( modulePrototype.IsSymmetrical ){
+				bitString += "S";
+			}
+		}
+		else {
+			bitString += this.RotationDir.ToString()[0];
+		}
+
+		return bitString;
+	}
 }

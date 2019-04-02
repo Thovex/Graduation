@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using static Thovex.Utility;
 using UnityEngine;
 
+// used for testing purposes
 [System.Serializable]
 public struct ViewDict{
     
@@ -66,8 +67,17 @@ public class Pattern : Matrix<Module> {
             if ( original.RotationEuler != comparison.RotationEuler ) bIsEqual = false;
         });
         
-
-
         return bIsEqual;
+    }
+
+    public Matrix<string> GenerateBits(TrainingScript training){
+
+        Matrix < string > bits = new Matrix < string >(new Vector3Int(this.SizeX, this.SizeY, this.SizeZ));
+
+        Nested3(bits, (x, y, z) => {
+            bits.MatrixData[x, y, z] = this.MatrixData[x,y,z].GenerateBit(training);
+        });
+
+        return bits;
     }
 }
