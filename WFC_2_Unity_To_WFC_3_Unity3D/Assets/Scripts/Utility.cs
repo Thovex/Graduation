@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Thovex{
 	public static class Utility{
 
-		public static void Nested3(Vector3Int data, Action < int, int, int > iterator){
+		public static void For3(Vector3Int data, Action < int, int, int > iterator){
 			for ( int x = 0; x < data.x; x++ ){
 				for ( int y = 0; y < data.y; y++ ){
 					for ( int z = 0; z < data.z; z++ ){
@@ -14,7 +14,7 @@ namespace Thovex{
 			}
 		}
 
-		public static void Nested3(Vector3Int data, int iteratorJumpSize, Action < int, int, int > iterator){
+		public static void For3(Vector3Int data, int iteratorJumpSize, Action < int, int, int > iterator){
 			for ( int x = 0; x < data.x; x += iteratorJumpSize ){
 				for ( int y = 0; y < data.y; y += iteratorJumpSize ){
 					for ( int z = 0; z < data.z; z += iteratorJumpSize ){
@@ -24,14 +24,14 @@ namespace Thovex{
 			}
 		}
 
-		public static void Nested3 < T >(Matrix < T > data, Action < int, int, int > iterator){
+		public static void For3 < T >(Matrix < T > data, Action < int, int, int > iterator){
 			Vector3Int loopSize = new Vector3Int(data.SizeX, data.SizeY, data.SizeZ);
-			Nested3(loopSize, iterator);
+			For3(loopSize, iterator);
 		}
 
-		public static void Nested3 < T >(Matrix < T > data, int iteratorJumpSize, Action < int, int, int > iterator){
+		public static void For3 < T >(Matrix < T > data, int iteratorJumpSize, Action < int, int, int > iterator){
 			Vector3Int loopSize = new Vector3Int(data.SizeX, data.SizeY, data.SizeZ);
-			Nested3(loopSize, iteratorJumpSize, iterator);
+			For3(loopSize, iteratorJumpSize, iterator);
 		}
 
 		public static Vector3Int V3ToV3I(Vector3 input){

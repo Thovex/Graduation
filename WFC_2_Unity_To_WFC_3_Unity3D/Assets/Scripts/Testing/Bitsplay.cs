@@ -29,7 +29,7 @@ public class Bitsplay : MonoBehaviour{
 
     private void OnDrawGizmos(){
 
-        Nested3(_bits, (x, y, z) => {
+        For3(_bits, (x, y, z) => {
             Handles.Label(transform.position + new Vector3(x,y,z), _bits.MatrixData[x,y,z]); 
         });
     }

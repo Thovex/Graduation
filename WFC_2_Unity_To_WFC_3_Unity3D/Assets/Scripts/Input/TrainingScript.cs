@@ -180,7 +180,7 @@ public class TrainingScript : SerializedMonoBehaviour{
     private void InitializeMatrix(){
         ModuleMatrix = new Matrix < Module >(_input.inputSize);
 
-        Nested3(ModuleMatrix, (x, y, z) => {
+        For3(ModuleMatrix, (x, y, z) => {
             Module module;
                     
             if (ChildrenByCoordinate.TryGetValue(new Vector3Int(x,y,z), out module)){
@@ -194,12 +194,12 @@ public class TrainingScript : SerializedMonoBehaviour{
         
         if ( N > 0 ){
             
-            Nested3(_input.inputSize, N, (x, y, z) => {
+            For3(_input.inputSize, N, (x, y, z) => {
                 Module[,,] newTrainingData = new Module[N,N,N];
 
                 bool bIsNull = true;
 
-                Nested3(new Vector3Int(N, N, N), (nx, ny, nz) => {
+                For3(new Vector3Int(N, N, N), (nx, ny, nz) => {
                     Module module;
 
                     if ( ChildrenByCoordinate.TryGetValue(new Vector3Int(x + nx, y + ny, z + nz), out module) ){
@@ -262,7 +262,7 @@ public class TrainingScript : SerializedMonoBehaviour{
 
                 Module[,,] data = pattern.MatrixData;
                 
-                Nested3(pattern, (x, y, z) => {
+                For3(pattern, (x, y, z) => {
                     if ( data[x, y, z].Prefab != null ){
                         GameObject patternData = Instantiate(data[x, y, z].Prefab, newPattern.transform);
                         patternData.transform.localPosition = new Vector3(x, y, z );
@@ -279,7 +279,7 @@ public class TrainingScript : SerializedMonoBehaviour{
         foreach ( Pattern pattern in Patterns ){
             Matrix<string> patternInBits = new Matrix <string>(new Vector3Int(pattern.SizeX,pattern.SizeY,pattern.SizeZ));
             
-            Nested3(pattern, (x, y, z) => {
+            For3(pattern, (x, y, z) => {
                 patternInBits.MatrixData[x, y, z] = pattern.MatrixData[x, y, z].GenerateBit(this);
             });
 
@@ -298,7 +298,7 @@ public class TrainingScript : SerializedMonoBehaviour{
             Matrix < string > patternBits;
             
             if (PatternBits.TryGetValue(pattern, out patternBits)){
-                Nested3(pattern, (x, y, z) => {
+                For3(pattern, (x, y, z) => {
                     if ( pattern.MatrixData[x, y, z].GenerateBit(this) == patternBits.MatrixData[x, y, z] ){
                         tempPatterns.Add(pattern);
                     }

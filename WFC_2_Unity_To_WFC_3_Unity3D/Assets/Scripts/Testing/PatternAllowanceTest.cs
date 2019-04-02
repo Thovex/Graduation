@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
+using System.Numerics;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEditor.Profiling.Memory.Experimental;
 using UnityEngine;
 using static Thovex.Utility;
+using Quaternion = UnityEngine.Quaternion;
+using Vector3 = UnityEngine.Vector3;
 
 [CustomEditor(typeof(PatternAllowanceTest))]
 public class PatternAllowanceTestInspector : OdinEditor
@@ -25,18 +28,66 @@ public class PatternAllowanceTestInspector : OdinEditor
             patternTest.SetPatterns();
         }
 
+        EditorGUILayout.BeginHorizontal("Button");
+
         value = EditorGUILayout.IntField("Pattern Index: ", value);
         
         if (GUILayout.Button("Spawn Pattern"))
         {
             patternTest.SpawnPattern(value);
         }
+        EditorGUILayout.EndHorizontal();
         
+        EditorGUILayout.BeginHorizontal("Button");
         
-        if (GUILayout.Button("Collapse Random coordinate"))
+        EditorGUILayout.BeginVertical("Button");
+
+        if (GUILayout.Button("MoveUp", GUILayout.Height(50)))
         {
-            patternTest.CollapseRandomCoordinate();
+            patternTest.Move(EOrientations.UP);
         }
+        
+        if (GUILayout.Button("MoveDown",  GUILayout.Height(50)))
+        {
+            patternTest.Move(EOrientations.DOWN);
+        }
+        
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.BeginVertical("Button");
+
+        if (GUILayout.Button("MoveLeft",  GUILayout.Height(50)))
+        {
+            patternTest.Move(EOrientations.LEFT);
+        }
+        
+        if (GUILayout.Button("MoveRight", GUILayout.Height(50)))
+        {
+            patternTest.Move(EOrientations.RIGHT);
+        }
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.BeginVertical("Button");
+
+        if (GUILayout.Button("MoveForward", GUILayout.Height(50)))
+        {
+            patternTest.Move(EOrientations.FORWARD);
+        }
+        
+        if (GUILayout.Button("MoveBack", GUILayout.Height(50)))
+        {
+            patternTest.Move(EOrientations.BACK);
+        }
+        EditorGUILayout.EndVertical();
+      
+        EditorGUILayout.EndHorizontal();
+
+        if (GUILayout.Button("Collapse coordinate",  GUILayout.Height(100)))
+        {
+            patternTest.CollapseCoordinate();
+        }
+        
+
         
 
     }
@@ -65,7 +116,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     private void InitWave(){
         _wave = new Matrix < bool >(_outputSize);
         
-        Nested3(_wave, (x, y, z) => { _wave.MatrixData[x, y, z] = true; });
+        For3(_wave, (x, y, z) => { _wave.MatrixData[x, y, z] = true; });
         
         for (int i = this.transform.childCount; i > 0; --i)
         {
@@ -85,83 +136,58 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
         newPattern.transform.localPosition = Vector3.zero;
 
-        Nested3(selectedPattern, (x, y, z) => {
+        For3(selectedPattern, (x, y, z) => {
             GameObject patternData = Instantiate(selectedPattern.MatrixData[x, y, z].Prefab, new Vector3(x, y, z), Quaternion.Euler(selectedPattern.MatrixData[x, y, z].RotationEuler), newPattern.transform);
             patternData.transform.localPosition = new Vector3(_outputSize.x / 3 + x,  y, _outputSize.z/ 3 + z);
             _wave.MatrixData[_outputSize.x / 3 +x, y, _outputSize.z / 3+z] = false;
         });
-
         
+        _coordinateMatrix = new Matrix < Vector3Int >(new Vector3Int(_training.N, _training.N, _training.N));
+        
+        For3(_coordinateMatrix, (x, y, z) => {
+            _coordinateMatrix.MatrixData[x,y,z] = new Vector3Int(x,y,z);
+        });        
     }
 
-    public void CollapseRandomCoordinate(){
-        List < Vector3Int > possibleCoordinates = new List < Vector3Int >();
-
-        Nested3(_wave, (x, y, z) => {
-            if ( !_wave.MatrixData[x, y, z] ){
-                if ( y == 1 ){
-                    possibleCoordinates.Add(new Vector3Int(x, y, z));
-                }
+    public void Move(EOrientations orientation){
+        
+        
+        For3(_coordinateMatrix, (x, y, z) => {
+            switch ( orientation ){
+                case EOrientations.FORWARD:
+                    _coordinateMatrix.MatrixData[x,y,z] += V3ToV3I(Vector3.forward);
+                    break;
+                case EOrientations.BACK:
+                    _coordinateMatrix.MatrixData[x,y,z] += V3ToV3I(Vector3.back);
+                    break;
+                case EOrientations.RIGHT:
+                    _coordinateMatrix.MatrixData[x,y,z] += Vector3Int.right;
+                    break;
+                case EOrientations.LEFT: 
+                    _coordinateMatrix.MatrixData[x,y,z] += Vector3Int.left;
+                    break;
+                case EOrientations.UP:
+                    _coordinateMatrix.MatrixData[x,y,z] += Vector3Int.up;
+                    break;
+                case EOrientations.DOWN:
+                    _coordinateMatrix.MatrixData[x,y,z] += Vector3Int.down;
+                    break;
+                case EOrientations.NULL:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(orientation), orientation, null);
             }
         });
+    }
 
-
-        if ( possibleCoordinates.Count > 0 ){
-            int tries = 0;
-            
-            while( true ){
-                Vector3Int coordinate = possibleCoordinates[UnityEngine.Random.Range(0, possibleCoordinates.Count - 1)];
-
-                _coordinateMatrix = new Matrix < Vector3Int >(new Vector3Int(_training.N, _training.N, _training.N));
-                _coordinateMatrix.MatrixData[0, 0, 0] = coordinate;
-
-                Nested3(_coordinateMatrix, (x, y, z) => {
-                    bool randDir = UnityEngine.Random.Range(0, .5F) > 0.5;
-
-                    if ( randDir ){
-                        _coordinateMatrix.MatrixData[x, y, z] = coordinate + new Vector3Int(x, y, z);
-                    }
-                    else{
-                        _coordinateMatrix.MatrixData[x, y, z] = coordinate - new Vector3Int(x, y, z);
- 
-                    }
-                });
-
-                int overlapCount = 0;
-
-                List < Vector3Int > closedCoordinates = new List < Vector3Int >();
-                
-                Nested3(_wave, (x, y, z) => {
-                    if ( !_wave.MatrixData[x, y, z] ){
-                        closedCoordinates.Add(new Vector3Int(x,y,z));
-                    }
-                });
-
-                Nested3(_coordinateMatrix, (x, y, z) => {
-                    if ( closedCoordinates.Contains(_coordinateMatrix.MatrixData[x,y,z]) ){
-                        overlapCount++;
-                    }
-                });
-                
-                if ( overlapCount == 2 ){
-                    break;
-                }
-
-                tries++;
-
-                if ( tries > 100 ){
-                    Debug.LogError("Blyad");
-                    break;
-                }
-            }
-        }
+    public void CollapseCoordinate(){
 
     }
 
     private void OnDrawGizmos()
     {
         try{
-            Nested3(_outputSize, (x, y, z) => {
+            For3(_outputSize, (x, y, z) => {
                 Color redColor = Color.red;
                 redColor.a = 0.75F;
 
@@ -178,9 +204,8 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
             Gizmos.color = magentaColor;
             
             
-            Nested3( _coordinateMatrix, (x, y, z) => {
+            For3( _coordinateMatrix, (x, y, z) => {
                 Gizmos.DrawSphere(transform.position + _coordinateMatrix.MatrixData[x,y,z], 0.25F);
-               // Handles.Label(transform.position + new Vector3(x,y,z), _bitToSpawn);
             });
             
         }

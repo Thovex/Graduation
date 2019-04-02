@@ -15,7 +15,7 @@ public class Matrix<T> {
 		SizeZ = matrixSize.z;
 	}
 
-	public T[,,] MatrixData{ get; protected set; }
+	public T[,,] MatrixData{ get;  set; }
 
 	public int SizeX{ get; protected set; }
 	public int SizeY{ get; protected set; }
@@ -30,7 +30,7 @@ public class Matrix<T> {
 				T[,,] originalData = MatrixData;
 				T[,,] copyMatrix = new T[originalData.GetLength(0), originalData.GetLength(1), originalData.GetLength(2)];
 
-				Nested3(this, (x, y, z) => {
+				For3(this, (x, y, z) => {
 					if ( x < SizeX - 1 && z == 0 ){
 						copyMatrix[x + 1, y, z] = originalData[x, y, z];
 					}
