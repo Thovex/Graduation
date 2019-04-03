@@ -51,7 +51,11 @@ public struct Module{
 			if ( modulePrototype.IsSymmetrical ){
 				bitString += "S";
 			}
-		}
+            else
+            {
+                bitString += this.RotationDir.ToString()[0];
+            }
+        }
 		else {
 			bitString += this.RotationDir.ToString()[0];
 		}

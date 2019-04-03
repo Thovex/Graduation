@@ -60,6 +60,11 @@ public class Matrix<T>
         return contains;
     }
 
+    public void Clear()
+    {
+        MatrixData = new T[SizeX,SizeY,SizeZ];
+    }
+
     public virtual void RotatePatternCounterClockwise(int times){
 		for ( int i = 0; i < times; i++ ){	
 			

@@ -89,6 +89,7 @@ GameObject:
   - component: {fileID: 4202449746103338343}
   - component: {fileID: 4202449746103338336}
   - component: {fileID: 2096964839223357808}
+  - component: {fileID: 4524170961033750439}
   m_Layer: 0
   m_Name: Ground_Door
   m_TagString: Untagged
@@ -170,6 +171,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bEmpty: 0
+--- !u!114 &4524170961033750439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4202449746103338337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a55378d875ff9c24aa76ae38df11ed39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _isSymmetrical: 0
 --- !u!1 &4764152721939782630
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using static Thovex.Utility;
 using UnityEngine;
-using UnityEngine.Serialization;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -15,6 +14,7 @@ public class InputGriddify : MonoBehaviour
     private GameObject[,,] _inputMatrix;
     private bool[,,] _inputMatrixSet;
     private bool[,,] _inputMatrixWarnings;
+    [SerializeField] private object For3;
 
     public int NValue{
         get{ return _nValue; }
@@ -121,29 +121,30 @@ public class InputGriddify : MonoBehaviour
     {
         Gizmos.color = new Color(.75f, .75f, .75f, .15f);
 
-        try{
-            for ( int x = 0; x < inputSize.x; x++ ){
-                for ( int y = 0; y < inputSize.y; y++ ){
-                    for ( int z = 0; z < inputSize.z; z++ ){
-                        if ( _inputMatrixSet[x, y, z] ){
-                            Gizmos.color = new Color(0f, 0f, 1f, .15f);
-                        }
-                        else{
-                            Gizmos.color = new Color(0f, 1f, 0f, .05f);
-                        }
-
-                        if ( _inputMatrixWarnings[x, y, z] ){
-                            Gizmos.color = Color.red;
-                        }
-
-                        float sphereSize = _inputMatrixWarnings[x, y, z] ? .5F : .15F;
-
-                        Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), sphereSize);
-                    }
+        try
+        {
+            For3(inputSize, (x, y, z) =>
+            {
+                if (_inputMatrixSet[x, y, z])
+                {
+                    Gizmos.color = new Color(0f, 0f, 1f, .15f);
                 }
-            }
+                else
+                {
+                    Gizmos.color = new Color(0f, 1f, 0f, .05f);
+                }
+
+                if (_inputMatrixWarnings[x, y, z])
+                {
+                    Gizmos.color = Color.red;
+                }
+
+                float sphereSize = _inputMatrixWarnings[x, y, z] ? .5F : .15F;
+
+                Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), sphereSize);
+            });
         }
-        catch ( Exception e ){
+        catch ( Exception ){
             // ignored
         }
 

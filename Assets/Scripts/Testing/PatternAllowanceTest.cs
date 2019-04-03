@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 using static Thovex.Utility;
+using Random = System.Random;
 
 [CustomEditor(typeof(PatternAllowanceTest))]
 public class PatternAllowanceTestInspector : OdinEditor
@@ -16,7 +17,7 @@ public class PatternAllowanceTestInspector : OdinEditor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        PatternAllowanceTest patternTest = (PatternAllowanceTest) target;
+        PatternAllowanceTest patternTest = (PatternAllowanceTest)target;
         if (GUILayout.Button("Set Patterns"))
         {
             patternTest.SetPatterns();
@@ -145,20 +146,27 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                     selectedPattern.MatrixData[x, y, z];
             });
 
-            Vector3Int NSize = new Vector3Int(training.N, training.N, training.N);
-            _coordinateMatrix = new Matrix<Vector3Int>(NSize);
-            _coordinateMatrixOrientations = new Matrix<List<EOrientations>>(NSize);
-
-            For3(_coordinateMatrix, (x, y, z) =>
-            {
-                _coordinateMatrix.MatrixData[x, y, z] = new Vector3Int(x, y, z);
-                _coordinateMatrixOrientations.MatrixData[x, y, z] = new List<EOrientations>();
-            });
+            InitSelectionMatrix();
         }
+    }
+
+    public void InitSelectionMatrix()
+    {
+        Vector3Int nSize = new Vector3Int(training.N, training.N, training.N);
+        _coordinateMatrix = new Matrix<Vector3Int>(nSize);
+        _coordinateMatrixOrientations = new Matrix<List<EOrientations>>(nSize);
+
+        For3(_coordinateMatrix, (x, y, z) =>
+        {
+            _coordinateMatrix.MatrixData[x, y, z] = new Vector3Int(x, y, z);
+            _coordinateMatrixOrientations.MatrixData[x, y, z] = new List<EOrientations>();
+        });
     }
 
     public void Move(EOrientations orientation)
     {
+
+
         For3(_coordinateMatrix, (x, y, z) =>
         {
             switch (orientation)
@@ -188,11 +196,6 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
             }
         });
 
-        CollapseCoordinate();
-    }
-
-    public void CollapseCoordinate()
-    {
         _collidingCoordinates.Clear();
 
         For3(_coordinateMatrix, (x, y, z) =>
@@ -204,24 +207,79 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
             {
                 string bit = _modules.GetDataAt(coordinate).GenerateBit(training);
 
-
                 _collidingCoordinates.Add(coordinate);
                 foreach (Vector3Int direction in Orientations.Dirs)
                 {
-                    EOrientations orientation = Orientations.ReturnOrientationVal(direction);
+                    EOrientations dirOrientation = Orientations.ReturnOrientationVal(direction);
 
-                    if (orientation != EOrientations.UP && orientation != EOrientations.DOWN)
+                    if (dirOrientation != EOrientations.UP && dirOrientation != EOrientations.DOWN)
                     {
-                        if (_coordinateMatrix.Contains(coordinate + direction) &&
-                            _wave.GetDataAt(coordinate + direction))
+                        if (_coordinateMatrix.Contains(coordinate + direction) && _wave.GetDataAt(coordinate + direction))
                         {
-                            _coordinateMatrixOrientations.MatrixData[x, y, z]
-                                .Add(orientation);
+                            _coordinateMatrixOrientations.MatrixData[x, y, z].Add(dirOrientation);
                         }
                     }
                 }
             }
         });
+    }
+
+    public void CollapseCoordinate()
+    {
+        For3(outputSize, (x, y, z) =>
+        {
+            Vector3Int coord = new Vector3Int(x, y, z);
+
+            if (_coordinateMatrix.Contains(coord, out Vector3Int localCoord))
+            {
+                List<EOrientations> orientations = _coordinateMatrixOrientations.GetDataAt(localCoord);
+                foreach (EOrientations orientation in orientations)
+                {
+                    string bit = _modules.GetDataAt(coord).GenerateBit(training);
+
+                    List<Possibility> outPossibilities = new List<Possibility>();
+
+                    if (training.NeighbourPossibilitiesPerBit.TryGetValue(bit, out outPossibilities))
+                    {
+                        foreach (Possibility possibility in outPossibilities)
+                        {
+                            if (possibility.Orientation == orientation)
+                            {
+                                List<string> possibilitiesList = possibility.Possibilities.ToList();
+                                string selectedBit =
+                                    possibilitiesList[
+                                        UnityEngine.Random.Range(0, possibility.Possibilities.Count() - 1)];
+                                Collapse(coord + Orientations.ReturnDirectionVal(orientation), selectedBit);
+
+                            }
+                        }
+
+                        
+                        // todo: not break
+
+                    }
+                }
+            }
+        });
+    }
+
+    private void Collapse(Vector3Int coord, string bit)
+    {
+        int key = bit[0] - '0';
+        Vector3Int rot = Orientations.ReturnRotationEulerFromChar(bit[1]);
+
+
+        if (training.PrefabAndId.TryGetValue(key, out GameObject prefab))
+        {
+            GameObject gameObject = Instantiate(prefab, transform.position + coord, Quaternion.Euler(rot), transform);
+            gameObject.name = "TEST";
+        }
+
+        _wave.MatrixData[coord.x, coord.y, coord.z] = false;
+
+        //InitSelectionMatrix();
+        Move(EOrientations.NULL);
+
     }
 
     private void OnDrawGizmos()
@@ -248,18 +306,18 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                 Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), 0.25F);
 
                 if (_coordinateMatrix.Contains(coord, out Vector3Int localCoord))
-                {   
+                {
                     List<EOrientations> orientations = _coordinateMatrixOrientations.GetDataAt(localCoord);
                     foreach (EOrientations orientation in orientations)
                     {
                         Gizmos.color = Color.yellow;
                         Gizmos.DrawLine(
-                            transform.position + coord, 
+                            transform.position + coord,
                             transform.position + coord + Orientations.ReturnDirectionVal(orientation)
                         );
 
                         Handles.Label(
-                            transform.position + coord + (((Vector3)Orientations.ReturnDirectionVal(orientation)) / 2), 
+                            transform.position + coord + (((Vector3)Orientations.ReturnDirectionVal(orientation)) / 2),
                             orientation.ToString()
                        );
                     }
