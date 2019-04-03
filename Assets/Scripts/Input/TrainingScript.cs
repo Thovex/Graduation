@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
+using Sirenix.Serialization;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -26,7 +27,6 @@ public class TrainingScriptInspector : OdinEditor
 [ExecuteInEditMode]
 public class TrainingScript : SerializedMonoBehaviour
 {
-    [SerializeField] private Dictionary<string, List<Possibility>> neighbourPossibilitiesPerBit = new Dictionary<string, List<Possibility>>();
     [SerializeField] private GameObject displayPatternObject;
     private InputGriddify _input;
 
@@ -34,11 +34,8 @@ public class TrainingScript : SerializedMonoBehaviour
     [SerializeField] public Dictionary<int, GameObject> PrefabAndId { get; set; } = new Dictionary<int, GameObject>();
     public HashSet<Pattern> Patterns { get; set; } = new HashSet<Pattern>();
     public Matrix<Module> ModuleMatrix { get; set; }
+    [SerializeField] public Dictionary<string, List<Possibility>> NeighbourPossibilitiesPerBit { get; set; } = new Dictionary<string, List<Possibility>>();
 
-    public Dictionary<string, List<Possibility>> NeighbourPossibilitiesPerBit {
-        get { return neighbourPossibilitiesPerBit; }
-        set { neighbourPossibilitiesPerBit = value; }
-    }
     public Dictionary<Pattern, Matrix<string>> PatternBits { get; set; } = new Dictionary<Pattern, Matrix<string>>();
     public int N { get; set; } = 2;
     public int PrefabToId(GameObject prefab)
@@ -272,9 +269,9 @@ public class TrainingScript : SerializedMonoBehaviour
                 {
                     newPossibilities.Add(new Possibility(Orientations.ReturnOrientationVal(orientationVector), new HashSet<string>()));
                 }
-                neighbourPossibilitiesPerBit.Add(bit, newPossibilities);
+                NeighbourPossibilitiesPerBit.Add(bit, newPossibilities);
             }
-            if (neighbourPossibilitiesPerBit.TryGetValue(bit, out List<Possibility> currentPossibilities))
+            if (NeighbourPossibilitiesPerBit.TryGetValue(bit, out List<Possibility> currentPossibilities))
             {
                 foreach (OrientationModule orientationModule in pair.Value.ModuleNeighbours)
                 {
