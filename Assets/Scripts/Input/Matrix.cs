@@ -4,9 +4,9 @@ using UnityEngine;
 using static Thovex.Utility;
 
 [Serializable]
-public class Matrix<T> {
-	protected Matrix(){}
-
+public class Matrix<T>
+{
+    public Matrix(){}
 	public Matrix(Vector3Int matrixSize){
 		MatrixData = new T[matrixSize.x, matrixSize.y, matrixSize.z];
 
@@ -20,6 +20,25 @@ public class Matrix<T> {
 	public int SizeX{ get; protected set; }
 	public int SizeY{ get; protected set; }
 	public int SizeZ{ get; protected set; }
+
+    public T GetDataAt(Vector3Int coordinate )
+    {
+        return MatrixData[coordinate.x, coordinate.y, coordinate.z];
+    }
+
+    public bool Contains(T check)
+    {
+        bool contains = false;
+
+        For3(this, (x, y, z) =>
+        {
+            if (Equals(MatrixData[x, y, z], check)) {
+                contains = true;
+            }
+        });
+
+        return contains;
+    }
 
 	public virtual void RotatePatternCounterClockwise(int times){
 		for ( int i = 0; i < times; i++ ){	
@@ -63,4 +82,21 @@ public class Matrix<T> {
 		throw new NotImplementedException();
 	}
 
+    public bool Equals(T data, T equal)
+    {
+        if (typeof(T) == typeof(T))
+        {
+            Vector3Int dataVector3Int = (Vector3Int)Convert.ChangeType(data, typeof(Vector3Int));
+            Vector3Int equalVector3Int = (Vector3Int)Convert.ChangeType(equal, typeof(Vector3Int));
+
+            if (dataVector3Int == equalVector3Int) return true;
+        }
+        else
+        {
+            Debug.LogError("Cannot check Equals T == Your type because it is not implemented specifically!");
+            return false;
+        }
+
+        return false;
+    }
 }
