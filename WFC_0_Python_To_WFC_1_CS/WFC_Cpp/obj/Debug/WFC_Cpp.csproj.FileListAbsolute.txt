@@ -1,7 +1,0 @@
-C:\Users\Thovex Personal\VS Projects\source\repos\WFC_Cpp\WFC_Cpp\bin\Debug\WFC_Cpp.exe.config
-C:\Users\Thovex Personal\VS Projects\source\repos\WFC_Cpp\WFC_Cpp\bin\Debug\WFC_Cpp.exe
-C:\Users\Thovex Personal\VS Projects\source\repos\WFC_Cpp\WFC_Cpp\bin\Debug\WFC_Cpp.pdb
-C:\Users\Thovex Personal\VS Projects\source\repos\WFC_Cpp\WFC_Cpp\obj\Debug\WFC_Cpp.csprojAssemblyReference.cache
-C:\Users\Thovex Personal\VS Projects\source\repos\WFC_Cpp\WFC_Cpp\obj\Debug\WFC_Cpp.csproj.CoreCompileInputs.cache
-C:\Users\Thovex Personal\VS Projects\source\repos\WFC_Cpp\WFC_Cpp\obj\Debug\WFC_Cpp.exe
-C:\Users\Thovex Personal\VS Projects\source\repos\WFC_Cpp\WFC_Cpp\obj\Debug\WFC_Cpp.pdb
