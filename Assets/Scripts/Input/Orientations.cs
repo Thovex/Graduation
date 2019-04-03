@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using UnityEngine;
-// ReSharper disable InconsistentNaming
 
 [System.Serializable]
 public enum EOrientations{

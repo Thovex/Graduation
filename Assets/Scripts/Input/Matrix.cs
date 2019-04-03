@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
 using static Thovex.Utility;
 
@@ -26,21 +27,40 @@ public class Matrix<T>
         return MatrixData[coordinate.x, coordinate.y, coordinate.z];
     }
 
-    public bool Contains(T check)
+    public bool Contains(T check, out Vector3Int coord)
     {
         bool contains = false;
 
+        coord = Vector3Int.zero;
+        Vector3Int containsCoord = Vector3Int.zero;
+
         For3(this, (x, y, z) =>
         {
-            if (Equals(MatrixData[x, y, z], check)) {
+            if (Equals(MatrixData[x, y, z], check))
+            {
                 contains = true;
+                containsCoord = new Vector3Int(x, y, z);
             }
         });
 
+        coord = containsCoord;
         return contains;
     }
 
-	public virtual void RotatePatternCounterClockwise(int times){
+    public bool Contains(T check)
+    {
+        bool contains = false;
+        For3(this, (x, y, z) =>
+        {
+            if (Equals(MatrixData[x, y, z], check))
+            {
+                contains = true;
+            }
+        });
+        return contains;
+    }
+
+    public virtual void RotatePatternCounterClockwise(int times){
 		for ( int i = 0; i < times; i++ ){	
 			
 			// Todo: Replace with Quaternion rotation
@@ -84,7 +104,7 @@ public class Matrix<T>
 
     public bool Equals(T data, T equal)
     {
-        if (typeof(T) == typeof(T))
+        if (typeof(T) == typeof(Vector3Int))
         {
             Vector3Int dataVector3Int = (Vector3Int)Convert.ChangeType(data, typeof(Vector3Int));
             Vector3Int equalVector3Int = (Vector3Int)Convert.ChangeType(equal, typeof(Vector3Int));

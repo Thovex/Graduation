@@ -4,6 +4,7 @@ using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using static Thovex.Utility;
 using Vector3Int = UnityEngine.Vector3Int;
 [CustomEditor(typeof(TrainingScript))]
@@ -25,21 +26,18 @@ public class TrainingScriptInspector : OdinEditor
 [ExecuteInEditMode]
 public class TrainingScript : SerializedMonoBehaviour
 {
-    [SerializeField] private Dictionary<int, GameObject> _prefabAndId = new Dictionary<int, GameObject>();
-    [SerializeField] private Dictionary<string, List<Possibility>> _neighbourPossibilitiesPerBit = new Dictionary<string, List<Possibility>>();
-    [SerializeField] private GameObject _displayPatternObject;
+    [SerializeField] private Dictionary<string, List<Possibility>> neighbourPossibilitiesPerBit = new Dictionary<string, List<Possibility>>();
+    [SerializeField] private GameObject displayPatternObject;
     private InputGriddify _input;
 
     public Dictionary<Vector3Int, Module> ChildrenByCoordinate { get; set; } = new Dictionary<Vector3Int, Module>();
-    public Dictionary<int, GameObject> PrefabAndId {
-        get { return _prefabAndId; }
-        set { _prefabAndId = value; }
-    }
-    [SerializeField] public HashSet<Pattern> Patterns { get; set; } = new HashSet<Pattern>();
+    [SerializeField] public Dictionary<int, GameObject> PrefabAndId { get; set; } = new Dictionary<int, GameObject>();
+    public HashSet<Pattern> Patterns { get; set; } = new HashSet<Pattern>();
     public Matrix<Module> ModuleMatrix { get; set; }
+
     public Dictionary<string, List<Possibility>> NeighbourPossibilitiesPerBit {
-        get { return _neighbourPossibilitiesPerBit; }
-        set { _neighbourPossibilitiesPerBit = value; }
+        get { return neighbourPossibilitiesPerBit; }
+        set { neighbourPossibilitiesPerBit = value; }
     }
     public Dictionary<Pattern, Matrix<string>> PatternBits { get; set; } = new Dictionary<Pattern, Matrix<string>>();
     public int N { get; set; } = 2;
@@ -196,11 +194,11 @@ public class TrainingScript : SerializedMonoBehaviour
     }
     private void DisplayPatterns()
     {
-        if (_displayPatternObject)
+        if (displayPatternObject)
         {
-            for (int i = _displayPatternObject.transform.childCount; i > 0; --i)
+            for (int i = displayPatternObject.transform.childCount; i > 0; --i)
             {
-                DestroyImmediate(_displayPatternObject.transform.GetChild(0).gameObject);
+                DestroyImmediate(displayPatternObject.transform.GetChild(0).gameObject);
             }
             int index = 0;
             foreach (Pattern pattern in Patterns)
@@ -210,7 +208,7 @@ public class TrainingScript : SerializedMonoBehaviour
                 newBitsplay.Training = this;
                 newBitsplay.Pattern = pattern;
                 newPattern.transform.localPosition = Vector3.zero + (index * (_input.NValue + _input.NValue)) * Vector3.left;
-                newPattern.transform.parent = _displayPatternObject.transform;
+                newPattern.transform.parent = displayPatternObject.transform;
                 Module[,,] data = pattern.MatrixData;
                 For3(pattern, (x, y, z) =>
                 {
@@ -274,9 +272,9 @@ public class TrainingScript : SerializedMonoBehaviour
                 {
                     newPossibilities.Add(new Possibility(Orientations.ReturnOrientationVal(orientationVector), new HashSet<string>()));
                 }
-                _neighbourPossibilitiesPerBit.Add(bit, newPossibilities);
+                neighbourPossibilitiesPerBit.Add(bit, newPossibilities);
             }
-            if (_neighbourPossibilitiesPerBit.TryGetValue(bit, out List<Possibility> currentPossibilities))
+            if (neighbourPossibilitiesPerBit.TryGetValue(bit, out List<Possibility> currentPossibilities))
             {
                 foreach (OrientationModule orientationModule in pair.Value.ModuleNeighbours)
                 {
