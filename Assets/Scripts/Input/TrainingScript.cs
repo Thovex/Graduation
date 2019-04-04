@@ -105,7 +105,7 @@ public class TrainingScript : SerializedMonoBehaviour
         foreach (KeyValuePair<Vector3Int, Module> pair in ChildrenByCoordinate)
         {
             List<OrientationModule> neighbours = new List<OrientationModule>();
-            foreach (Vector3Int orientation in Orientations.Dirs)
+            foreach (Vector3Int orientation in Orientations.OrientationUnitVectors.Values)
             {
                 Vector3Int neighbourCoordinate = pair.Key + orientation;
                 if (ChildrenByCoordinate.ContainsKey(neighbourCoordinate))
@@ -265,7 +265,7 @@ public class TrainingScript : SerializedMonoBehaviour
             if (!NeighbourPossibilitiesPerBit.ContainsKey(bit))
             {
                 List<Possibility> newPossibilities = new List<Possibility>();
-                foreach (Vector3Int orientationVector in Orientations.Dirs)
+                foreach (Vector3Int orientationVector in Orientations.OrientationUnitVectors.Values)
                 {
                     newPossibilities.Add(new Possibility(Orientations.ReturnOrientationVal(orientationVector), new HashSet<string>()));
                 }

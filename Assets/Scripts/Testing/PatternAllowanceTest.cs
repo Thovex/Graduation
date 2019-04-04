@@ -165,8 +165,6 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
     public void Move(EOrientations orientation)
     {
-
-
         For3(_coordinateMatrix, (x, y, z) =>
         {
             switch (orientation)
@@ -191,8 +189,6 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                     break;
                 case EOrientations.NULL:
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(orientation), orientation, null);
             }
         });
 
@@ -208,7 +204,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                 string bit = _modules.GetDataAt(coordinate).GenerateBit(training);
 
                 _collidingCoordinates.Add(coordinate);
-                foreach (Vector3Int direction in Orientations.Dirs)
+                foreach (Vector3Int direction in Orientations.OrientationEulers.Values)
                 {
                     EOrientations dirOrientation = Orientations.ReturnOrientationVal(direction);
 
@@ -249,14 +245,10 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                                 string selectedBit =
                                     possibilitiesList[
                                         UnityEngine.Random.Range(0, possibility.Possibilities.Count() - 1)];
-                                Collapse(coord + Orientations.ReturnDirectionVal(orientation), selectedBit);
+                                Collapse(coord + Orientations.OrientationToUnitVector(orientation), selectedBit);
 
                             }
                         }
-
-                        
-                        // todo: not break
-
                     }
                 }
             }
@@ -266,7 +258,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     private void Collapse(Vector3Int coord, string bit)
     {
         int key = bit[0] - '0';
-        Vector3Int rot = Orientations.ReturnRotationEulerFromChar(bit[1]);
+        Vector3Int rot = Orientations.OrientationToRotationEuler(Orientations.CharToOrientation(bit[1]));
 
 
         if (training.PrefabAndId.TryGetValue(key, out GameObject prefab))
@@ -313,11 +305,11 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                         Gizmos.color = Color.yellow;
                         Gizmos.DrawLine(
                             transform.position + coord,
-                            transform.position + coord + Orientations.ReturnDirectionVal(orientation)
+                            transform.position + coord + Orientations.OrientationToUnitVector(orientation)
                         );
 
                         Handles.Label(
-                            transform.position + coord + (((Vector3)Orientations.ReturnDirectionVal(orientation)) / 2),
+                            transform.position + coord + (((Vector3)Orientations.OrientationToUnitVector(orientation)) / 2),
                             orientation.ToString()
                        );
                     }

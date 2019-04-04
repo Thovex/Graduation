@@ -5,7 +5,7 @@ using UnityEngine;
 [Serializable]
 public struct Module{
 	[SerializeField] private GameObject _prefab;
-	[SerializeField] private EDirection _rotationDir;
+	[SerializeField] private EOrientations _rotationDir;
 	[SerializeField] private Vector3Int _rotationEuler;
 	[SerializeField] private List < OrientationModule > _moduleNeighbours;
 
@@ -15,7 +15,7 @@ public struct Module{
 		set{ _prefab = value; }
 	}
 
-	public EDirection RotationDir{
+	public EOrientations RotationDir {
 		get{ return _rotationDir; }
 		set{ _rotationDir = value; }
 	}
