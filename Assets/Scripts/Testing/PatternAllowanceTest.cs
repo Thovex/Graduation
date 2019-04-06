@@ -7,7 +7,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 using static Thovex.Utility;
-using Random = System.Random;
 
 [CustomEditor(typeof(PatternAllowanceTest))]
 public class PatternAllowanceTestInspector : OdinEditor
@@ -76,14 +75,13 @@ public class PatternAllowanceTestInspector : OdinEditor
     }
 }
 
+[ExecuteInEditMode]
 public class PatternAllowanceTest : SerializedMonoBehaviour
 {
-    private string _bitToSpawn = "";
     private readonly List<Vector3Int> _collidingCoordinates = new List<Vector3Int>();
 
     private Matrix<Vector3Int> _coordinateMatrix = new Matrix<Vector3Int>();
     private Matrix<List<EOrientations>> _coordinateMatrixOrientations = new Matrix<List<EOrientations>>();
-    private Matrix<Module> _modules = new Matrix<Module>();
 
     [FormerlySerializedAs("_outputSize")] [SerializeField] private Vector3Int outputSize = new Vector3Int(6, 6, 6);
 
@@ -91,27 +89,136 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     [SerializeField] private Pattern patternToSpawn;
     [SerializeField] private TrainingScript training;
 
+    [SerializeField] private Dictionary<string, int> weights = new Dictionary<string, int>();
+
     private Matrix<bool> _wave = new Matrix<bool>();
+    private Matrix<Module> _modules = new Matrix<Module>();
+    private Matrix<Coefficient> _coefficients = new Matrix<Coefficient>();
 
     public Vector3Int CollapsingCoordinate { get; set; } = Vector3Int.zero;
+
+    [SerializeField] private Transform displayTarget;
+
+    private int patternIndex = 0;
+    private float patternChangeTimer = 1F;
+
+    private void OnEnable()
+    {
+#if UNITY_EDITOR
+        EditorApplication.update += CyclePattern;
+#endif
+    }
+
+    private void OnDisable()
+    {
+#if UNITY_EDITOR
+        EditorApplication.update -= CyclePattern;
+#endif
+    }
+
 
     public void SetPatterns()
     {
         patterns = training.Patterns.ToList();
     }
 
+    private void DisplayPattern()
+    {
+        if (displayTarget)
+        {
+            for (int i = displayTarget.childCount; i > 0; --i)
+            {
+                DestroyImmediate(displayTarget.GetChild(0).gameObject);
+            }
+
+
+            For3(_coordinateMatrix, (x, y, z) =>
+            {
+                Module module = training.Patterns.ToList()[patternIndex].GetDataAt(x, y, z);
+
+                GameObject patternObject = Instantiate(module.Prefab,
+                    transform.position + _coordinateMatrix.GetDataAt(x, y, z), Quaternion.Euler(module.RotationEuler),
+                    displayTarget);
+
+                patternObject.name = "PREVIEW";
+
+                for (int i = 0; i < patternObject.transform.childCount; i++)
+                {
+                    Transform child = patternObject.transform.GetChild(i);
+
+                    if (child.GetComponent<MeshRenderer>())
+                    {
+                        MeshRenderer mr = child.GetComponent<MeshRenderer>();
+
+                        var tempMaterial = new Material(Shader.Find("Transparent/Diffuse"));
+                        tempMaterial.color = new Color(1, 0, 1, 0.25F);
+
+                        mr.sharedMaterial = tempMaterial;
+                    }
+                }
+            });
+        }
+    }
+
+    private void ChangePattern()
+    {
+        if (displayTarget)
+        {
+            if (patternIndex + 1 > training.Patterns.Count() - 1)
+            {
+                patternIndex = 0;
+            }
+            else
+            {
+                patternIndex++;
+            }
+
+            DisplayPattern();
+        }
+
+    }
+
+    private void CyclePattern()
+    {
+        if (displayTarget)
+        {
+            patternChangeTimer -= Time.deltaTime;
+
+            if (patternChangeTimer < 0)
+            {
+                ChangePattern();
+                patternChangeTimer = 5F;
+            }
+        }
+    }
+
     private void InitWave()
     {
         _wave = new Matrix<bool>(outputSize);
         _modules = new Matrix<Module>(outputSize);
+        _coefficients = new Matrix<Coefficient>(outputSize);
+
         _collidingCoordinates.Clear();
+        weights.Clear();
 
-
-        For3(_wave, (x, y, z) => { _wave.MatrixData[x, y, z] = true; });
-
-        for (int i = transform.childCount; i > 0; --i)
+        if (training)
         {
-            DestroyImmediate(transform.GetChild(0).gameObject);
+
+            foreach (KeyValuePair<string, List<Possibility>> pair in training.NeighbourPossibilitiesPerBit)
+            {
+                weights.Add(pair.Key, 100);
+            }
+
+            For3(_wave, (x, y, z) =>
+            {
+                _wave.MatrixData[x, y, z] = true;
+                _coefficients.MatrixData[x, y, z] = new Coefficient(training.NeighbourPossibilitiesPerBit);
+            });
+
+            for (int i = transform.childCount; i > 0; --i)
+            {
+                DestroyImmediate(transform.GetChild(0).gameObject);
+            }
         }
     }
 
@@ -124,13 +231,15 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
             index = 0;
         }
 
-        Pattern selectedPattern = patterns[index];
-        GameObject newPattern = new GameObject("Pattern");
-        newPattern.transform.parent = transform;
-        newPattern.transform.localPosition = Vector3.zero;
-
         if (patterns.Count > 0)
         {
+
+            Pattern selectedPattern = patterns[index];
+            GameObject newPattern = new GameObject("Pattern");
+            newPattern.transform.parent = transform;
+            newPattern.transform.localPosition = Vector3.zero;
+
+ 
             For3(selectedPattern, (x, y, z) =>
             {
                 GameObject patternData = Instantiate(
@@ -140,14 +249,52 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                     newPattern.transform
                 );
 
-                patternData.transform.localPosition = new Vector3(outputSize.x / 3 + x, y, outputSize.z / 3 + z);
-                _wave.MatrixData[outputSize.x / 3 + x, y, outputSize.z / 3 + z] = false;
-                _modules.MatrixData[outputSize.x / 3 + x, y, outputSize.z / 3 + z] =
+                Vector3Int coords = new Vector3Int(2 + x, y, 2+  z);
+
+                patternData.transform.localPosition = coords;
+                _wave.MatrixData[coords.x, coords.y, coords.z] = false;
+
+                _modules.MatrixData[coords.x, coords.y, coords.z] =
                     selectedPattern.MatrixData[x, y, z];
+
+                Propagate(coords);
             });
 
             InitSelectionMatrix();
         }
+    }
+
+    private void Propagate(Vector3Int coords)
+    {
+        _coefficients.MatrixData[coords.x, coords.y, coords.z] = new Coefficient(new Dictionary<string, List<Possibility>>());
+        
+        foreach (Vector3Int direction in Orientations.OrientationUnitVectors.Values)
+        {
+            Vector3Int neighbourCoord = coords + direction;
+
+            if (_wave.ValidCoordinate(neighbourCoord))
+            {
+                if (_wave.GetDataAt(neighbourCoord))
+                {
+                    Dictionary<string, List<Possibility>> adjustedPossibilites =
+                        new Dictionary<string, List<Possibility>>();
+                    string bit = _modules.GetDataAt(coords).GenerateBit(training);
+
+                    adjustedPossibilites.Add(bit, CheckCompatibilities(bit));
+
+                    _coefficients.MatrixData[neighbourCoord.x, neighbourCoord.y, neighbourCoord.z].Keys =
+                        adjustedPossibilites;
+                }
+            }
+        }
+    }
+
+
+
+    private List<Possibility> CheckCompatibilities(string insertBit)
+    {
+        training.NeighbourPossibilitiesPerBit.TryGetValue(insertBit, out List<Possibility> possibilities);
+        return possibilities;
     }
 
     public void InitSelectionMatrix()
@@ -163,69 +310,85 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         });
     }
 
-    public void Move(EOrientations orientation)
+    private Vector3Int MinEntropyCoords()
     {
+        float minEntropy = 0;
+        Vector3Int minEntropyCoords = new Vector3Int();
 
+        System.Random random = new System.Random();
 
-        For3(_coordinateMatrix, (x, y, z) =>
+        For3(outputSize, (x, y, z) =>
         {
-            switch (orientation)
+            Vector3Int currentCoordinates = new Vector3Int(x, y, z);
+            if (_coefficients.MatrixData[x, y, z].Keys.Any())
             {
-                case EOrientations.FORWARD:
-                    _coordinateMatrix.MatrixData[x, y, z] += V3ToV3I(Vector3.forward);
-                    break;
-                case EOrientations.BACK:
-                    _coordinateMatrix.MatrixData[x, y, z] += V3ToV3I(Vector3.back);
-                    break;
-                case EOrientations.RIGHT:
-                    _coordinateMatrix.MatrixData[x, y, z] += Vector3Int.right;
-                    break;
-                case EOrientations.LEFT:
-                    _coordinateMatrix.MatrixData[x, y, z] += Vector3Int.left;
-                    break;
-                case EOrientations.UP:
-                    _coordinateMatrix.MatrixData[x, y, z] += Vector3Int.up;
-                    break;
-                case EOrientations.DOWN:
-                    _coordinateMatrix.MatrixData[x, y, z] += Vector3Int.down;
-                    break;
-                case EOrientations.NULL:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(orientation), orientation, null);
+                float entropy = ShannonEntropy(currentCoordinates);
+                float entropyPlusNoise = entropy - (float)random.NextDouble() / 1000;
+
+                if (minEntropy == 0 || entropyPlusNoise < minEntropy)
+                {
+                    minEntropy = entropyPlusNoise;
+                    minEntropyCoords = new Vector3Int(x, y, z);
+                }
             }
         });
 
+        return minEntropyCoords;
+    }
+
+    public float ShannonEntropy(Vector3Int currentCoordinates)
+    {
+        int sumOfWeights = 0;
+        float sumOfWeightsLogWeights = 0;
+
+        foreach (KeyValuePair<string, List<Possibility>> pair in _coefficients.MatrixData[currentCoordinates.x, currentCoordinates.y, currentCoordinates.z].Keys)
+        {
+            weights.TryGetValue(pair.Key, out int weight);
+
+            sumOfWeights += weight;
+            sumOfWeightsLogWeights += weight * (float)Math.Log(weight);
+        }
+        return (float)Math.Log(sumOfWeights) - (sumOfWeightsLogWeights / sumOfWeights);
+    }
+
+    public void Move(EOrientations orientation)
+    {
         _collidingCoordinates.Clear();
 
         For3(_coordinateMatrix, (x, y, z) =>
         {
+            _coordinateMatrix.MatrixData[x, y, z] += Orientations.ToUnitVector(orientation);
             _coordinateMatrixOrientations.MatrixData[x, y, z] = new List<EOrientations>();
 
             Vector3Int coordinate = _coordinateMatrix.MatrixData[x, y, z];
-            if (!_wave.GetDataAt(coordinate))
+            if (_wave.GetDataAt(coordinate))
             {
-                string bit = _modules.GetDataAt(coordinate).GenerateBit(training);
+                return;
+            }
 
-                _collidingCoordinates.Add(coordinate);
-                foreach (Vector3Int direction in Orientations.Dirs)
+            _collidingCoordinates.Add(coordinate);
+            foreach (Vector3Int direction in Orientations.OrientationUnitVectors.Values)
+            {
+                EOrientations dirOrientation = Orientations.DirToOrientation(direction);
+
+                if (dirOrientation == EOrientations.UP || dirOrientation == EOrientations.DOWN)
                 {
-                    EOrientations dirOrientation = Orientations.ReturnOrientationVal(direction);
+                    continue;
+                }
 
-                    if (dirOrientation != EOrientations.UP && dirOrientation != EOrientations.DOWN)
-                    {
-                        if (_coordinateMatrix.Contains(coordinate + direction) && _wave.GetDataAt(coordinate + direction))
-                        {
-                            _coordinateMatrixOrientations.MatrixData[x, y, z].Add(dirOrientation);
-                        }
-                    }
+                if (_coordinateMatrix.Contains(coordinate + direction) && _wave.GetDataAt(coordinate + direction))
+                {
+                    _coordinateMatrixOrientations.MatrixData[x, y, z].Add(dirOrientation);
                 }
             }
         });
-    }
 
+        DisplayPattern();
+    }
     public void CollapseCoordinate()
     {
+        List<Vector3Int> collapseableCoordinates = new List<Vector3Int>();
+
         For3(outputSize, (x, y, z) =>
         {
             Vector3Int coord = new Vector3Int(x, y, z);
@@ -235,50 +398,62 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                 List<EOrientations> orientations = _coordinateMatrixOrientations.GetDataAt(localCoord);
                 foreach (EOrientations orientation in orientations)
                 {
-                    string bit = _modules.GetDataAt(coord).GenerateBit(training);
-
-                    List<Possibility> outPossibilities = new List<Possibility>();
-
-                    if (training.NeighbourPossibilitiesPerBit.TryGetValue(bit, out outPossibilities))
-                    {
-                        foreach (Possibility possibility in outPossibilities)
-                        {
-                            if (possibility.Orientation == orientation)
-                            {
-                                List<string> possibilitiesList = possibility.Possibilities.ToList();
-                                string selectedBit =
-                                    possibilitiesList[
-                                        UnityEngine.Random.Range(0, possibility.Possibilities.Count() - 1)];
-                                Collapse(coord + Orientations.ReturnDirectionVal(orientation), selectedBit);
-
-                            }
-                        }
-
-                        
-                        // todo: not break
-
-                    }
+                    collapseableCoordinates.Add(coord + Orientations.ToUnitVector(orientation));
                 }
             }
         });
+
+        if (!collapseableCoordinates.Any()) return;
+        collapseableCoordinates.RemoveAll((s => s.y > collapseableCoordinates.Min(v => v.y)));
+        Collapse(collapseableCoordinates.PickRandom());
     }
 
-    private void Collapse(Vector3Int coord, string bit)
+    private void CheckNeighbours(Vector3Int coordToCheck, Vector3Int cameFromDirection)
     {
-        int key = bit[0] - '0';
-        Vector3Int rot = Orientations.ReturnRotationEulerFromChar(bit[1]);
+        List<Vector3Int> coordinatesToCheck = new List<Vector3Int>();
 
-
-        if (training.PrefabAndId.TryGetValue(key, out GameObject prefab))
+        if (!_wave.MatrixData[coordToCheck.x, coordToCheck.y, coordToCheck.z])
         {
-            GameObject gameObject = Instantiate(prefab, transform.position + coord, Quaternion.Euler(rot), transform);
-            gameObject.name = "TEST";
+            coordinatesToCheck.Add(coordToCheck);
         }
 
+        foreach (Vector3Int direction in Orientations.OrientationUnitVectors.Values)
+        {
+            Vector3Int coordNeighbour = coordToCheck + direction;
+            if (!_wave.MatrixData[coordNeighbour.x, coordNeighbour.y, coordNeighbour.z])
+            {
+                coordinatesToCheck.Add(coordNeighbour);
+            }
+        }
+
+        foreach (Vector3Int coordinateToCheck in coordinatesToCheck)
+        {
+
+        }
+    }
+
+    private void Collapse(Vector3Int coord)
+    {
+        Dictionary<Vector3Int, bool> neighbourAllowance = new Dictionary<Vector3Int, bool>();
+
+        //int key = bit[0] - '0';
+        // Vector3Int rot = Orientations.ReturnRotationEulerFromChar(bit[1]);
+
+
+        //if (training.PrefabAndId.TryGetValue(key, out GameObject prefab))
+        //{
+        //     GameObject gameObject = Instantiate(prefab, transform.position + coord, Quaternion.Euler(rot), transform);
+        //     gameObject.name = "TEST";
+        // }
+
         _wave.MatrixData[coord.x, coord.y, coord.z] = false;
+        _modules.MatrixData[coord.x, coord.y, coord.z] = new Module();
+        //_coefficients.MatrixData[coord.x,coord.y,coord.z] = new Coefficient(new Dictionary<string, List<Possibility>>());
 
         //InitSelectionMatrix();
+        Propagate(coord);
         Move(EOrientations.NULL);
+
 
     }
 
@@ -303,23 +478,35 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                 Vector3Int coord = new Vector3Int(x, y, z);
 
                 Gizmos.color = _wave.MatrixData[x, y, z] ? greenColor : redColor;
-                Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), 0.25F);
 
-                if (_coordinateMatrix.Contains(coord, out Vector3Int localCoord))
+                if (coord == MinEntropyCoords())
                 {
-                    List<EOrientations> orientations = _coordinateMatrixOrientations.GetDataAt(localCoord);
-                    foreach (EOrientations orientation in orientations)
-                    {
-                        Gizmos.color = Color.yellow;
-                        Gizmos.DrawLine(
-                            transform.position + coord,
-                            transform.position + coord + Orientations.ReturnDirectionVal(orientation)
-                        );
+                    Gizmos.color = Color.cyan;
+                    Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), 0.35F);
 
-                        Handles.Label(
-                            transform.position + coord + (((Vector3)Orientations.ReturnDirectionVal(orientation)) / 2),
-                            orientation.ToString()
-                       );
+                }
+                else
+                {
+
+                    Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), 0.25F);
+
+                    if (_coordinateMatrix.Contains(coord, out Vector3Int localCoord))
+                    {
+                        List<EOrientations> orientations = _coordinateMatrixOrientations.GetDataAt(localCoord);
+                        foreach (EOrientations orientation in orientations)
+                        {
+                            Gizmos.color = Color.yellow;
+                            Gizmos.DrawLine(
+                                transform.position + coord,
+                                transform.position + coord + Orientations.ToUnitVector(orientation)
+                            );
+
+                            Handles.Label(
+                                transform.position + coord +
+                                (((Vector3)Orientations.ToUnitVector(orientation)) / 2),
+                                orientation.ToString()
+                            );
+                        }
                     }
                 }
             });

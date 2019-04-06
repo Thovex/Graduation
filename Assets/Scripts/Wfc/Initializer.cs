@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Coefficient{
-	
-}
-
 public class Initializer : MonoBehaviour{
 	private bool[,,] _wave;
 	

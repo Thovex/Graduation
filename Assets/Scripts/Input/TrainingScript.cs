@@ -40,10 +40,14 @@ public class TrainingScript : SerializedMonoBehaviour
     public int N { get; set; } = 2;
     public int PrefabToId(GameObject prefab)
     {
-        foreach (KeyValuePair<int, GameObject> pair in PrefabAndId)
+        if (prefab)
         {
-            if (prefab == pair.Value) return pair.Key;
+            foreach (KeyValuePair<int, GameObject> pair in PrefabAndId)
+            {
+                if (prefab == pair.Value) return pair.Key;
+            }
         }
+
         return -1;
     }
     private void Update()
@@ -105,21 +109,21 @@ public class TrainingScript : SerializedMonoBehaviour
         foreach (KeyValuePair<Vector3Int, Module> pair in ChildrenByCoordinate)
         {
             List<OrientationModule> neighbours = new List<OrientationModule>();
-            foreach (Vector3Int orientation in Orientations.Dirs)
+            foreach (Vector3Int orientation in Orientations.OrientationUnitVectors.Values)
             {
                 Vector3Int neighbourCoordinate = pair.Key + orientation;
                 if (ChildrenByCoordinate.ContainsKey(neighbourCoordinate))
                 {
                     if (ChildrenByCoordinate.TryGetValue(neighbourCoordinate, out Module neighbourModule))
                     {
-                        neighbours.Add(new OrientationModule(Orientations.ReturnOrientationVal(orientation), neighbourModule));
+                        neighbours.Add(new OrientationModule(Orientations.DirToOrientation(orientation), neighbourModule));
                     }
                 }
                 else
                 {
                     if (PrefabAndId.TryGetValue(0, out GameObject emptyPrefab))
                     {
-                        neighbours.Add(new OrientationModule(Orientations.ReturnOrientationVal(orientation), new Module(emptyPrefab, neighbourCoordinate)));
+                        neighbours.Add(new OrientationModule(Orientations.DirToOrientation(orientation), new Module(emptyPrefab, neighbourCoordinate)));
                     }
                 }
             }
@@ -265,9 +269,9 @@ public class TrainingScript : SerializedMonoBehaviour
             if (!NeighbourPossibilitiesPerBit.ContainsKey(bit))
             {
                 List<Possibility> newPossibilities = new List<Possibility>();
-                foreach (Vector3Int orientationVector in Orientations.Dirs)
+                foreach (Vector3Int orientationVector in Orientations.OrientationUnitVectors.Values)
                 {
-                    newPossibilities.Add(new Possibility(Orientations.ReturnOrientationVal(orientationVector), new HashSet<string>()));
+                    newPossibilities.Add(new Possibility(Orientations.DirToOrientation(orientationVector), new HashSet<string>()));
                 }
                 NeighbourPossibilitiesPerBit.Add(bit, newPossibilities);
             }
