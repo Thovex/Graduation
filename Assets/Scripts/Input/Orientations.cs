@@ -97,6 +97,11 @@ public static class Orientations
         return orientation;
     }
 
+    public static Vector3Int CharToEulerRotation(char character)
+    {
+        return ToRotationEuler(CharToOrientation(character));
+    }
+
     public static char ToChar(EOrientations orientation)
     {
         char value = ' ';

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
@@ -80,12 +81,16 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 {
     private readonly List<Vector3Int> _collidingCoordinates = new List<Vector3Int>();
 
-    private Matrix<Vector3Int> _coordinateMatrix = new Matrix<Vector3Int>();
-    private Matrix<List<EOrientations>> _coordinateMatrixOrientations = new Matrix<List<EOrientations>>();
+    private Matrix<Vector3Int> userCoordinateMatrix = new Matrix<Vector3Int>();
+    private Matrix<List<EOrientations>> userCoordinateMatrixOrientations = new Matrix<List<EOrientations>>();
+
+    [SerializeField] private Dictionary<Vector3Int, int> coefficientCountPerCoordinate = new Dictionary<Vector3Int, int>();
 
     [FormerlySerializedAs("_outputSize")] [SerializeField] private Vector3Int outputSize = new Vector3Int(6, 6, 6);
 
     [SerializeField] private List<Pattern> patterns;
+    [SerializeField] private List<Pattern> allowedPatterns = new List<Pattern>();
+
     [SerializeField] private Pattern patternToSpawn;
     [SerializeField] private TrainingScript training;
 
@@ -126,37 +131,41 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     {
         if (displayTarget)
         {
-            for (int i = displayTarget.childCount; i > 0; --i)
+            if (allowedPatterns.Any())
             {
-                DestroyImmediate(displayTarget.GetChild(0).gameObject);
-            }
-
-
-            For3(_coordinateMatrix, (x, y, z) =>
-            {
-                Module module = training.Patterns.ToList()[patternIndex].GetDataAt(x, y, z);
-
-                GameObject patternObject = Instantiate(module.Prefab,
-                    transform.position + _coordinateMatrix.GetDataAt(x, y, z), Quaternion.Euler(module.RotationEuler),
-                    displayTarget);
-
-                patternObject.name = "PREVIEW";
-
-                for (int i = 0; i < patternObject.transform.childCount; i++)
+                for (int i = displayTarget.childCount; i > 0; --i)
                 {
-                    Transform child = patternObject.transform.GetChild(i);
-
-                    if (child.GetComponent<MeshRenderer>())
-                    {
-                        MeshRenderer mr = child.GetComponent<MeshRenderer>();
-
-                        var tempMaterial = new Material(Shader.Find("Transparent/Diffuse"));
-                        tempMaterial.color = new Color(1, 0, 1, 0.25F);
-
-                        mr.sharedMaterial = tempMaterial;
-                    }
+                    DestroyImmediate(displayTarget.GetChild(0).gameObject);
                 }
-            });
+
+
+                For3(userCoordinateMatrix, (x, y, z) =>
+                {
+                    Module module = allowedPatterns[patternIndex].GetDataAt(x, y, z);
+
+                    GameObject patternObject = Instantiate(module.Prefab,
+                        transform.position + userCoordinateMatrix.GetDataAt(x, y, z),
+                        Quaternion.Euler(module.RotationEuler),
+                        displayTarget);
+
+                    patternObject.name = "PREVIEW";
+
+                    for (int i = 0; i < patternObject.transform.childCount; i++)
+                    {
+                        Transform child = patternObject.transform.GetChild(i);
+
+                        if (child.GetComponent<MeshRenderer>())
+                        {
+                            MeshRenderer mr = child.GetComponent<MeshRenderer>();
+
+                            var tempMaterial = new Material(Shader.Find("Transparent/Diffuse"));
+                            tempMaterial.color = new Color(1, 0, 1, 0.25F);
+
+                            mr.sharedMaterial = tempMaterial;
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -164,30 +173,35 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     {
         if (displayTarget)
         {
-            if (patternIndex + 1 > training.Patterns.Count() - 1)
+            if (allowedPatterns.Any())
             {
-                patternIndex = 0;
-            }
-            else
-            {
-                patternIndex++;
-            }
+                if (patternIndex + 1 > allowedPatterns.Count() - 1)
+                {
+                    patternIndex = 0;
+                }
+                else
+                {
+                    patternIndex++;
+                }
 
-            DisplayPattern();
+                DisplayPattern();
+            }
         }
-
     }
 
     private void CyclePattern()
     {
         if (displayTarget)
         {
-            patternChangeTimer -= Time.deltaTime;
-
-            if (patternChangeTimer < 0)
+            if (allowedPatterns.Any())
             {
-                ChangePattern();
-                patternChangeTimer = 5F;
+                patternChangeTimer -= Time.deltaTime;
+
+                if (patternChangeTimer < 0)
+                {
+                    ChangePattern();
+                    patternChangeTimer = 5F;
+                }
             }
         }
     }
@@ -282,11 +296,25 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
                     adjustedPossibilites.Add(bit, CheckCompatibilities(bit));
 
-                    _coefficients.MatrixData[neighbourCoord.x, neighbourCoord.y, neighbourCoord.z].Keys =
+                    _coefficients.MatrixData[neighbourCoord.x, neighbourCoord.y, neighbourCoord.z].AllowedBits =
                         adjustedPossibilites;
                 }
             }
         }
+
+        For3(_coefficients, (x, y, z) =>
+        {
+            Vector3Int coord = new Vector3Int(x, y, z);
+
+            if (!coefficientCountPerCoordinate.ContainsKey(coord))
+            {
+                coefficientCountPerCoordinate.Add(coord, _coefficients.GetDataAt(x, y, z).AllowedBits.Count);
+            }
+            else
+            {
+                coefficientCountPerCoordinate[coord] = _coefficients.GetDataAt(x, y, z).AllowedBits.Count;
+            }
+        });
     }
 
 
@@ -300,13 +328,13 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     public void InitSelectionMatrix()
     {
         Vector3Int nSize = new Vector3Int(training.N, training.N, training.N);
-        _coordinateMatrix = new Matrix<Vector3Int>(nSize);
-        _coordinateMatrixOrientations = new Matrix<List<EOrientations>>(nSize);
+        userCoordinateMatrix = new Matrix<Vector3Int>(nSize);
+        userCoordinateMatrixOrientations = new Matrix<List<EOrientations>>(nSize);
 
-        For3(_coordinateMatrix, (x, y, z) =>
+        For3(userCoordinateMatrix, (x, y, z) =>
         {
-            _coordinateMatrix.MatrixData[x, y, z] = new Vector3Int(x, y, z);
-            _coordinateMatrixOrientations.MatrixData[x, y, z] = new List<EOrientations>();
+            userCoordinateMatrix.MatrixData[x, y, z] = new Vector3Int(x, y, z);
+            userCoordinateMatrixOrientations.MatrixData[x, y, z] = new List<EOrientations>();
         });
     }
 
@@ -320,7 +348,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         For3(outputSize, (x, y, z) =>
         {
             Vector3Int currentCoordinates = new Vector3Int(x, y, z);
-            if (_coefficients.MatrixData[x, y, z].Keys.Any())
+            if (_coefficients.MatrixData[x, y, z].AllowedBits.Any())
             {
                 float entropy = ShannonEntropy(currentCoordinates);
                 float entropyPlusNoise = entropy - (float)random.NextDouble() / 1000;
@@ -341,7 +369,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         int sumOfWeights = 0;
         float sumOfWeightsLogWeights = 0;
 
-        foreach (KeyValuePair<string, List<Possibility>> pair in _coefficients.MatrixData[currentCoordinates.x, currentCoordinates.y, currentCoordinates.z].Keys)
+        foreach (KeyValuePair<string, List<Possibility>> pair in _coefficients.MatrixData[currentCoordinates.x, currentCoordinates.y, currentCoordinates.z].AllowedBits)
         {
             weights.TryGetValue(pair.Key, out int weight);
 
@@ -355,12 +383,12 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     {
         _collidingCoordinates.Clear();
 
-        For3(_coordinateMatrix, (x, y, z) =>
+        For3(userCoordinateMatrix, (x, y, z) =>
         {
-            _coordinateMatrix.MatrixData[x, y, z] += Orientations.ToUnitVector(orientation);
-            _coordinateMatrixOrientations.MatrixData[x, y, z] = new List<EOrientations>();
+            userCoordinateMatrix.MatrixData[x, y, z] += Orientations.ToUnitVector(orientation);
+            userCoordinateMatrixOrientations.MatrixData[x, y, z] = new List<EOrientations>();
 
-            Vector3Int coordinate = _coordinateMatrix.MatrixData[x, y, z];
+            Vector3Int coordinate = userCoordinateMatrix.MatrixData[x, y, z];
             if (_wave.GetDataAt(coordinate))
             {
                 return;
@@ -376,9 +404,9 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                     continue;
                 }
 
-                if (_coordinateMatrix.Contains(coordinate + direction) && _wave.GetDataAt(coordinate + direction))
+                if (userCoordinateMatrix.Contains(coordinate + direction) && _wave.GetDataAt(coordinate + direction))
                 {
-                    _coordinateMatrixOrientations.MatrixData[x, y, z].Add(dirOrientation);
+                    userCoordinateMatrixOrientations.MatrixData[x, y, z].Add(dirOrientation);
                 }
             }
         });
@@ -393,9 +421,9 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         {
             Vector3Int coord = new Vector3Int(x, y, z);
 
-            if (_coordinateMatrix.Contains(coord, out Vector3Int localCoord))
+            if (userCoordinateMatrix.Contains(coord, out Vector3Int localCoord))
             {
-                List<EOrientations> orientations = _coordinateMatrixOrientations.GetDataAt(localCoord);
+                List<EOrientations> orientations = userCoordinateMatrixOrientations.GetDataAt(localCoord);
                 foreach (EOrientations orientation in orientations)
                 {
                     collapseableCoordinates.Add(coord + Orientations.ToUnitVector(orientation));
@@ -490,9 +518,9 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
                     Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), 0.25F);
 
-                    if (_coordinateMatrix.Contains(coord, out Vector3Int localCoord))
+                    if (userCoordinateMatrix.Contains(coord, out Vector3Int localCoord))
                     {
-                        List<EOrientations> orientations = _coordinateMatrixOrientations.GetDataAt(localCoord);
+                        List<EOrientations> orientations = userCoordinateMatrixOrientations.GetDataAt(localCoord);
                         foreach (EOrientations orientation in orientations)
                         {
                             Gizmos.color = Color.yellow;
@@ -514,9 +542,10 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
             Gizmos.color = magentaColor;
 
-            For3(_coordinateMatrix, (x, y, z) =>
+            For3(userCoordinateMatrix, (x, y, z) =>
             {
-                Gizmos.DrawSphere(transform.position + _coordinateMatrix.MatrixData[x, y, z], 0.25F);
+                Gizmos.DrawSphere(transform.position + userCoordinateMatrix.MatrixData[x, y, z], 0.25F);
+                Handles.Label(transform.position + userCoordinateMatrix.MatrixData[x, y, z], new Vector3Int(x,y,z).ToString());
             });
         }
         catch (Exception)

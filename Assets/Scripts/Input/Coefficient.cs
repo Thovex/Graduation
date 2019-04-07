@@ -3,10 +3,10 @@ using UnityEngine;
 
 public struct Coefficient
 {
-    public Coefficient(Dictionary<string, List<Possibility>> keys)
+    public Coefficient(Dictionary<string, List<Possibility>> allowedBits)
     {
-        Keys = keys;
+        AllowedBits = allowedBits;
     }
 
-    [SerializeField] public Dictionary<string, List<Possibility>> Keys { get; set; }
+    [SerializeField] public Dictionary<string, List<Possibility>> AllowedBits { get; set; }
 }

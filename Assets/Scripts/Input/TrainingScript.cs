@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using static Thovex.Utility;
 using Vector3Int = UnityEngine.Vector3Int;
+
 [CustomEditor(typeof(TrainingScript))]
 public class TrainingScriptInspector : OdinEditor
 {
@@ -19,11 +20,9 @@ public class TrainingScriptInspector : OdinEditor
         {
             training.TranslatePrefabsToId();
         }
-        if (GUILayout.Button("For2"))
-        {
-        }
     }
 }
+
 [ExecuteInEditMode]
 public class TrainingScript : SerializedMonoBehaviour
 {
@@ -32,7 +31,7 @@ public class TrainingScript : SerializedMonoBehaviour
 
     public Dictionary<Vector3Int, Module> ChildrenByCoordinate { get; set; } = new Dictionary<Vector3Int, Module>();
     [SerializeField] public Dictionary<int, GameObject> PrefabAndId { get; set; } = new Dictionary<int, GameObject>();
-    public HashSet<Pattern> Patterns { get; set; } = new HashSet<Pattern>();
+    [SerializeField] public HashSet<Pattern> Patterns { get; set; } = new HashSet<Pattern>();
     public Matrix<Module> ModuleMatrix { get; set; }
     [SerializeField] public Dictionary<string, List<Possibility>> NeighbourPossibilitiesPerBit { get; set; } = new Dictionary<string, List<Possibility>>();
 
@@ -69,7 +68,10 @@ public class TrainingScript : SerializedMonoBehaviour
             PatternToBits();
             FillNeighbourPossibilities();
         }
-        catch (Exception) { }
+        catch
+        {
+            // ignored
+        }
     }
     private void ClearPreviousData()
     {
@@ -170,7 +172,7 @@ public class TrainingScript : SerializedMonoBehaviour
                 });
                 if (!bIsNull)
                 {
-                    Pattern newPattern = new Pattern(N, newTrainingData, new Vector3Int(x, y, z));
+                    Pattern newPattern = new Pattern(N, newTrainingData);
                     bool isEqual = false;
                     foreach (Pattern pattern in Patterns)
                     {
@@ -184,7 +186,7 @@ public class TrainingScript : SerializedMonoBehaviour
                         Patterns.Add(newPattern);
                         for (int i = 1; i < 4; i++)
                         {
-                            Pattern rotatedPattern = new Pattern(N, newTrainingData, new Vector3Int(x, y, z));
+                            Pattern rotatedPattern = new Pattern(N, newTrainingData);
                             rotatedPattern.RotatePatternCounterClockwise(i);
                             Patterns.Add(rotatedPattern);
                         }
@@ -201,23 +203,26 @@ public class TrainingScript : SerializedMonoBehaviour
             {
                 DestroyImmediate(displayPatternObject.transform.GetChild(0).gameObject);
             }
+
             int index = 0;
+
             foreach (Pattern pattern in Patterns)
             {
                 GameObject newPattern = new GameObject("Pattern");
                 Bitsplay newBitsplay = newPattern.AddComponent<Bitsplay>();
+
                 newBitsplay.Training = this;
                 newBitsplay.Pattern = pattern;
                 newPattern.transform.localPosition = Vector3.zero + (index * (_input.NValue + _input.NValue)) * Vector3.left;
                 newPattern.transform.parent = displayPatternObject.transform;
-                Module[,,] data = pattern.MatrixData;
+
                 For3(pattern, (x, y, z) =>
                 {
-                    if (data[x, y, z].Prefab != null)
+                    if (pattern.MatrixData[x, y, z].Prefab != null)
                     {
-                        GameObject patternData = Instantiate(data[x, y, z].Prefab, newPattern.transform);
+                        GameObject patternData = Instantiate(pattern.MatrixData[x, y, z].Prefab, newPattern.transform);
                         patternData.transform.localPosition = new Vector3(x, y, z);
-                        patternData.transform.localEulerAngles = data[x, y, z].RotationEuler;
+                        patternData.transform.localEulerAngles =  pattern.MatrixData[x, y, z].RotationEuler;
                     }
                 });
                 index++;

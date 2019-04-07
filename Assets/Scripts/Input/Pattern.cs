@@ -21,20 +21,23 @@ public struct ViewDict
 public class Pattern : Matrix<Module>
 {
     [SerializeField] private readonly List<ViewDict> _patternDictionary = new List<ViewDict>();
-    [SerializeField] private Vector3Int _patternCoordinate;
 
     private int _patternSizeN;
 
-    public Pattern(int patternSizeN, Module[,,] patternData, Vector3Int patternCoordinate)
+    public Pattern(int patternSizeN)
     {
+        _patternSizeN = patternSizeN;
+        MatrixData = new Module[_patternSizeN, _patternSizeN, _patternSizeN];
+
+        For3(this,
+            (x, y, z) => { _patternDictionary.Add(new ViewDict(new Vector3Int(x, y, z), MatrixData[x, y, z])); });
+    }
+
+    public Pattern(int patternSizeN, Module[,,] patternData)
+    {
+        _patternSizeN = patternSizeN;
         MatrixData = patternData;
 
-        _patternSizeN = patternSizeN;
-        _patternCoordinate = patternCoordinate;
-
-        SizeX = MatrixData.GetLength(0);
-        SizeY = MatrixData.GetLength(1);
-        SizeZ = MatrixData.GetLength(2);
 
         For3(this, (x, y, z) =>
         {
@@ -50,6 +53,32 @@ public class Pattern : Matrix<Module>
         {
             For3(this, (x, y, z) => { MatrixData[x, y, z].RotationEuler += new Vector3Int(0, -90, 0); });
         }
+    }
+
+    public bool HasEqualMatrixValue(Vector3Int coord, Module comparison, bool skipCheck = false)
+    {
+        if (!skipCheck)
+        {
+            if (coord.x < 0 || coord.x > SizeX) return false;
+            if (coord.y < 0 || coord.y > SizeY) return false;
+            if (coord.z < 0 || coord.z > SizeZ) return false;
+        }
+
+        bool bIsEqual = true;
+
+        Module original = MatrixData[coord.x, coord.y, coord.z];
+
+        if (original.Prefab != comparison.Prefab)
+        {
+            bIsEqual = false;
+        }
+
+        if (original.RotationEuler != comparison.RotationEuler)
+        {
+            bIsEqual = false;
+        }
+
+        return bIsEqual;
     }
 
     public override bool IsEqualToMatrix(Matrix<Module> otherMatrix)

@@ -13,18 +13,34 @@ public class Matrix<T>
     {
         MatrixData = new T[matrixSize.x, matrixSize.y, matrixSize.z];
 
-        SizeX = matrixSize.x;
-        SizeY = matrixSize.y;
-        SizeZ = matrixSize.z;
+        SetSize();
     }
 
-    public T[,,] MatrixData { get; set; }
+    private T[,,] _matrixData;
+
+    public T[,,] MatrixData
+    {
+        get => _matrixData;
+        set
+        {
+            _matrixData = value;
+            SetSize();
+        }
+    }
 
     public int SizeX { get; protected set; }
     public int SizeY { get; protected set; }
     public int SizeZ { get; protected set; }
+    public Vector3Int Size { get; protected set; }
 
+    protected void SetSize()
+    {
+        SizeX = _matrixData.GetLength(0);
+        SizeY = _matrixData.GetLength(1);
+        SizeZ = _matrixData.GetLength(2);
 
+        Size = new Vector3Int(SizeX, SizeY, SizeZ);
+    }
 
     public T GetDataAt(Vector3Int coordinate)
     {
