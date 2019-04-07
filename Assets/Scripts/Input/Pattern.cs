@@ -55,6 +55,29 @@ public class Pattern : Matrix<Module>
         }
     }
 
+    public bool CompareBitPatterns(TrainingScript training, Matrix<string> bitMatrix)
+    {
+        Matrix<string> patternAsBitMatrix = GenerateBits(training);
+
+        bool bEqual = true;
+
+        For3(bitMatrix, (x, y, z) =>
+        {
+            string bit = bitMatrix.GetDataAt(x, y, z);
+
+            if ( bit != "null")
+            {
+                if (bit != patternAsBitMatrix.GetDataAt(x,y,z))
+                {
+                    bEqual = false;
+                }
+            }
+        });
+
+        return bEqual;
+
+    }
+
     public bool HasEqualMatrixValue(Vector3Int coord, Module comparison, bool skipCheck = false)
     {
         if (!skipCheck)

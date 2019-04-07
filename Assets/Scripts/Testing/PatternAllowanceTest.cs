@@ -91,7 +91,6 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     [SerializeField] private List<Pattern> patterns;
     [SerializeField] private List<Pattern> allowedPatterns = new List<Pattern>();
 
-    [SerializeField] private Pattern patternToSpawn;
     [SerializeField] private TrainingScript training;
 
     [SerializeField] private Dictionary<string, int> weights = new Dictionary<string, int>();
@@ -125,6 +124,11 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     public void SetPatterns()
     {
         patterns = training.Patterns.ToList();
+    }
+
+    private void Update()
+    {
+        CheckAllowedPatterns();
     }
 
     private void DisplayPattern()
@@ -202,6 +206,33 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                     ChangePattern();
                     patternChangeTimer = 5F;
                 }
+            }
+        }
+    }
+
+    private void CheckAllowedPatterns()
+    {
+        allowedPatterns.Clear();
+
+        Matrix<string> bitMatrix = new Matrix<string>(training.N);
+
+        For3(bitMatrix, (x, y, z) => { bitMatrix.MatrixData[x, y, z] = "null"; });
+
+        For3(userCoordinateMatrix, (x, y, z) =>
+        {
+            Vector3Int coord = userCoordinateMatrix.GetDataAt(x, y, z);
+
+            if (!_wave.GetDataAt(coord))
+            {
+                bitMatrix.MatrixData[x, y, z] = _modules.GetDataAt(coord).GenerateBit(training);
+            }
+        });
+
+        foreach (Pattern pattern in patterns)
+        {
+            if (pattern.CompareBitPatterns(training, bitMatrix))
+            {
+                allowedPatterns.Add(pattern);
             }
         }
     }
@@ -507,14 +538,14 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
                 Gizmos.color = _wave.MatrixData[x, y, z] ? greenColor : redColor;
 
-                if (coord == MinEntropyCoords())
-                {
-                    Gizmos.color = Color.cyan;
-                    Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), 0.35F);
-
-                }
-                else
-                {
+                //if (coord == MinEntropyCoords())
+                //{
+                //    Gizmos.color = Color.cyan;
+                //    Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), 0.35F);
+//
+                //}
+                //else
+                //{
 
                     Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), 0.25F);
 
@@ -536,7 +567,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                             );
                         }
                     }
-                }
+                //}
             });
 
 

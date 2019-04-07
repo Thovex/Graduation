@@ -9,11 +9,15 @@ using static Thovex.Utility;
 public class Matrix<T>
 {
     public Matrix() { }
+
+    public Matrix(int matrixSize)
+    {
+        MatrixData = new T[matrixSize, matrixSize, matrixSize];
+    }
+
     public Matrix(Vector3Int matrixSize)
     {
         MatrixData = new T[matrixSize.x, matrixSize.y, matrixSize.z];
-
-        SetSize();
     }
 
     private T[,,] _matrixData;
