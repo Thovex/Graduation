@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
-using Sirenix.Serialization;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 using static Thovex.Utility;
 using Vector3Int = UnityEngine.Vector3Int;
 
@@ -18,24 +17,24 @@ public class TrainingScriptInspector : OdinEditor
         TrainingScript training = (TrainingScript)target;
         if (GUILayout.Button("Update"))
         {
-            training.TranslatePrefabsToId();
+            training.Train();
         }
     }
 }
 
-[ExecuteInEditMode]
+[ExecuteAlways]
 public class TrainingScript : SerializedMonoBehaviour
 {
     [SerializeField] private GameObject displayPatternObject;
     private InputGriddify _input;
 
-    public Dictionary<Vector3Int, Module> ChildrenByCoordinate { get; set; } = new Dictionary<Vector3Int, Module>();
     [SerializeField] public Dictionary<int, GameObject> PrefabAndId { get; set; } = new Dictionary<int, GameObject>();
     [SerializeField] public HashSet<Pattern> Patterns { get; set; } = new HashSet<Pattern>();
-    public Matrix<Module> ModuleMatrix { get; set; }
-    [SerializeField] public Dictionary<string, List<Possibility>> NeighbourPossibilitiesPerBit { get; set; } = new Dictionary<string, List<Possibility>>();
+    [SerializeField] private Dictionary<string, Dictionary<EOrientations, Coefficient>> AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
 
-    public Dictionary<Pattern, Matrix<string>> PatternBits { get; set; } = new Dictionary<Pattern, Matrix<string>>();
+    [SerializeField] private Dictionary<Vector3Int, Module> TESTONLY_ModuleMatrix = new Dictionary<Vector3Int, Module>();
+    public Matrix<Module> ModuleMatrix { get; set; }
+
     public int N { get; set; } = 2;
     public int PrefabToId(GameObject prefab)
     {
@@ -49,103 +48,210 @@ public class TrainingScript : SerializedMonoBehaviour
 
         return -1;
     }
+
     private void Update()
     {
-        TranslatePrefabsToId();
+        Train();
     }
-    public void TranslatePrefabsToId()
+
+    public void Train()
     {
-        try
+        InitializeData();
+        DefinePatterns();
+        DisplayPatterns();
+
+    }
+
+    private void UpdateInputComponents()
+    {
+        // Loop through all the children
+        for (int i = 0; i < transform.childCount; i++)
         {
-            ClearPreviousData();
-            GetResources();
-            _input = GetComponent<InputGriddify>();
-            AssignCoordinateToChildren();
-            CalculateNeighbours();
-            InitializeMatrix();
-            DefinePatterns();
-            DisplayPatterns();
-            PatternToBits();
-            FillNeighbourPossibilities();
-        }
-        catch
-        {
-            // ignored
+            Transform childTransform = transform.GetChild(i);
+
+            // Create int XYZ coord based on child value in input grid.
+            Vector3Int coord = V3ToV3I(childTransform.localPosition);
+
+            ModulePrototype modulePrototype = childTransform.GetComponent<ModulePrototype>();
+            modulePrototype.CoefficientDict = ModuleMatrix.MatrixData[coord.x, coord.y, coord.z].ModuleNeighbours;
+
+            modulePrototype.CalculateDisplay();
         }
     }
-    private void ClearPreviousData()
+
+    // Clear old data and initialize new data.
+    private void InitializeData()
     {
-        ChildrenByCoordinate = new Dictionary<Vector3Int, Module>();
-        PrefabAndId = new Dictionary<int, GameObject>();
-        ModuleMatrix = new Matrix<Module>(Vector3Int.zero);
+        _input = GetComponent<InputGriddify>();
+
+        // Initialize matrix of InputSize.
+        ModuleMatrix = new Matrix<Module>(_input.inputSize);
+        AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
         Patterns = new HashSet<Pattern>();
-        NeighbourPossibilitiesPerBit = new Dictionary<string, List<Possibility>>();
-        PatternBits = new Dictionary<Pattern, Matrix<string>>();
+
+        TESTONLY_ModuleMatrix = new Dictionary<Vector3Int, Module>();
+
+        GetResources();
     }
+
+    // Assign Prefab & Id from local Unity Resources folder.
     private void GetResources()
     {
+        PrefabAndId = new Dictionary<int, GameObject>();
+
+        // Load all "WFC" Resources.
         GameObject[] prefabs = Resources.LoadAll<GameObject>("Wfc");
         for (int i = 0; i < prefabs.Length; i++)
         {
             PrefabAndId.Add(i, prefabs[i]);
         }
+
+        AssignCoordinateToChildren();
     }
     private void AssignCoordinateToChildren()
     {
+        // Loop through all the children
         for (int i = 0; i < transform.childCount; i++)
         {
             Transform childTransform = transform.GetChild(i);
-            ChildrenByCoordinate.Add(
-                V3ToV3I(childTransform.localPosition),
-                new Module(
-                    PrefabUtility.GetCorrespondingObjectFromSource(childTransform.gameObject),
-                    V3ToV3I(childTransform.localEulerAngles)
-                )
-            );
-            childTransform.name = V3ToV3I(childTransform.localPosition).ToString() + " " + ((GameObject)PrefabUtility.GetCorrespondingObjectFromSource(childTransform.gameObject)).name;
+
+            // Create int XYZ coord based on child value in input grid.
+            Vector3Int coord = V3ToV3I(childTransform.localPosition);
+
+            // Create new Module from it's Prefab object and it's local rotation.
+            ModuleMatrix.MatrixData[coord.x, coord.y, coord.z] = new Module(PrefabUtility.GetCorrespondingObjectFromSource(childTransform.gameObject), V3ToV3I(childTransform.localEulerAngles));
+
+            // Change child name to (X, Y, Z) + Prefab.Name
+            childTransform.name = V3ToV3I(childTransform.localPosition).ToString() + " " + (PrefabUtility.GetCorrespondingObjectFromSource(childTransform.gameObject)).name;
         }
-    }
-    private void CalculateNeighbours()
-    {
-        Dictionary<Vector3Int, Module> childrenByCoordinateWithNeighbours = new Dictionary<Vector3Int, Module>();
-        foreach (KeyValuePair<Vector3Int, Module> pair in ChildrenByCoordinate)
+
+        // Find invalid indices
+        For3(ModuleMatrix, (x, y, z) =>
         {
-            List<OrientationModule> neighbours = new List<OrientationModule>();
-            foreach (Vector3Int orientation in Orientations.OrientationUnitVectors.Values)
+            if (!ModuleMatrix.Valid(x, y, z))
             {
-                Vector3Int neighbourCoordinate = pair.Key + orientation;
-                if (ChildrenByCoordinate.ContainsKey(neighbourCoordinate))
+                // Get the 0 prefab which is "Empty" and fill the matrix with "Empty" values for unassigned blocks.
+                PrefabAndId.TryGetValue(0, out GameObject emptyPrefab);
+                ModuleMatrix.MatrixData[x, y, z] = new Module(emptyPrefab, Vector3Int.zero);
+            }
+        });
+
+        CalculateModuleNeighbours();
+    }
+
+    private void CalculateModuleNeighbours()
+    {
+        For3(ModuleMatrix, (x, y, z) =>
+        {
+            // Get the module we want to create neighbours for and create a current coordinate
+            Vector3Int currentMatrixCoordinate = new Vector3Int(x, y, z);
+            Module designatedModule = ModuleMatrix.GetDataAt(currentMatrixCoordinate);
+
+            // Loop through each orientation in the 3D matrix.
+            foreach (Vector3Int orientationDir in Orientations.OrientationUnitVectors.Values)
+            {
+                // Calculate orientation based on Vector
+                EOrientations orientation = Orientations.DirToOrientation(orientationDir);
+
+                // Get neighbour coordinate 
+                Vector3Int neighbourCoordinate = currentMatrixCoordinate + orientationDir;
+
+                // If this coordinate exists, meaning we're still inside our matrix.
+                if (ModuleMatrix.ValidCoordinate(neighbourCoordinate))
                 {
-                    if (ChildrenByCoordinate.TryGetValue(neighbourCoordinate, out Module neighbourModule))
+                    Module neighbourModule = ModuleMatrix.GetDataAt(neighbourCoordinate);
+
+                    // Retrieve designated module's neighbour list
+                    Dictionary<EOrientations, Coefficient> designatedModuleNeighbours = designatedModule.ModuleNeighbours;
+
+                    // Find orientation and coefficient HashSet
+                    designatedModuleNeighbours.TryGetValue(orientation, out Coefficient coefficient);
+
+                    if (coefficient.AllowedBits == null)
                     {
-                        neighbours.Add(new OrientationModule(Orientations.DirToOrientation(orientation), neighbourModule));
+                        coefficient.Initialize();
                     }
+
+                    // Add this neighbour to it.
+                    coefficient.AllowedBits.Add(neighbourModule.GenerateBit(this));
+
+                    // Update dictionary
+                    designatedModuleNeighbours[orientation] = coefficient;
+
+                    // Overwrite old dictionary with new updated dictionary
+                    designatedModule.ModuleNeighbours = designatedModuleNeighbours;
+
+                }
+            }
+
+            // TEST ONLY - purposes.
+            if (ModuleMatrix.GetDataAt(currentMatrixCoordinate).Prefab != PrefabAndId[0])
+            {
+                TESTONLY_ModuleMatrix.Add(currentMatrixCoordinate, ModuleMatrix.GetDataAt(currentMatrixCoordinate));
+            }
+        });
+
+        FetchSimilarModuleData();
+
+        //UpdateInputComponents();
+    }
+
+    private void FetchSimilarModuleData()
+    {
+        // Define dictionary which can hold a bit (based on Module) and save in a List
+        // those specific modules. So only the same modules get collected together.
+        Dictionary<string, List<Module>> similarModulesByBit = new Dictionary<string, List<Module>>();
+
+        // We want to do this function 4 times in total. Because we will rotate our data
+        // to get all results (similar to rotating the patterns).
+
+        for (int i = 0; i < 4; i++)
+        {
+            For3(ModuleMatrix, (x, y, z) =>
+            {
+                // Generate the module's bit.
+                string bit = ModuleMatrix.GetDataAt(x, y, z).GenerateBit(this);
+
+                // Check in the dictionary if this specific bit is already added.
+                if (similarModulesByBit.ContainsKey(bit))
+                {
+                    // Get current lists thats available if it already was in dictionary.
+                    similarModulesByBit.TryGetValue(bit, out List<Module> similarModules);
+
+                    // Add this module to similar ones.
+                    similarModules.Add(ModuleMatrix.GetDataAt(x, y, z));
+                    similarModulesByBit[bit] = similarModules;
                 }
                 else
                 {
-                    if (PrefabAndId.TryGetValue(0, out GameObject emptyPrefab))
-                    {
-                        neighbours.Add(new OrientationModule(Orientations.DirToOrientation(orientation), new Module(emptyPrefab, neighbourCoordinate)));
-                    }
+                    // Looks like this bit is not in the dictionary yet so we will create a new
+                    // list for this specific bit.
+                    List<Module> newSimilarModules = new List<Module>();
+
+                    // Append itself to the list and add to dictionary.
+                    newSimilarModules.Add(ModuleMatrix.GetDataAt(x, y, z));
+                    similarModulesByBit.Add(bit, newSimilarModules);
                 }
-            }
-            Module updatedModule = pair.Value;
-            updatedModule.ModuleNeighbours = neighbours;
-            childrenByCoordinateWithNeighbours.Add(pair.Key, updatedModule);
+            });
+
+            // Rotate input matrix.
+            ModuleMatrix.RotatePatternCounterClockwise(1);
         }
-        ChildrenByCoordinate = childrenByCoordinateWithNeighbours;
+        // UpdateInputComponents();
     }
-    private void InitializeMatrix()
+
+    private void CombineSimilarData(Dictionary<string, List<Module>> similarModulesByBit)
     {
-        ModuleMatrix = new Matrix<Module>(_input.inputSize);
-        For3(ModuleMatrix, (x, y, z) =>
+        Dictionary<string, Dictionary<EOrientations, Coefficient>> newCombinedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
+
+        foreach (var similarModulesPair in similarModulesByBit)
         {
-            if (ChildrenByCoordinate.TryGetValue(new Vector3Int(x, y, z), out Module module))
-            {
-                ModuleMatrix.MatrixData[x, y, z] = module;
-            }
-        });
+            // TODO combine
+           // similarModulesPair.Value;
+        }
+
     }
+
     private void DefinePatterns()
     {
         N = _input.NValue;
@@ -157,17 +263,12 @@ public class TrainingScript : SerializedMonoBehaviour
                 bool bIsNull = true;
                 For3(new Vector3Int(N, N, N), (nx, ny, nz) =>
                 {
-                    if (ChildrenByCoordinate.TryGetValue(new Vector3Int(x + nx, y + ny, z + nz), out Module module))
+                    Vector3Int coordinate = new Vector3Int(x + nx, y + ny, z + nz);
+
+                    if (ModuleMatrix.ValidCoordinate(coordinate))
                     {
-                        newTrainingData[nx, ny, nz] = module;
+                        newTrainingData[nx, ny, nz] = ModuleMatrix.GetDataAt(coordinate);
                         bIsNull = false;
-                    }
-                    else
-                    {
-                        if (PrefabAndId.TryGetValue(0, out GameObject emptyPrefab))
-                        {
-                            newTrainingData[nx, ny, nz] = new Module(emptyPrefab, Vector3Int.zero);
-                        }
                     }
                 });
                 if (!bIsNull)
@@ -222,78 +323,11 @@ public class TrainingScript : SerializedMonoBehaviour
                     {
                         GameObject patternData = Instantiate(pattern.MatrixData[x, y, z].Prefab, newPattern.transform);
                         patternData.transform.localPosition = new Vector3(x, y, z);
-                        patternData.transform.localEulerAngles =  pattern.MatrixData[x, y, z].RotationEuler;
+                        patternData.transform.localEulerAngles = pattern.MatrixData[x, y, z].RotationEuler;
                     }
                 });
                 index++;
             }
-        }
-    }
-    private void PatternToBits()
-    {
-        foreach (Pattern pattern in Patterns)
-        {
-            Matrix<string> patternInBits = new Matrix<string>(new Vector3Int(pattern.SizeX, pattern.SizeY, pattern.SizeZ));
-            For3(pattern, (x, y, z) =>
-            {
-                patternInBits.MatrixData[x, y, z] = pattern.MatrixData[x, y, z].GenerateBit(this);
-            });
-            PatternBits.Add(pattern, patternInBits);
-        }
-    }
-    public bool GetPatternByBit(string bit, out List<Pattern> outPattern)
-    {
-        // need to be sure its on ze bottom and shit 
-        outPattern = new List<Pattern>();
-        List<Pattern> tempPatterns = new List<Pattern>();
-        foreach (Pattern pattern in Patterns)
-        {
-            if (PatternBits.TryGetValue(pattern, out Matrix<string> patternBits))
-            {
-                For3(pattern, (x, y, z) =>
-                {
-                    if (pattern.MatrixData[x, y, z].GenerateBit(this) == patternBits.MatrixData[x, y, z])
-                    {
-                        tempPatterns.Add(pattern);
-                    }
-                });
-            }
-        }
-        outPattern = tempPatterns;
-        if (outPattern.Count > 0)
-        {
-            return true;
-        }
-        return false;
-    }
-    private void FillNeighbourPossibilities()
-    {
-        foreach (KeyValuePair<Vector3Int, Module> pair in ChildrenByCoordinate)
-        {
-            string bit = pair.Value.GenerateBit(this);
-            if (!NeighbourPossibilitiesPerBit.ContainsKey(bit))
-            {
-                List<Possibility> newPossibilities = new List<Possibility>();
-                foreach (Vector3Int orientationVector in Orientations.OrientationUnitVectors.Values)
-                {
-                    newPossibilities.Add(new Possibility(Orientations.DirToOrientation(orientationVector), new HashSet<string>()));
-                }
-                NeighbourPossibilitiesPerBit.Add(bit, newPossibilities);
-            }
-            if (NeighbourPossibilitiesPerBit.TryGetValue(bit, out List<Possibility> currentPossibilities))
-            {
-                foreach (OrientationModule orientationModule in pair.Value.ModuleNeighbours)
-                {
-                    foreach (Possibility possibilities in currentPossibilities)
-                    {
-                        if (orientationModule.Orientation == possibilities.Orientation)
-                        {
-                            possibilities.Possibilities.Add(orientationModule.NeighbourModule.GenerateBit(this));
-                        }
-                    }
-                }
-            }
-            NeighbourPossibilitiesPerBit[bit] = currentPossibilities;
         }
     }
 }

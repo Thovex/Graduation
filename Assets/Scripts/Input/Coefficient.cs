@@ -1,12 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public struct Coefficient
 {
-    public Coefficient(Dictionary<string, List<Possibility>> allowedBits)
-    {
-        AllowedBits = allowedBits;
+    private HashSet<string> _allowedBits;
+    public HashSet<string> AllowedBits { get => _allowedBits;
+        set {
+            _allowedBits = value;
+        }
     }
 
-    [SerializeField] public Dictionary<string, List<Possibility>> AllowedBits { get; set; }
+    public void Initialize()
+    {
+        AllowedBits = new HashSet<string>();
+    }
+
+    public string Print()
+    {
+        string bitDisplay = "";
+
+        foreach (string s in _allowedBits)
+        {
+            bitDisplay += "{" + s + "}";
+        }
+
+        return bitDisplay;
+    }
 }

@@ -8,7 +8,7 @@ public struct Module
     [SerializeField] private GameObject prefab;
     [SerializeField] private EOrientations rotationDir;
     [SerializeField] private Vector3Int rotationEuler;
-    [SerializeField] private List<OrientationModule> moduleNeighbours;
+    [SerializeField] private Dictionary<EOrientations, Coefficient> allowedNeighbours;
 
 
     public GameObject Prefab {
@@ -21,9 +21,9 @@ public struct Module
         set => rotationDir = value;
     }
 
-    public List<OrientationModule> ModuleNeighbours {
-        get => moduleNeighbours;
-        set => moduleNeighbours = value;
+    public Dictionary<EOrientations, Coefficient> ModuleNeighbours {
+        get => allowedNeighbours;
+        set => allowedNeighbours = value;
     }
 
     public Vector3Int RotationEuler {
@@ -39,35 +39,46 @@ public struct Module
         this.prefab = prefab;
         this.rotationEuler = rotationEuler;
         this.rotationDir = Orientations.EulerToOrientation(rotationEuler);
-        this.moduleNeighbours = new List<OrientationModule>();
+        this.allowedNeighbours = new Dictionary<EOrientations, Coefficient>();
     }
 
-    public string GenerateBit(TrainingScript training)
+    public string GenerateID(TrainingScript training)
     {
+        if (!Prefab) return "null";
 
+        return training.PrefabToId(this.Prefab).ToString();
+    }
+
+    private string GenerateRotation(TrainingScript training)
+    {
         if (!Prefab) return "null";
 
         ModulePrototype modulePrototype = this.Prefab.GetComponent<ModulePrototype>();
 
-        string bitString = training.PrefabToId(this.Prefab).ToString();
+        string rotString = "";
 
         if (modulePrototype)
         {
             if (modulePrototype.IsSymmetrical)
             {
-                bitString += "S";
+                rotString += "S";
             }
             else
             {
-                bitString += this.RotationDir.ToString()[0];
+                rotString += this.RotationDir.ToString()[0];
             }
         }
         else
         {
-            bitString += this.RotationDir.ToString()[0];
+            rotString += this.RotationDir.ToString()[0];
         }
 
+        return rotString;
+    }
 
-        return bitString;
+    public string GenerateBit(TrainingScript training)
+    {
+        if (!Prefab) return "null";
+        return GenerateID(training) + GenerateRotation(training);
     }
 }

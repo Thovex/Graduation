@@ -73,5 +73,12 @@ namespace Thovex
         {
             return source.OrderBy(x => Guid.NewGuid());
         }
+
+        public static float SetScale(float CurrentValue, float OldMinScale, float OldMaxScale, float NewMinScale, float NewMaxScale)
+        {
+
+            return (((CurrentValue - OldMinScale) * (NewMaxScale - NewMinScale)) / (OldMaxScale - OldMinScale)) + NewMinScale;
+        }
+
     }
 }

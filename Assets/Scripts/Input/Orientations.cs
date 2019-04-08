@@ -97,6 +97,17 @@ public static class Orientations
         return orientation;
     }
 
+    public static EOrientations FlipOrientation(EOrientations input)
+    {
+        if (input == EOrientations.FORWARD) return EOrientations.BACK;
+        if (input == EOrientations.BACK) return EOrientations.FORWARD;
+        if (input == EOrientations.RIGHT) return EOrientations.LEFT;
+        if (input == EOrientations.LEFT) return EOrientations.RIGHT;
+        if (input == EOrientations.UP) return EOrientations.DOWN;
+        if (input == EOrientations.DOWN) return EOrientations.UP;
+        return EOrientations.NULL;
+    }
+
     public static Vector3Int CharToEulerRotation(char character)
     {
         return ToRotationEuler(CharToOrientation(character));

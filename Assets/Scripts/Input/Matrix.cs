@@ -46,6 +46,31 @@ public class Matrix<T>
         Size = new Vector3Int(SizeX, SizeY, SizeZ);
     }
 
+    public bool Valid(Vector3Int coord)
+    {
+        if (typeof(T) == typeof(Module))
+        {
+            Module dataModule = (Module)Convert.ChangeType(GetDataAt(coord), typeof(Module));
+
+            if (dataModule.Prefab) return true;
+
+            return false;
+        }
+        else
+        {
+            if (GetDataAt(coord) == default)
+            {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    public bool Valid(int x, int y, int z)
+    {
+        return Valid(new Vector3Int(x, y, z));
+    }
+
     public T GetDataAt(Vector3Int coordinate)
     {
         try
