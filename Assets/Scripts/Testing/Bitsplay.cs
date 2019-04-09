@@ -25,7 +25,7 @@ public class Bitsplay : MonoBehaviour{
         set{ _training = value; }
     }
 
-    private Matrix<string> _bits;
+    private Matrix3<string> _bits;
 
     private void OnDrawGizmos(){
 

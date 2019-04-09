@@ -11,6 +11,11 @@ public struct Coefficient
         }
     }
 
+    public Coefficient(HashSet<string> allowedBits)
+    {
+        _allowedBits = allowedBits;
+    }
+
     public void Initialize()
     {
         AllowedBits = new HashSet<string>();

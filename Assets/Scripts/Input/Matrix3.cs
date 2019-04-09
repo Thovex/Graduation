@@ -6,27 +6,25 @@ using UnityEngine;
 using static Thovex.Utility;
 
 [Serializable]
-public class Matrix<T>
+public class Matrix3<T>
 {
-    public Matrix() { }
+    public Matrix3() { }
 
-    public Matrix(int matrixSize)
+    public Matrix3(int matrixSize)
     {
         MatrixData = new T[matrixSize, matrixSize, matrixSize];
     }
 
-    public Matrix(Vector3Int matrixSize)
+    public Matrix3(Vector3Int matrixSize)
     {
         MatrixData = new T[matrixSize.x, matrixSize.y, matrixSize.z];
     }
 
     private T[,,] _matrixData;
 
-    public T[,,] MatrixData
-    {
+    public T[,,] MatrixData {
         get => _matrixData;
-        set
-        {
+        set {
             _matrixData = value;
             SetSize();
         }
@@ -88,6 +86,16 @@ public class Matrix<T>
         return GetDataAt(new Vector3Int(x, y, z));
     }
 
+    public void SetDataAt(Vector3Int coordinate, T data)
+    {
+        MatrixData[coordinate.x, coordinate.y, coordinate.z] = data;
+    }
+
+    public void SetDataAt(int x, int y, int z, T data)
+    {
+        MatrixData[x, y, z] = data;
+    }
+
     public bool Contains(T check, out Vector3Int coord)
     {
         bool contains = false;
@@ -135,7 +143,7 @@ public class Matrix<T>
         Clear();
     }
 
-    public virtual void RotatePatternCounterClockwise(int times)
+    public virtual void RotateCounterClockwise(int times)
     {
         for (int i = 0; i < times; i++)
         {
@@ -176,6 +184,7 @@ public class Matrix<T>
         }
     }
 
+
     public bool ValidCoordinate(Vector3Int coords)
     {
         if (coords.x < 0) return false;
@@ -196,7 +205,7 @@ public class Matrix<T>
     }
 
 
-    public virtual bool IsEqualToMatrix(Matrix<T> otherMatrix)
+    public virtual bool IsEqualToMatrix(Matrix3<T> otherMatrix)
     {
         throw new NotImplementedException();
     }

@@ -36,7 +36,7 @@ namespace Thovex
             }
         }
 
-        public static void For3<T>(Matrix<T> data, Action<int, int, int> iterator)
+        public static void For3<T>(Matrix3<T> data, Action<int, int, int> iterator)
         {
             if (data != null)
             {
@@ -45,7 +45,7 @@ namespace Thovex
             }
         }
 
-        public static void For3<T>(Matrix<T> data, int iteratorJumpSize, Action<int, int, int> iterator)
+        public static void For3<T>(Matrix3<T> data, int iteratorJumpSize, Action<int, int, int> iterator)
         {
             if (data != null)
             {

@@ -18,7 +18,7 @@ public struct Module
 
     public EOrientations RotationDir {
         get => rotationDir;
-        set => rotationDir = value;
+        private set => rotationDir = value;
     }
 
     public Dictionary<EOrientations, Coefficient> ModuleNeighbours {
@@ -49,7 +49,7 @@ public struct Module
         return training.PrefabToId(this.Prefab).ToString();
     }
 
-    private string GenerateRotation(TrainingScript training)
+    public string GenerateRotation(TrainingScript training)
     {
         if (!Prefab) return "null";
 

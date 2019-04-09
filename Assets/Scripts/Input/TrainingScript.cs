@@ -33,9 +33,9 @@ public class TrainingScript : SerializedMonoBehaviour
 
     [SerializeField] public Dictionary<int, GameObject> PrefabAndId { get; set; } = new Dictionary<int, GameObject>();
     [SerializeField] public HashSet<Pattern> Patterns { get; set; } = new HashSet<Pattern>();
-    [SerializeField] private Dictionary<string, Dictionary<EOrientations, Coefficient>> AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
+    [SerializeField] public Dictionary<string, Dictionary<EOrientations, Coefficient>> AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
 
-    public Matrix<Module> ModuleMatrix { get; set; }
+    public Matrix3<Module> ModuleMatrix { get; set; }
 
     public int N { get; set; } = 2;
     public int PrefabToId(GameObject prefab)
@@ -59,6 +59,7 @@ public class TrainingScript : SerializedMonoBehaviour
     public void Train()
     {
         InitializeData();
+
         DefinePatterns();
         DisplayPatterns();
 
@@ -70,7 +71,7 @@ public class TrainingScript : SerializedMonoBehaviour
         _input = GetComponent<InputGriddify>();
 
         // Initialize matrix of InputSize.
-        ModuleMatrix = new Matrix<Module>(_input.inputSize);
+        ModuleMatrix = new Matrix3<Module>(_input.inputSize);
         AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
         Patterns = new HashSet<Pattern>();
 
@@ -187,7 +188,9 @@ public class TrainingScript : SerializedMonoBehaviour
 
         for (int i = 0; i < 4; i++)
         {
-            For3(ModuleMatrix, (x, y, z) =>
+            Pattern ModulePattern = new Pattern(ModuleMatrix.MatrixData);
+
+            For3(ModulePattern, (x, y, z) =>
             {
                 // Generate the module's bit.
                 string bit = ModuleMatrix.GetDataAt(x, y, z).GenerateBit(this);
@@ -214,9 +217,9 @@ public class TrainingScript : SerializedMonoBehaviour
                 }
             });
 
-            // Rotate input matrix.
-            ModuleMatrix.RotatePatternCounterClockwise(1);
+            ModulePattern.RotateCounterClockwise(1);
         }
+
         // UpdateInputComponents();
 
         CombineSimilarData(similarModulesByBit);
@@ -228,7 +231,6 @@ public class TrainingScript : SerializedMonoBehaviour
         // Loop through dictionary.
         for (int i = 0; i < similarModulesByBit.Count; i++)
         {
- 
             // Create our List of List's.
             var ListList = similarModulesByBit.Values.ToList();
 
@@ -280,7 +282,6 @@ public class TrainingScript : SerializedMonoBehaviour
                             foreach (string bit in neighbourPair.Value.AllowedBits)
                             {
                                 // We don't want a "null" bit to enter this list (outside the training area)
-
                                 if (bit != "null")
                                 {
                                     // Append it's new bits to the allowed bits.
@@ -289,7 +290,7 @@ public class TrainingScript : SerializedMonoBehaviour
                             }
                             // Update dictionary's value with new allowed bits.
                             similarDict[neighbourPair.Key] = newCoefficient;
-                        }                       
+                        }
                     }
                 }
 
@@ -341,10 +342,47 @@ public class TrainingScript : SerializedMonoBehaviour
         }
     }
 
+    public Module CreateModuleFromBit(string bit)
+    {
+        // Define new Module
+        Module newModule = new Module();
+
+        // Extract bit data using the 1st char, create int by using an empty char min operator.
+        int id = bit[0] - '0';
+
+        // Get rotation from bit by 2nd char. 
+        Vector3Int rot = Orientations.CharToEulerRotation(bit[1]);
+
+        // Get prefab
+        PrefabAndId.TryGetValue(id, out GameObject prefab);
+        newModule.Prefab = prefab;
+
+        // The rotationDir will automatically set itself after the Euler is set.
+        newModule.RotationEuler = rot;
+
+        // Get it's neighbour data
+        AllowedData.TryGetValue(bit, out Dictionary<EOrientations, Coefficient> neighbours);
+        newModule.ModuleNeighbours = neighbours;
+
+        return newModule;
+    }
+
+    public GameObject SpawnModule(Module module, Vector3 localPosition, Transform parent)
+    {
+        if (module.Prefab != null)
+        {
+            GameObject newModule = Instantiate(module.Prefab, Vector3.zero, Quaternion.Euler(module.RotationEuler), parent);
+            newModule.transform.localPosition = localPosition;
+            return newModule;
+        }
+
+        return null;
+    }
 
     private void DefinePatterns()
     {
         N = _input.NValue;
+
         if (N > 0)
         {
             For3(_input.inputSize, N, (x, y, z) =>
@@ -363,7 +401,7 @@ public class TrainingScript : SerializedMonoBehaviour
                 });
                 if (!bIsNull)
                 {
-                    Pattern newPattern = new Pattern(N, newTrainingData);
+                    Pattern newPattern = new Pattern(newTrainingData);
                     bool isEqual = false;
                     foreach (Pattern pattern in Patterns)
                     {
@@ -377,8 +415,8 @@ public class TrainingScript : SerializedMonoBehaviour
                         Patterns.Add(newPattern);
                         for (int i = 1; i < 4; i++)
                         {
-                            Pattern rotatedPattern = new Pattern(N, newTrainingData);
-                            rotatedPattern.RotatePatternCounterClockwise(i);
+                            Pattern rotatedPattern = new Pattern(newTrainingData);
+                            rotatedPattern.RotateCounterClockwise(i);
                             Patterns.Add(rotatedPattern);
                         }
                     }

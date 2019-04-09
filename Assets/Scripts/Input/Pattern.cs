@@ -18,26 +18,21 @@ public struct ViewDict
 }
 
 [Serializable]
-public class Pattern : Matrix<Module>
+public class Pattern : Matrix3<Module>
 {
     [SerializeField] private readonly List<ViewDict> _patternDictionary = new List<ViewDict>();
 
-    private int _patternSizeN;
-
-    public Pattern(int patternSizeN)
+    public Pattern(int patternSize)
     {
-        _patternSizeN = patternSizeN;
-        MatrixData = new Module[_patternSizeN, _patternSizeN, _patternSizeN];
+        MatrixData = new Module[patternSize, patternSize, patternSize];
 
         For3(this,
             (x, y, z) => { _patternDictionary.Add(new ViewDict(new Vector3Int(x, y, z), MatrixData[x, y, z])); });
     }
 
-    public Pattern(int patternSizeN, Module[,,] patternData)
+    public Pattern(Module[,,] patternData)
     {
-        _patternSizeN = patternSizeN;
         MatrixData = patternData;
-
 
         For3(this, (x, y, z) =>
         {
@@ -45,19 +40,22 @@ public class Pattern : Matrix<Module>
         });
     }
 
-    public override void RotatePatternCounterClockwise(int times)
+    public override void RotateCounterClockwise(int times)
     {
-        base.RotatePatternCounterClockwise(times);
+        base.RotateCounterClockwise(times);
 
         for (int i = 0; i < times; i++)
         {
-            For3(this, (x, y, z) => { MatrixData[x, y, z].RotationEuler += new Vector3Int(0, -90, 0); });
+            For3(this, (x, y, z) =>
+            {
+                MatrixData[x, y, z].RotationEuler += new Vector3Int(0, -90, 0);
+            });
         }
     }
 
-    public bool CompareBitPatterns(TrainingScript training, Matrix<string> bitMatrix)
+    public bool CompareBitPatterns(TrainingScript training, Matrix3<string> bitMatrix)
     {
-        Matrix<string> patternAsBitMatrix = GenerateBits(training);
+        Matrix3<string> patternAsBitMatrix = GenerateBits(training);
 
         bool bEqual = true;
 
@@ -65,9 +63,9 @@ public class Pattern : Matrix<Module>
         {
             string bit = bitMatrix.GetDataAt(x, y, z);
 
-            if ( bit != "null")
+            if (bit != "null")
             {
-                if (bit != patternAsBitMatrix.GetDataAt(x,y,z))
+                if (bit != patternAsBitMatrix.GetDataAt(x, y, z))
                 {
                     bEqual = false;
                 }
@@ -104,7 +102,7 @@ public class Pattern : Matrix<Module>
         return bIsEqual;
     }
 
-    public override bool IsEqualToMatrix(Matrix<Module> otherMatrix)
+    public override bool IsEqualToMatrix(Matrix3<Module> otherMatrix)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -135,9 +133,9 @@ public class Pattern : Matrix<Module>
         return bIsEqual;
     }
 
-    public Matrix<string> GenerateBits(TrainingScript training)
+    public Matrix3<string> GenerateBits(TrainingScript training)
     {
-        Matrix<string> bits = new Matrix<string>(new Vector3Int(SizeX, SizeY, SizeZ));
+        Matrix3<string> bits = new Matrix3<string>(new Vector3Int(SizeX, SizeY, SizeZ));
 
         For3(bits, (x, y, z) => { bits.MatrixData[x, y, z] = MatrixData[x, y, z].GenerateBit(training); });
 

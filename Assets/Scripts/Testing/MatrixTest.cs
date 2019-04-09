@@ -35,17 +35,17 @@ public class MatrixTestInspector : OdinEditor
 
 public class MatrixTest : SerializedMonoBehaviour
 {
-    private Matrix<Color> vectorMatrix = new Matrix<Color>(new Vector3Int(0, 0, 0));
+    private Matrix3<Color> vectorMatrix = new Matrix3<Color>(new Vector3Int(0, 0, 0));
     [SerializeField] private int N = 2;
 
     public void CleanMatrix()
     {
-        vectorMatrix = new Matrix<Color>(new Vector3Int(0, 0, 0));
+        vectorMatrix = new Matrix3<Color>(new Vector3Int(0, 0, 0));
     }
     
     public void FillMatrix()
     {
-        vectorMatrix = new Matrix<Color>(new Vector3Int(N, N, N));
+        vectorMatrix = new Matrix3<Color>(new Vector3Int(N, N, N));
 
         For3(vectorMatrix, (x, y, z) =>
         {
@@ -69,7 +69,7 @@ public class MatrixTest : SerializedMonoBehaviour
         } 
         else 
         {
-            vectorMatrix.RotatePatternCounterClockwise(1);
+            vectorMatrix.RotateCounterClockwise(1);
         }
     }
 
