@@ -35,7 +35,7 @@ public class TrainingScript : SerializedMonoBehaviour
     [SerializeField] public HashSet<Pattern> Patterns { get; set; } = new HashSet<Pattern>();
     [SerializeField] public Dictionary<string, Dictionary<EOrientations, Coefficient>> AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
 
-    public Matrix3<Module> ModuleMatrix { get; set; }
+    public Pattern ModuleMatrix { get; set; }
 
     public int N { get; set; } = 2;
     public int PrefabToId(GameObject prefab)
@@ -60,6 +60,17 @@ public class TrainingScript : SerializedMonoBehaviour
     {
         InitializeData();
 
+        AssignCoordinateToChildren();
+
+        for (int i = 0; i < 4; i++)
+        {
+            if (!editMode)
+            {
+                CalculateModuleNeighbours();
+                ModuleMatrix.RotateCounterClockwise(1);
+            }
+        }
+
         DefinePatterns();
         DisplayPatterns();
 
@@ -71,7 +82,7 @@ public class TrainingScript : SerializedMonoBehaviour
         _input = GetComponent<InputGriddify>();
 
         // Initialize matrix of InputSize.
-        ModuleMatrix = new Matrix3<Module>(_input.inputSize);
+        ModuleMatrix = new Pattern(_input.inputSize);
         AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
         Patterns = new HashSet<Pattern>();
 
@@ -90,7 +101,6 @@ public class TrainingScript : SerializedMonoBehaviour
             PrefabAndId.Add(i, prefabs[i]);
         }
 
-        AssignCoordinateToChildren();
     }
     private void AssignCoordinateToChildren()
     {
@@ -120,10 +130,7 @@ public class TrainingScript : SerializedMonoBehaviour
             }
         });
 
-        if (!editMode)
-        {
-            CalculateModuleNeighbours();
-        }
+
     }
 
     private void CalculateModuleNeighbours()
@@ -186,39 +193,33 @@ public class TrainingScript : SerializedMonoBehaviour
         // We want to do this function 4 times in total. Because we will rotate our data
         // to get all results (similar to rotating the patterns).
 
-        for (int i = 0; i < 4; i++)
+
+        For3(ModuleMatrix, (x, y, z) =>
         {
-            Pattern ModulePattern = new Pattern(ModuleMatrix.MatrixData);
+            // Generate the module's bit.
+            string bit = ModuleMatrix.GetDataAt(x, y, z).GenerateBit(this);
 
-            For3(ModulePattern, (x, y, z) =>
+            // Check in the dictionary if this specific bit is already added.
+            if (similarModulesByBit.ContainsKey(bit))
             {
-                // Generate the module's bit.
-                string bit = ModuleMatrix.GetDataAt(x, y, z).GenerateBit(this);
+                // Get current lists thats available if it already was in dictionary.
+                similarModulesByBit.TryGetValue(bit, out List<Module> similarModules);
 
-                // Check in the dictionary if this specific bit is already added.
-                if (similarModulesByBit.ContainsKey(bit))
-                {
-                    // Get current lists thats available if it already was in dictionary.
-                    similarModulesByBit.TryGetValue(bit, out List<Module> similarModules);
+                // Add this module to similar ones.
+                similarModules.Add(ModuleMatrix.GetDataAt(x, y, z));
+                similarModulesByBit[bit] = similarModules;
+            }
+            else
+            {
+                // Looks like this bit is not in the dictionary yet so we will create a new
+                // list for this specific bit.
+                List<Module> newSimilarModules = new List<Module>();
 
-                    // Add this module to similar ones.
-                    similarModules.Add(ModuleMatrix.GetDataAt(x, y, z));
-                    similarModulesByBit[bit] = similarModules;
-                }
-                else
-                {
-                    // Looks like this bit is not in the dictionary yet so we will create a new
-                    // list for this specific bit.
-                    List<Module> newSimilarModules = new List<Module>();
-
-                    // Append itself to the list and add to dictionary.
-                    newSimilarModules.Add(ModuleMatrix.GetDataAt(x, y, z));
-                    similarModulesByBit.Add(bit, newSimilarModules);
-                }
-            });
-
-            ModulePattern.RotateCounterClockwise(1);
-        }
+                // Append itself to the list and add to dictionary.
+                newSimilarModules.Add(ModuleMatrix.GetDataAt(x, y, z));
+                similarModulesByBit.Add(bit, newSimilarModules);
+            }
+        });
 
         // UpdateInputComponents();
 
@@ -311,6 +312,13 @@ public class TrainingScript : SerializedMonoBehaviour
             }
         }
 
+        AugmentDataWithRotations();
+
+    }
+
+    private void AugmentDataWithRotations()
+    {
+ 
         UpdateInputComponents();
     }
 

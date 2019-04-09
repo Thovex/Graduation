@@ -91,6 +91,16 @@ public static class Orientations
         }
     };
 
+    public static EOrientations RotateCounterClockwise(EOrientations orientation)
+    {
+        if (orientation == EOrientations.FORWARD) return EOrientations.RIGHT;
+        if (orientation == EOrientations.RIGHT) return EOrientations.BACK;
+        if (orientation == EOrientations.BACK) return EOrientations.LEFT;
+        if (orientation == EOrientations.LEFT) return EOrientations.FORWARD;
+
+        return EOrientations.NULL;
+    }
+
     public static EOrientations CharToOrientation(char character)
     {
         OrientationByChar.TryGetValue(character, out EOrientations orientation);
@@ -158,6 +168,7 @@ public static class Orientations
     public static EOrientations EulerToOrientation(Vector3Int rotationVector)
     {
         int rotationValue = rotationVector.y;
+        rotationValue %= 360;
 
         if (rotationValue % 360 == 0)
         {
@@ -176,11 +187,13 @@ public static class Orientations
                 return EOrientations.LEFT;
             }
 
-            if (rotationValue == 90 | rotationValue == -270)
+            if (rotationValue == 90 || rotationValue == -270)
             {
                 return EOrientations.RIGHT;
             }
         }
+
+        Debug.Log(rotationValue);
 
         return EOrientations.NULL;
     }

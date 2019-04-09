@@ -26,8 +26,20 @@ public class Pattern : Matrix3<Module>
     {
         MatrixData = new Module[patternSize, patternSize, patternSize];
 
-        For3(this,
-            (x, y, z) => { _patternDictionary.Add(new ViewDict(new Vector3Int(x, y, z), MatrixData[x, y, z])); });
+        For3(this, (x, y, z) =>
+        {
+            _patternDictionary.Add(new ViewDict(new Vector3Int(x, y, z), MatrixData[x, y, z]));
+        });
+    }
+
+    public Pattern(Vector3Int patternSize)
+    {
+        MatrixData = new Module[patternSize.x, patternSize.y, patternSize.z];
+
+        For3(this, (x, y, z) =>
+        {
+            _patternDictionary.Add(new ViewDict(new Vector3Int(x, y, z), MatrixData[x, y, z]));
+        });
     }
 
     public Pattern(Module[,,] patternData)
@@ -73,7 +85,6 @@ public class Pattern : Matrix3<Module>
         });
 
         return bEqual;
-
     }
 
     public bool HasEqualMatrixValue(Vector3Int coord, Module comparison, bool skipCheck = false)
