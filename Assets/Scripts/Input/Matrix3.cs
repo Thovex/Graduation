@@ -219,10 +219,18 @@ public class Matrix3<T>
 
             if (dataVector3Int == equalVector3Int) return true;
         }
+
+        if (typeof(T) == typeof(bool))
+        {
+            bool databool = (bool)Convert.ChangeType(data, typeof(bool));
+            bool equabool = (bool)Convert.ChangeType(equal, typeof(bool));
+
+            if (databool == equabool) return true;
+        }
+
         else
         {
-            Debug.LogError("Cannot check Equals T == Your type because it is not implemented specifically!");
-            Debug.LogError(typeof(T).ToString());
+            Debug.LogError("Cannot check Equals T == " + typeof(T).ToString() + " because it is not implemented specifically!");
             return false;
         }
 

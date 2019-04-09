@@ -126,6 +126,12 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                 }
             }
         }
+
+        //while (!IsFullyCollapsed())
+        //{
+            //Vector3Int minEntropyCoord = MinEntropyCoords();
+            //Collapse(minEntropyCoord, coefficients.GetDataAt(minEntropyCoord).AllowedBits.PickRandom());
+       // }
     }
 
     private void Propagate(Vector3Int coord)
@@ -151,8 +157,13 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         coefficient.AllowedBits = training.RetrieveAllowedBits(lookingFor);
         coefficients.SetDataAt(coord, coefficient);
 
+
     }
 
+    private bool IsFullyCollapsed()
+    {
+        return !wave.Contains(true);
+    }
 
     private Vector3Int MinEntropyCoords()
     {
@@ -217,7 +228,6 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                 Gizmos.color = new Color(1, 0, 1, 0.2F);
                 Gizmos.DrawSphere(transform.position + coord, 0.25F);
             }
-
         });
     }
 }
