@@ -226,7 +226,8 @@ public class TrainingScript : SerializedMonoBehaviour
             if (!Weights.ContainsKey(similarModulePair.Key))
             {
                 Weights.Add(similarModulePair.Key, similarModulePair.Value.Count);
-            } else
+            }
+            else
             {
                 Weights.TryGetValue(similarModulePair.Key, out int currentCount);
                 currentCount += similarModulePair.Value.Count;
@@ -464,6 +465,12 @@ public class TrainingScript : SerializedMonoBehaviour
             });
         }
     }
+
+    public bool IsDivisible(int x, int n)
+    {
+        return (x % n) == 0;
+    }
+
     private void DisplayPatterns()
     {
         if (displayPatternObject)
@@ -478,11 +485,16 @@ public class TrainingScript : SerializedMonoBehaviour
             foreach (Pattern pattern in Patterns)
             {
                 GameObject newPattern = new GameObject("Pattern");
-                Bitsplay newBitsplay = newPattern.AddComponent<Bitsplay>();
+                //Bitsplay newBitsplay = newPattern.AddComponent<Bitsplay>();
 
-                newBitsplay.Training = this;
-                newBitsplay.Pattern = pattern;
-                newPattern.transform.localPosition = Vector3.zero + (index * (_input.NValue + _input.NValue)) * Vector3.left;
+                //newBitsplay.Training = this;
+                //newBitsplay.Pattern = pattern;
+
+                int val = index % 4;
+
+                newPattern.transform.localPosition = (index * (_input.NValue + _input.NValue)) * (Vector3.left / (4 - 1)) / N + ((Vector3.up * (N + 1)) * val) + val * (Vector3.right / (4 - 1)) * N;
+
+
                 newPattern.transform.parent = displayPatternObject.transform;
 
                 For3(pattern, (x, y, z) =>
