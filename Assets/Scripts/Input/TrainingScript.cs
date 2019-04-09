@@ -28,11 +28,13 @@ public class TrainingScript : SerializedMonoBehaviour
     [SerializeField] private GameObject displayPatternObject;
     private InputGriddify _input;
 
+    [Header("EDIT MODE")]
+    [SerializeField] private bool editMode = false;
+
     [SerializeField] public Dictionary<int, GameObject> PrefabAndId { get; set; } = new Dictionary<int, GameObject>();
     [SerializeField] public HashSet<Pattern> Patterns { get; set; } = new HashSet<Pattern>();
     [SerializeField] private Dictionary<string, Dictionary<EOrientations, Coefficient>> AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
 
-    [SerializeField] private Dictionary<Vector3Int, Module> TESTONLY_ModuleMatrix = new Dictionary<Vector3Int, Module>();
     public Matrix<Module> ModuleMatrix { get; set; }
 
     public int N { get; set; } = 2;
@@ -62,23 +64,6 @@ public class TrainingScript : SerializedMonoBehaviour
 
     }
 
-    private void UpdateInputComponents()
-    {
-        // Loop through all the children
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            Transform childTransform = transform.GetChild(i);
-
-            // Create int XYZ coord based on child value in input grid.
-            Vector3Int coord = V3ToV3I(childTransform.localPosition);
-
-            ModulePrototype modulePrototype = childTransform.GetComponent<ModulePrototype>();
-            modulePrototype.CoefficientDict = ModuleMatrix.MatrixData[coord.x, coord.y, coord.z].ModuleNeighbours;
-
-            modulePrototype.CalculateDisplay();
-        }
-    }
-
     // Clear old data and initialize new data.
     private void InitializeData()
     {
@@ -88,8 +73,6 @@ public class TrainingScript : SerializedMonoBehaviour
         ModuleMatrix = new Matrix<Module>(_input.inputSize);
         AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
         Patterns = new HashSet<Pattern>();
-
-        TESTONLY_ModuleMatrix = new Dictionary<Vector3Int, Module>();
 
         GetResources();
     }
@@ -136,7 +119,10 @@ public class TrainingScript : SerializedMonoBehaviour
             }
         });
 
-        CalculateModuleNeighbours();
+        if (!editMode)
+        {
+            CalculateModuleNeighbours();
+        }
     }
 
     private void CalculateModuleNeighbours()
@@ -182,12 +168,6 @@ public class TrainingScript : SerializedMonoBehaviour
                     designatedModule.ModuleNeighbours = designatedModuleNeighbours;
 
                 }
-            }
-
-            // TEST ONLY - purposes.
-            if (ModuleMatrix.GetDataAt(currentMatrixCoordinate).Prefab != PrefabAndId[0])
-            {
-                TESTONLY_ModuleMatrix.Add(currentMatrixCoordinate, ModuleMatrix.GetDataAt(currentMatrixCoordinate));
             }
         });
 
@@ -238,19 +218,129 @@ public class TrainingScript : SerializedMonoBehaviour
             ModuleMatrix.RotatePatternCounterClockwise(1);
         }
         // UpdateInputComponents();
+
+        CombineSimilarData(similarModulesByBit);
     }
 
     private void CombineSimilarData(Dictionary<string, List<Module>> similarModulesByBit)
     {
-        Dictionary<string, Dictionary<EOrientations, Coefficient>> newCombinedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
-
-        foreach (var similarModulesPair in similarModulesByBit)
+        // Take our dictionary where string = bit and list<module> is each list of similar modules to this bit.
+        // Loop through dictionary.
+        for (int i = 0; i < similarModulesByBit.Count; i++)
         {
-            // TODO combine
-           // similarModulesPair.Value;
+ 
+            // Create our List of List's.
+            var ListList = similarModulesByBit.Values.ToList();
+
+            // Get it's List of List<Module> and convert it's values to a List so we'll end up with just a List
+            // of Modules.
+            for (int j = 0; j < ListList.Count; j++)
+            {
+                // Create a new dictionary for each bit to append similar values to.
+                Dictionary<EOrientations, Coefficient> similarDict = new Dictionary<EOrientations, Coefficient>();
+
+                // Get list of Modules per Bit
+                var List = ListList[j].ToList();
+
+                // Loop through this list
+                for (int k = 0; k < List.Count; k++)
+                {
+                    // Get it's module's module neighours. We want to append this to our similarDict.
+                    foreach (var neighbourPair in List[k].ModuleNeighbours)
+                    {
+                        // Loop through the different orientations with coefficients.
+                        if (similarDict.TryGetValue(neighbourPair.Key, out Coefficient currentValue))
+                        {
+                            // Initialize coefficient if it's not initialized yet (odd problem with struct?)
+                            if (currentValue.AllowedBits == null)
+                            {
+                                currentValue.Initialize();
+                            }
+
+                            // Check which bits were allowed in this module from the training
+                            foreach (string bit in neighbourPair.Value.AllowedBits)
+                            {
+                                // We don't want a "null" bit to enter this list (outside the training area)
+                                if (bit != "null")
+                                {
+                                    // Append it's new bits to the allowed bits.
+                                    currentValue.AllowedBits.Add(bit);
+                                }
+                            }
+                            // Update dictionary's value with new allowed bits.
+                            similarDict[neighbourPair.Key] = currentValue;
+                        }
+                        else
+                        {
+                            // Looks like this coefficient didn't exist yet. We make a new one.
+                            Coefficient newCoefficient = new Coefficient();
+                            newCoefficient.Initialize();
+
+                            // Check which bits were allowed in this module from the training
+                            foreach (string bit in neighbourPair.Value.AllowedBits)
+                            {
+                                // We don't want a "null" bit to enter this list (outside the training area)
+
+                                if (bit != "null")
+                                {
+                                    // Append it's new bits to the allowed bits.
+                                    newCoefficient.AllowedBits.Add(bit);
+                                }
+                            }
+                            // Update dictionary's value with new allowed bits.
+                            similarDict[neighbourPair.Key] = newCoefficient;
+                        }                       
+                    }
+                }
+
+                // Now we've finished that we want to make sure we add all finished data to the allowed data dictionary.
+                // We will do this by looping through the modules so we have all bit values. This has no "null" values.
+                for (int k = 0; k < List.Count; k++)
+                {
+                    // Create it's bit
+                    string bit = List[k].GenerateBit(this);
+
+                    // Let's see if it's already in the data.
+                    if (!AllowedData.ContainsKey(bit))
+                    {
+                        // It's not, so we add it.
+                        AllowedData.Add(bit, similarDict);
+                    }
+                }
+            }
         }
 
+        UpdateInputComponents();
     }
+
+    private void UpdateInputComponents()
+    {
+        // Loop through all the children
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Transform childTransform = transform.GetChild(i);
+
+            // Create int XYZ coord based on child value in input grid.
+            Vector3Int coord = V3ToV3I(childTransform.localPosition);
+
+            // Get the module prototype (to display to the developer what each module is)
+            ModulePrototype modulePrototype = childTransform.GetComponent<ModulePrototype>();
+
+            // Set it's bit.
+            modulePrototype.bit = ModuleMatrix.MatrixData[coord.x, coord.y, coord.z].GenerateBit(this);
+
+            // See if we can extract data from the new Allowed Data Dictionary.
+            AllowedData.TryGetValue(modulePrototype.bit, out Dictionary<EOrientations, Coefficient> allowedDictionary);
+
+            // Set our data to the new data.
+            ModuleMatrix.MatrixData[coord.x, coord.y, coord.z].ModuleNeighbours = allowedDictionary;
+            modulePrototype.CoefficientDict = ModuleMatrix.MatrixData[coord.x, coord.y, coord.z].ModuleNeighbours;
+
+            // Display data to developer.
+            modulePrototype.CalculateDisplay();
+        }
+    }
+
 
     private void DefinePatterns()
     {

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public struct Coefficient
 {
-    private HashSet<string> _allowedBits;
+    [SerializeField] private HashSet<string> _allowedBits;
     public HashSet<string> AllowedBits { get => _allowedBits;
         set {
             _allowedBits = value;

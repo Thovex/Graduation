@@ -6,9 +6,10 @@ using UnityEngine;
 [ExecuteAlways]
 public class ModulePrototype : SerializedMonoBehaviour {
     [SerializeField] private bool _isSymmetrical = false;
-    [SerializeField] private Dictionary<EOrientations, Coefficient> _coefficientDict = new Dictionary<EOrientations, Coefficient>();
+    private Dictionary<EOrientations, Coefficient> _coefficientDict = new Dictionary<EOrientations, Coefficient>();
     [SerializeField] private Dictionary<EOrientations, string> _coefficientsDisplay = new Dictionary<EOrientations, string>();
 
+    public string bit;
     public Dictionary<EOrientations, Coefficient> CoefficientDict { get => _coefficientDict; set => _coefficientDict = value; }
     public bool IsSymmetrical { get => _isSymmetrical; set => _isSymmetrical = value; }
 
