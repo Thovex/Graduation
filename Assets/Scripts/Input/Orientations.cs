@@ -168,6 +168,8 @@ public static class Orientations
     public static EOrientations EulerToOrientation(Vector3Int rotationVector)
     {
         int rotationValue = rotationVector.y;
+
+        // Get rid of giant rotated 360 spinning wheel bro's.
         rotationValue %= 360;
 
         if (rotationValue % 360 == 0)

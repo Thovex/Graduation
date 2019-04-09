@@ -34,6 +34,7 @@ public class TrainingScript : SerializedMonoBehaviour
     [SerializeField] public Dictionary<int, GameObject> PrefabAndId { get; set; } = new Dictionary<int, GameObject>();
     [SerializeField] public HashSet<Pattern> Patterns { get; set; } = new HashSet<Pattern>();
     [SerializeField] public Dictionary<string, Dictionary<EOrientations, Coefficient>> AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
+    [SerializeField] public Dictionary<string, int> Weights = new Dictionary<string, int>();
 
     public Pattern ModuleMatrix { get; set; }
 
@@ -85,6 +86,7 @@ public class TrainingScript : SerializedMonoBehaviour
         ModuleMatrix = new Pattern(_input.inputSize);
         AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
         Patterns = new HashSet<Pattern>();
+        Weights = new Dictionary<string, int>();
 
         GetResources();
     }
@@ -129,8 +131,6 @@ public class TrainingScript : SerializedMonoBehaviour
                 ModuleMatrix.MatrixData[x, y, z] = new Module(emptyPrefab, Vector3Int.zero);
             }
         });
-
-
     }
 
     private void CalculateModuleNeighbours()
@@ -221,7 +221,18 @@ public class TrainingScript : SerializedMonoBehaviour
             }
         });
 
-        // UpdateInputComponents();
+        foreach (var similarModulePair in similarModulesByBit)
+        {
+            if (!Weights.ContainsKey(similarModulePair.Key))
+            {
+                Weights.Add(similarModulePair.Key, similarModulePair.Value.Count);
+            } else
+            {
+                Weights.TryGetValue(similarModulePair.Key, out int currentCount);
+                currentCount += similarModulePair.Value.Count;
+                Weights[similarModulePair.Key] = currentCount;
+            }
+        }
 
         CombineSimilarData(similarModulesByBit);
     }
@@ -311,16 +322,9 @@ public class TrainingScript : SerializedMonoBehaviour
                 }
             }
         }
-
-        AugmentDataWithRotations();
-
-    }
-
-    private void AugmentDataWithRotations()
-    {
- 
         UpdateInputComponents();
     }
+
 
     private void UpdateInputComponents()
     {
@@ -348,6 +352,34 @@ public class TrainingScript : SerializedMonoBehaviour
             // Display data to developer.
             modulePrototype.CalculateDisplay();
         }
+    }
+
+    public HashSet<string> RetrieveAllowedBits(List<Tuple<string, EOrientations>> lookingFor)
+    {
+        HashSet<string> allowedBits = new HashSet<string>();
+
+        foreach (var lookingForItem in lookingFor)
+        {
+            EOrientations orientationLookingFor = lookingForItem.Item2;
+
+            foreach (var allowedData in AllowedData)
+            {
+                var data = allowedData.Value.ToList();
+
+                foreach (var dataElem in data)
+                {
+                    if (dataElem.Key == orientationLookingFor)
+                    {
+                        if (dataElem.Value.AllowedBits.Contains(lookingForItem.Item1))
+                        {
+                            allowedBits.Add(allowedData.Key);
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+        return allowedBits;
     }
 
     public Module CreateModuleFromBit(string bit)

@@ -188,13 +188,13 @@ public class Matrix3<T>
     public bool ValidCoordinate(Vector3Int coords)
     {
         if (coords.x < 0) return false;
-        if (coords.x > SizeX) return false;
+        if (coords.x >= SizeX) return false;
 
         if (coords.y < 0) return false;
-        if (coords.y > SizeY) return false;
+        if (coords.y >= SizeY) return false;
 
         if (coords.z < 0) return false;
-        if (coords.z > SizeZ) return false;
+        if (coords.z >= SizeZ) return false;
 
         return true;
     }
