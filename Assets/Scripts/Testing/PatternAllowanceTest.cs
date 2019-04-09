@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
-using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 using static Thovex.Utility;
 
-[CustomEditor(typeof(PatternAllowanceTest))]
-public class PatternAllowanceTestInspector : OdinEditor
-{
 
-}
 
 [ExecuteAlways]
 public class PatternAllowanceTest : SerializedMonoBehaviour
@@ -25,24 +18,30 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     [SerializeField] private Vector3Int patternSpawnCoordinate = Vector3Int.zero;
 
     [SerializeField] private Transform objects;
+    [SerializeField] private Transform displayTarget;
 
-    private Matrix3<Module> moduleMatrix;
+    [SerializeField] private List<Pattern> allowedPatterns = new List<Pattern>();
+
+
+    private Pattern moduleMatrix;
     private Matrix3<bool> wave;
     private Matrix3<Coefficient> coefficients;
 
+    private Matrix3<Vector3Int> userCoordinateMatrix = new Matrix3<Vector3Int>();
+
     private int mostCoefficients = 0;
-    private object weights;
 
     private void Update()
     {
+        Debug.Log("hey");
         if (training)
         {
             Initialize();
         }
     }
-    private void Initialize()
+    public void Initialize()
     {
-        moduleMatrix = new Matrix3<Module>(outputSize);
+        moduleMatrix = new Pattern(outputSize);
         wave = new Matrix3<bool>(outputSize);
         coefficients = new Matrix3<Coefficient>(outputSize);
 
@@ -50,6 +49,8 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         {
             DestroyImmediate(objects.GetChild(0).gameObject);
         }
+
+        InitSelectionMatrix();
 
         HashSet<string> allowedData = ReturnAllowedData();
 
@@ -60,6 +61,18 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         });
 
         InitializeInitialPattern();
+    }
+
+
+    public void InitSelectionMatrix()
+    {
+        Vector3Int nSize = new Vector3Int(training.N, training.N, training.N);
+        userCoordinateMatrix = new Matrix3<Vector3Int>(nSize);
+
+        For3(userCoordinateMatrix, (x, y, z) =>
+        {
+            userCoordinateMatrix.MatrixData[x, y, z] = new Vector3Int(x, y, z);
+        });
     }
 
     private HashSet<string> ReturnAllowedData()
@@ -91,16 +104,10 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         {
             Vector3Int patternCoord = new Vector3Int(x, y, z);
 
-            if (x == 0 && y == 0 && z == 0)
-            {
-
-                wave.SetDataAt(patternSpawnCoordinate + patternCoord, false);
-
-                Collapse(
-                    patternSpawnCoordinate + patternCoord,
-                    initialPattern.GetDataAt(patternCoord).GenerateBit(training)
-                );
-            }
+            Collapse(
+                patternSpawnCoordinate + patternCoord,
+                initialPattern.GetDataAt(patternCoord).GenerateBit(training)
+            );
         });
     }
 
@@ -127,16 +134,11 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
             }
         }
 
-        //while (!IsFullyCollapsed())
-        //{
-            //Vector3Int minEntropyCoord = MinEntropyCoords();
-            //Collapse(minEntropyCoord, coefficients.GetDataAt(minEntropyCoord).AllowedBits.PickRandom());
-       // }
+
     }
 
     private void Propagate(Vector3Int coord)
     {
-        List<Vector3Int> checkedCoords = new List<Vector3Int>();
         List<Tuple<string, EOrientations>> lookingFor = new List<Tuple<string, EOrientations>>();
 
         foreach (var direction in Orientations.OrientationUnitVectors)
@@ -157,7 +159,15 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         coefficient.AllowedBits = training.RetrieveAllowedBits(lookingFor);
         coefficients.SetDataAt(coord, coefficient);
 
+        //         if (coefficients.GetDataAt(coord).AllowedBits.Count == 1)
+        //         {
+        //             Collapse(coord, coefficients.GetDataAt(coord).AllowedBits.ToList()[0]);
+        //         }
+    }
 
+    public void UpdateAll()
+    {
+        Vector3Int coord = MinEntropyCoords() + Orientations.OrientationUnitVectors.Values.PickRandom();
     }
 
     private bool IsFullyCollapsed()
@@ -208,26 +218,75 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Vector3Int minEntropyCoords = MinEntropyCoords();
-
-        For3(wave, (x, y, z) =>
+        try
         {
-            Vector3Int coord = new Vector3Int(x, y, z);
 
-            Gizmos.color =
-            wave.GetDataAt(x, y, z) ?
-                new Color(0, 1, 0, SetScale(coefficients.GetDataAt(x, y, z).AllowedBits.Count, 0, mostCoefficients, 0, 0.5F)) :
-                new Color(1, 0, 0, 0.2F);
-
-            Gizmos.DrawCube(transform.position + new Vector3(x, y, z), Vector3.one / 4);
-            Handles.Label(transform.position + new Vector3(x, y, z), coefficients.GetDataAt(x, y, z).AllowedBits.Count.ToString());
+            //Vector3Int minEntropyCoords = MinEntropyCoords();
 
 
-            if (minEntropyCoords == coord)
+            For3(wave, (x, y, z) =>
             {
-                Gizmos.color = new Color(1, 0, 1, 0.2F);
-                Gizmos.DrawSphere(transform.position + coord, 0.25F);
+                Vector3Int coord = new Vector3Int(x, y, z);
+
+                int currentAllowedCount = coefficients.GetDataAt(x, y, z).AllowedBits.Count;
+
+                Gizmos.color =
+                wave.GetDataAt(x, y, z) ?
+                    new Color(0, 1, 0, SetScale(currentAllowedCount, 0, mostCoefficients, 0, 0.5F)) :
+                    new Color(1, 0, 0, 0.2F);
+
+                float scale = SetScale(currentAllowedCount, 0, mostCoefficients, 1, 0.1F);
+
+                Gizmos.DrawCube(transform.position + new Vector3(x, y, z), new Vector3(scale, scale, scale));
+                Handles.Label(transform.position + new Vector3(x, y, z), coefficients.GetDataAt(x, y, z).AllowedBits.Count.ToString());
+
+                //if (minEntropyCoords == coord)
+                //{
+                //    Gizmos.color = new Color(1, 0, 1, 0.2F);
+                //    Gizmos.DrawSphere(transform.position + coord, 0.25F);
+                //}
+            });
+
+            Gizmos.color = new Color(1, 0, 1, 0.2F);
+
+            For3(userCoordinateMatrix, (x, y, z) =>
+            {
+                Gizmos.DrawSphere(transform.position + userCoordinateMatrix.MatrixData[x, y, z], 0.25F);
+            });
+        }
+        catch (Exception) { }
+    }
+
+    public void Move(EOrientations orientation)
+    {
+
+        For3(userCoordinateMatrix, (x, y, z) =>
+        {
+            userCoordinateMatrix.MatrixData[x, y, z] += Orientations.ToUnitVector(orientation);
+        });
+
+        allowedPatterns.Clear();
+
+        Matrix3<string> bitMatrix = new Matrix3<string>(training.N);
+
+        For3(bitMatrix, (x, y, z) => { bitMatrix.MatrixData[x, y, z] = "null"; });
+
+        For3(userCoordinateMatrix, (x, y, z) =>
+        {
+            Vector3Int coord = userCoordinateMatrix.GetDataAt(x, y, z);
+
+            if (!wave.GetDataAt(coord))
+            {
+                bitMatrix.MatrixData[x, y, z] = moduleMatrix.GetDataAt(coord).GenerateBit(training);
             }
         });
+
+        foreach (Pattern pattern in training.Patterns)
+        {
+            if (pattern.CompareBitPatterns(training, bitMatrix))
+            {
+                allowedPatterns.Add(pattern);
+            }
+        }
     }
 }
