@@ -153,7 +153,7 @@ public class Matrix3<T>
             {
 
                 T[,,] originalData = MatrixData;
-                T[,,] copyMatrix = new T[originalData.GetLength(0), originalData.GetLength(1), originalData.GetLength(2)];
+                T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
 
                 For3(this, (x, y, z) =>
                 {
@@ -184,6 +184,73 @@ public class Matrix3<T>
         }
     }
 
+    // Only supports 2D flipping (left/right & forward/back).
+    public virtual void Flip(EOrientations orientation)
+    {
+        T[,,] originalData = MatrixData;
+        T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
+
+        if (orientation == EOrientations.RIGHT || orientation == EOrientations.LEFT)
+        {
+            for (int y = 0; y < SizeY; y++)
+            {
+                copyMatrix[0, y, 0] = originalData[SizeX - 1, y, 0];
+                copyMatrix[SizeX - 1, y, 0] = originalData[0, y, 0];
+
+                copyMatrix[0, y, SizeZ - 1] = originalData[SizeX - 1, y, SizeZ - 1];
+                copyMatrix[SizeX - 1, y, SizeZ - 1] = originalData[0, y, SizeZ - 1];
+            }
+        }
+        else if (orientation == EOrientations.FORWARD || orientation == EOrientations.BACK)
+        {
+            for (int y = 0; y < SizeY; y++)
+            {
+                copyMatrix[0, y, 0] = originalData[0, y, SizeZ - 1];
+                copyMatrix[0, y, SizeZ - 1] = originalData[0, y, 0];
+
+                copyMatrix[SizeX - 1, y, 0] = originalData[SizeX - 1, y, SizeZ - 1];
+                copyMatrix[SizeX - 1, y, SizeZ - 1] = originalData[SizeX - 1, y, 0];
+
+            }
+        }
+        else
+        {
+            return;
+        }
+
+        MatrixData = copyMatrix;
+
+    }
+
+    public virtual void PushData(Vector3Int direction)
+    {
+        T[,,] originalData = MatrixData;
+        T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
+
+
+        For3(this, (x, y, z) =>
+        {
+            Vector3Int sweepCoord = new Vector3Int(x + direction.x, y + direction.y, z + direction.z);
+
+            if (ValidCoordinate(sweepCoord))
+            {
+                copyMatrix[x, y, z] = originalData[sweepCoord.x, sweepCoord.y, sweepCoord.z];
+            }
+            else
+            {
+                if (typeof(T) == typeof(string))
+                {
+                    copyMatrix[x, y, z] = (T)Convert.ChangeType((string)"null", typeof(T));
+                }
+                else
+                {
+                    copyMatrix[x, y, z] = default;
+                }
+            }
+        });
+
+        MatrixData = copyMatrix;
+    }
 
     public bool ValidCoordinate(Vector3Int coords)
     {

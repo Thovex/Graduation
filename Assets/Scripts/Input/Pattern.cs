@@ -15,6 +15,9 @@ public class Pattern : Matrix3<Module>
 {
     [SerializeField] private Dictionary<Vector3Int, List<int>> _propagator;
     public Dictionary<Vector3Int, List<int>> Propagator { get => _propagator; set => _propagator = value; }
+
+    public List<Tuple<Matrix3<string>, Vector3Int>> debugPatterns = new List<Tuple<Matrix3<string>, Vector3Int>>();
+
     public int N { get => n; set => n = value; }
 
     private int n = 2;
@@ -55,20 +58,26 @@ public class Pattern : Matrix3<Module>
 
     public bool CompareBitPatterns(TrainingScript training, Matrix3<string> bitMatrix)
     {
-        Matrix3<string> patternAsBitMatrix = GenerateBits(training);
+        return CompareBitPatterns(GenerateBits(training), bitMatrix);
+    }
 
+    public bool CompareBitPatterns(Matrix3<string> inMatrix, Matrix3<string> bitMatrix)
+    {
         bool bEqual = true;
 
         For3(bitMatrix, (x, y, z) =>
         {
             string bit = bitMatrix.GetDataAt(x, y, z);
 
-            if (bit != "null")
+            // Check?
+            if (bit != "null" && bit != "0S")
             {
-                if (bit != patternAsBitMatrix.GetDataAt(x, y, z))
+
+                if (bit != inMatrix.GetDataAt(x, y, z))
                 {
                     bEqual = false;
                 }
+
             }
         });
 
@@ -147,6 +156,8 @@ public class Pattern : Matrix3<Module>
 
         int halfN = N / 2;
 
+        debugPatterns.Clear();
+
         foreach (var direction in Orientations.OrientationUnitVectors)
         {
             if (direction.Key == EOrientations.NULL) continue;
@@ -154,54 +165,30 @@ public class Pattern : Matrix3<Module>
             List<int> patternsFit = new List<int>();
             for (int i = 0; i < training.Patterns.Count; i++)
             {
+                Matrix3<string> sidePatternBits = GenerateBits(training);
+                Matrix3<string> sidePatternBitsCopy = new Matrix3<string>(sidePatternBits.Size);
 
-                Pattern sidePattern = new Pattern(N);
+                sidePatternBits.PushData(direction.Value);
 
-                For3 (sidePattern, (x, y, z) =>
-                {
-                    sidePattern.MatrixData[x, y, z] =
-                });
+                Matrix3<string> checkPatternBits = training.Patterns[i].GenerateBits(training);
+                checkPatternBits.Flip(direction.Key);
+                checkPatternBits.PushData(direction.Value);
 
-                if (sidePattern.CompareBitPatterns(training, training.Patterns[i].GenerateBits(training)))
+                if (this.CompareBitPatterns(sidePatternBits, checkPatternBits))
                 {
                     patternsFit.Add(i);
                 }
 
+                debugPatterns.Add(new Tuple<Matrix3<string>, Vector3Int>(sidePatternBits, direction.Value));
             }
-
             allowedPatterns.Add(direction.Value * halfN, patternsFit);
+
+
         }
 
+        // TODO VALIDATE ALL DATA USING "WHAT THE FUCK IS EVEN ALLOWED HERE" 
+        // TODO OTHER ANGLES :-D
 
-
-
-
-
-        //         foreach (var direction in Orientations.OrientationUnitVectors)
-        //         {
-        //             if (direction.Key == EOrientations.NULL) continue;
-        // 
-        //             Vector3Int middlePointWithDir = direction.Value * halfN;
-        //             allowedPatterns.Add(middlePointWithDir, new List<Pattern>());
-        // 
-        //             foreach (var direction2 in Orientations.OrientationUnitVectors)
-        //             {
-        //                 if (direction2.Key == EOrientations.NULL) continue;
-        //                 if (direction2.Key == direction.Key) continue;
-        //                 if (direction2.Key == Orientations.FlipOrientation(direction.Key)) continue;
-        // 
-        //                 Vector3Int DirWithDir = middlePointWithDir + direction2.Value * halfN;
-        // 
-        //                 try
-        //                 {
-        //                     allowedPatterns.Add(DirWithDir, new List<Pattern>());
-        //                 }
-        //                 catch (Exception) { }
-        //             }
-        //         }
-
-
-        //}
         Propagator = allowedPatterns;
 
     }

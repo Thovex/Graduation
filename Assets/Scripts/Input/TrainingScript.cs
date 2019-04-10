@@ -495,8 +495,8 @@ public class TrainingScript : SerializedMonoBehaviour
 
                 int val = index % 4;
 
-                newPattern.transform.localPosition = (index * (_input.NValue + _input.NValue)) * (Vector3.left / (4 - 1)) / N + ((Vector3.up * (N + 1)) * val) + val * (Vector3.right / (4 - 1)) * N;
                 newPattern.transform.parent = displayPatternObject.transform;
+                newPattern.transform.localPosition = (index * (_input.NValue + _input.NValue)) * (Vector3.left / (4 - 1)) / N + ((Vector3.up * (N + 1)) * val) + val * (Vector3.right / (4 - 1)) * N;
 
                 For3(pattern, (x, y, z) =>
                 {
@@ -510,28 +510,5 @@ public class TrainingScript : SerializedMonoBehaviour
                 index++;
             }
         }
-    }
-
-    private void OnDrawGizmos()
-    {
-        try
-        {
-            Gizmos.color = new Color(1, 0, 1, 1);
-
-            Pattern pattern = Patterns.ToList()[4];
-
-            Vector3 position = displayPatternObject.transform.GetChild(4).position;
-
-
-            foreach (var pair in pattern.Propagator)
-            {
-                For3(new Vector3Int(N, N, N), (x, y, z) =>
-                {
-                    Gizmos.DrawWireCube(position + new Vector3Int( x,y,z) + pair.Key, Vector3.one );
-                });
-            }
-        }
-        catch (Exception) { }
-
     }
 }
