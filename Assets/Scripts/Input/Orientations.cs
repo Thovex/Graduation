@@ -13,6 +13,14 @@ public enum EOrientations
     NULL
 };
 
+public enum EOrientationsAdvanced
+{
+    FORWARDRIGHT,
+    FORWARDLEFT,
+    BACKRIGHT,
+    BACKLEFT
+}
+
 
 public static class Orientations
 {
@@ -43,7 +51,6 @@ public static class Orientations
         }
     };
 
-    // Old direction values
     public static Dictionary<EOrientations, Vector3Int> OrientationUnitVectors = new Dictionary<EOrientations, Vector3Int>
     {
         {
@@ -68,6 +75,23 @@ public static class Orientations
             EOrientations.NULL, Vector3Int.zero
         }
     };
+
+    public static Dictionary<EOrientationsAdvanced, Vector3Int> OrientationUnitVectorsAdvanced = new Dictionary<EOrientationsAdvanced, Vector3Int>
+    {
+        {
+            EOrientationsAdvanced.FORWARDRIGHT, (new Vector3Int(0, 0, 1) + Vector3Int.right)
+        },
+        {
+            EOrientationsAdvanced.FORWARDLEFT,  (new Vector3Int(0, 0, 1) + Vector3Int.left)
+        },
+        {
+            EOrientationsAdvanced.BACKRIGHT, (new Vector3Int(0, 0, -1) - Vector3Int.right)
+        },
+        {
+            EOrientationsAdvanced.BACKLEFT, (new Vector3Int(0, 0, -1) - Vector3Int.left)
+        }
+    };
+
 
     public static Dictionary<char, EOrientations> OrientationByChar = new Dictionary<char, EOrientations>
     {

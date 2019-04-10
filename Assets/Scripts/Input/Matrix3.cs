@@ -210,7 +210,6 @@ public class Matrix3<T>
 
                 copyMatrix[SizeX - 1, y, 0] = originalData[SizeX - 1, y, SizeZ - 1];
                 copyMatrix[SizeX - 1, y, SizeZ - 1] = originalData[SizeX - 1, y, 0];
-
             }
         }
         else

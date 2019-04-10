@@ -110,10 +110,6 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
                 patternData.transform.localEulerAngles = neighbourPattern.MatrixData[x, y, z].RotationEuler;
             }
         });
-
-
-
-
     }
 
     private void OnDrawGizmos()

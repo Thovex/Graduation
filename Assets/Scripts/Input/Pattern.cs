@@ -178,13 +178,11 @@ public class Pattern : Matrix3<Module>
                 {
                     patternsFit.Add(i);
                 }
-
-                debugPatterns.Add(new Tuple<Matrix3<string>, Vector3Int>(sidePatternBits, direction.Value));
             }
             allowedPatterns.Add(direction.Value * halfN, patternsFit);
-
-
         }
+
+
 
         // TODO VALIDATE ALL DATA USING "WHAT THE FUCK IS EVEN ALLOWED HERE" 
         // TODO OTHER ANGLES :-D
