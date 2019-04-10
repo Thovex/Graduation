@@ -33,7 +33,6 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
     private void Update()
     {
-        Debug.Log("hey");
         if (training)
         {
             Initialize();
@@ -220,9 +219,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     {
         try
         {
-
             //Vector3Int minEntropyCoords = MinEntropyCoords();
-
 
             For3(wave, (x, y, z) =>
             {

@@ -32,7 +32,7 @@ public class TrainingScript : SerializedMonoBehaviour
     [SerializeField] private bool editMode = false;
 
     [SerializeField] public Dictionary<int, GameObject> PrefabAndId { get; set; } = new Dictionary<int, GameObject>();
-    [SerializeField] public HashSet<Pattern> Patterns { get; set; } = new HashSet<Pattern>();
+    [SerializeField] public List<Pattern> Patterns { get; set; } = new List<Pattern>();
     [SerializeField] public Dictionary<string, Dictionary<EOrientations, Coefficient>> AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
     [SerializeField] public Dictionary<string, int> Weights = new Dictionary<string, int>();
 
@@ -85,7 +85,7 @@ public class TrainingScript : SerializedMonoBehaviour
         // Initialize matrix of InputSize.
         ModuleMatrix = new Pattern(_input.inputSize);
         AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
-        Patterns = new HashSet<Pattern>();
+        Patterns = new List<Pattern>();
         Weights = new Dictionary<string, int>();
 
         GetResources();
@@ -180,8 +180,6 @@ public class TrainingScript : SerializedMonoBehaviour
         });
 
         FetchSimilarModuleData();
-
-        //UpdateInputComponents();
     }
 
     private void FetchSimilarModuleData()
@@ -464,6 +462,11 @@ public class TrainingScript : SerializedMonoBehaviour
                 }
             });
         }
+
+        foreach (Pattern pattern in Patterns)
+        {
+            pattern.BuildPropagator(this);
+        }
     }
 
     public bool IsDivisible(int x, int n)
@@ -493,8 +496,6 @@ public class TrainingScript : SerializedMonoBehaviour
                 int val = index % 4;
 
                 newPattern.transform.localPosition = (index * (_input.NValue + _input.NValue)) * (Vector3.left / (4 - 1)) / N + ((Vector3.up * (N + 1)) * val) + val * (Vector3.right / (4 - 1)) * N;
-
-
                 newPattern.transform.parent = displayPatternObject.transform;
 
                 For3(pattern, (x, y, z) =>
@@ -509,5 +510,28 @@ public class TrainingScript : SerializedMonoBehaviour
                 index++;
             }
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        try
+        {
+            Gizmos.color = new Color(1, 0, 1, 1);
+
+            Pattern pattern = Patterns.ToList()[4];
+
+            Vector3 position = displayPatternObject.transform.GetChild(4).position;
+
+
+            foreach (var pair in pattern.Propagator)
+            {
+                For3(new Vector3Int(N, N, N), (x, y, z) =>
+                {
+                    Gizmos.DrawWireCube(position + new Vector3Int( x,y,z) + pair.Key, Vector3.one );
+                });
+            }
+        }
+        catch (Exception) { }
+
     }
 }
