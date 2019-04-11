@@ -18,7 +18,8 @@ public enum EOrientationsAdvanced
     FORWARDRIGHT,
     FORWARDLEFT,
     BACKRIGHT,
-    BACKLEFT
+    BACKLEFT,
+    NULL
 }
 
 
@@ -171,6 +172,12 @@ public static class Orientations
     public static Vector3Int ToUnitVector(EOrientations orientation)
     {
         OrientationUnitVectors.TryGetValue(orientation, out Vector3Int unitVector);
+        return unitVector;
+    }
+
+    public static Vector3Int ToUnitVector(EOrientationsAdvanced orientation)
+    {
+        OrientationUnitVectorsAdvanced.TryGetValue(orientation, out Vector3Int unitVector);
         return unitVector;
     }
 
