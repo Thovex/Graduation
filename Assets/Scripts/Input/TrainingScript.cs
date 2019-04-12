@@ -427,7 +427,7 @@ public class TrainingScript : SerializedMonoBehaviour
             For3(_input.inputSize, N, (x, y, z) =>
             {
                 Module[,,] newTrainingData = new Module[N, N, N];
-                bool bIsNull = true;
+                bool isNull = true;
                 For3(new Vector3Int(N, N, N), (nx, ny, nz) =>
                 {
                     Vector3Int coordinate = new Vector3Int(x + nx, y + ny, z + nz);
@@ -435,10 +435,10 @@ public class TrainingScript : SerializedMonoBehaviour
                     if (ModuleMatrix.ValidCoordinate(coordinate))
                     {
                         newTrainingData[nx, ny, nz] = ModuleMatrix.GetDataAt(coordinate);
-                        bIsNull = false;
+                        isNull = false;
                     }
                 });
-                if (!bIsNull)
+                if (!isNull)
                 {
                     Pattern newPattern = new Pattern(newTrainingData);
                     bool isEqual = false;
@@ -465,13 +465,21 @@ public class TrainingScript : SerializedMonoBehaviour
 
         foreach (Pattern pattern in Patterns)
         {
-            pattern.BuildPropagator(this);
+            //pattern.BuildPropagator(this);
         }
     }
 
-    public bool IsDivisible(int x, int n)
+    public HashSet<string> GetAllowedDataFromBitAndDirection(string bit, EOrientations direction)
     {
-        return (x % n) == 0;
+
+        if (AllowedData.TryGetValue(bit, out Dictionary<EOrientations, Coefficient> dict))
+        {
+            if (dict.TryGetValue(direction, out Coefficient coefficient))
+            {
+                return coefficient.AllowedBits;
+            }
+        }
+        return null;
     }
 
     private void DisplayPatterns()

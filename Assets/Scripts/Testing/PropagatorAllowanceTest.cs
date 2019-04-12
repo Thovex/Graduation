@@ -27,6 +27,50 @@ public class PropagatorAllowanceTestInspector : OdinEditor
         {
             propagatorTest.SyncNeighbour();
         }
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Forward", GUILayout.Height(75), GUILayout.Width(150)))
+        {
+            propagatorTest.Move(EOrientations.FORWARD);
+        }
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Left", GUILayout.Height(75), GUILayout.Width(150)))
+        {
+            propagatorTest.Move(EOrientations.LEFT);
+        }
+
+        if (GUILayout.Button("Right", GUILayout.Height(75), GUILayout.Width(150)))
+        {
+            propagatorTest.Move(EOrientations.RIGHT);
+        }
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Back", GUILayout.Height(75), GUILayout.Width(150)))
+        {
+            propagatorTest.Move(EOrientations.BACK);
+        }
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
+
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Flip Horizontal (RIGHT/LEFT)", GUILayout.Width(150), GUILayout.Height(20)))
+        {
+            propagatorTest.Flip(EOrientations.LEFT);
+        }
+
+        if (GUILayout.Button("Flip Vertical (FORWARD/BACK)", GUILayout.Width(150), GUILayout.Height(20)))
+        {
+            propagatorTest.Flip(EOrientations.FORWARD);
+        }
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.EndHorizontal();
     }
 }
 
@@ -55,11 +99,10 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
 
     [OdinSerialize] private Pattern selectedPattern = new Pattern(2);
 
-
-
     public void Sync()
     {
         selectedPattern = training.Patterns[patternToDisplay];
+        selectedPattern.BuildPropagator(training);
 
         for (int i = patternSpawnTransform.transform.childCount; i > 0; --i)
         {
@@ -117,7 +160,6 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
                 newPattern2.transform.localPosition = Vector3.zero + direction;
 
 
-
                 For3(neighbourPattern, (x, y, z) =>
                 {
                     if (neighbourPattern.MatrixData[x, y, z].Prefab != null)
@@ -129,6 +171,16 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
                 });
             }
         }
+    }
+
+    internal void Flip(EOrientations orientation)
+    {
+        selectedPattern.Flip(orientation);
+    }
+
+    internal void Move(EOrientations orientation)
+    {
+        selectedPattern.PushData(Orientations.ToUnitVector(orientation));
     }
 
     private void OnDrawGizmos()

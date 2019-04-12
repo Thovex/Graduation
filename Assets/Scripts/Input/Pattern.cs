@@ -153,13 +153,71 @@ public class Pattern : Matrix3<Module>
     public void BuildPropagator(TrainingScript training)
     {
         Dictionary<Vector3Int, List<int>> allowedPatterns = new Dictionary<Vector3Int, List<int>>();
+        foreach (var direction in Orientations.OrientationUnitVectors)
+        {
+            if (direction.Key == EOrientations.NULL) continue;
 
-        int halfN = N / 2;
+            Matrix3<string> bitPattern = GenerateBits(training);
+            bitPattern.Flip(direction.Key);
+            bitPattern.PushData(direction.Value);
 
-        debugPatterns.Clear();
+            List<int> patternsFit = new List<int>();
+            for (int i = 0; i < training.Patterns.Count; i++)
+            {
+                Matrix3<string> checkPatternBits = training.Patterns[i].GenerateBits(training);
+                checkPatternBits.PushData(direction.Value);
+                //checkPatternBits.PushData(NegateVector3Int(direction.Value));
 
-        BuildForStandardOrientations(training, allowedPatterns, halfN);
-        BuildForAdvancedOrientations(training, allowedPatterns, halfN);
+                GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Clear();
+                GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(checkPatternBits);
+
+                bool isAllowed = true;
+
+                For3(checkPatternBits, (x, y, z) =>
+                {
+                    if (checkPatternBits.GetDataAt(x,y,z) != "null")
+                    {
+                        HashSet<string> allowed = training.GetAllowedDataFromBitAndDirection(checkPatternBits.GetDataAt(x, y, z), Orientations.FlipOrientation(direction.Key));
+
+                        if (allowed == null) return;
+
+                        if (!allowed.Contains(bitPattern.GetDataAt(x,y,z)))
+                        {
+                            isAllowed = false;
+                        }
+                    }
+                });
+
+                if (isAllowed)
+                {
+                    patternsFit.Add(i);
+                }
+            }
+
+            allowedPatterns.Add(direction.Value, patternsFit);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // int halfN = N / 2;
+
+        // debugPatterns.Clear();
+
+        //BuildForStandardOrientations(training, allowedPatterns, halfN);
+        // BuildForAdvancedOrientations(training, allowedPatterns, halfN);
 
 
         // Propagator in training script (using sketch 1)
@@ -174,18 +232,18 @@ public class Pattern : Matrix3<Module>
     {
         foreach (var direction in Orientations.OrientationUnitVectors)
         {
-            if (direction.Key == EOrientations.NULL) continue;
+            if (direction.Key != EOrientations.FORWARD) continue;
 
             List<int> patternsFit = new List<int>();
             for (int i = 0; i < training.Patterns.Count; i++)
             {
                 Matrix3<string> sidePatternBits = GenerateBits(training);
-                Matrix3<string> sidePatternBitsCopy = new Matrix3<string>(sidePatternBits.Size);
+
+                sidePatternBits.Flip(direction.Key);
                 sidePatternBits.PushData(direction.Value);
 
                 Matrix3<string> checkPatternBits = training.Patterns[i].GenerateBits(training);
-                checkPatternBits.Flip(direction.Key);
-                checkPatternBits.PushData(direction.Value);
+                GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(checkPatternBits);
 
                 if (this.CompareBitPatterns(sidePatternBits, checkPatternBits))
                 {
@@ -195,35 +253,4 @@ public class Pattern : Matrix3<Module>
             allowedPatterns.Add(direction.Value * halfN, patternsFit);
         }
     }
-
-    private void BuildForAdvancedOrientations(TrainingScript training, Dictionary<Vector3Int, List<int>> allowedPatterns, int halfN)
-    {
-        foreach (var direction in Orientations.OrientationUnitVectorsAdvanced)
-        {
-            if (direction.Key == EOrientationsAdvanced.NULL) continue;
-
-            List<int> patternsFit = new List<int>();
-            for (int i = 0; i < training.Patterns.Count; i++)
-            {
-                Matrix3<string> sidePatternBits = GenerateBits(training);
-                Matrix3<string> sidePatternBitsCopy = new Matrix3<string>(sidePatternBits.Size);
-
-                sidePatternBits.PushData(direction.Value);
-
-                Matrix3<string> checkPatternBits = training.Patterns[i].GenerateBits(training);
-                checkPatternBits.PushData(direction.Value);
-                checkPatternBits.RotateCounterClockwise(2);
-
-
-                if (this.CompareBitPatterns(sidePatternBits, checkPatternBits))
-                {
-                    patternsFit.Add(i);
-                }
-            }
-            allowedPatterns.Add(direction.Value * halfN, patternsFit);
-        }
-    }
-
-
-
 }

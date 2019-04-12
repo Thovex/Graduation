@@ -184,36 +184,52 @@ public class Matrix3<T>
         }
     }
 
-    // Only supports 2D flipping (left/right & forward/back).
+    // Only supports 2D flipping (left/right & forward/back). ONLY FOR N == 2 && N == 3
+    // Todo support N>3
+
+    // Example: N = 5
+    // *     *     *     *     * | Matrix
+    //       ^-----------^       | This code has to be created.
+    // ^-----------------------^ | This code is created.
+
     public virtual void Flip(EOrientations orientation)
     {
         T[,,] originalData = MatrixData;
         T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
 
+        if (SizeX > 3) {
+            Debug.LogError("N > 3 not implemented!");
+        }
+
         if (orientation == EOrientations.RIGHT || orientation == EOrientations.LEFT)
         {
+            int x = SizeX - 1;
+            int z = SizeZ - 1;
+
             for (int y = 0; y < SizeY; y++)
             {
-                copyMatrix[0, y, 0] = originalData[SizeX - 1, y, 0];
-                copyMatrix[SizeX - 1, y, 0] = originalData[0, y, 0];
-
-                copyMatrix[0, y, SizeZ - 1] = originalData[SizeX - 1, y, SizeZ - 1];
-                copyMatrix[SizeX - 1, y, SizeZ - 1] = originalData[0, y, SizeZ - 1];
+                copyMatrix[0, y, 0] = originalData[x, y, 0];
+                copyMatrix[x, y, 0] = originalData[0, y, 0];
+                copyMatrix[0, y, z] = originalData[x, y, z];
+                copyMatrix[x, y, z] = originalData[0, y, z];
             }
         }
         else if (orientation == EOrientations.FORWARD || orientation == EOrientations.BACK)
         {
+            int x = SizeX - 1;
+            int z = SizeZ - 1;
+
             for (int y = 0; y < SizeY; y++)
             {
-                copyMatrix[0, y, 0] = originalData[0, y, SizeZ - 1];
-                copyMatrix[0, y, SizeZ - 1] = originalData[0, y, 0];
-
-                copyMatrix[SizeX - 1, y, 0] = originalData[SizeX - 1, y, SizeZ - 1];
-                copyMatrix[SizeX - 1, y, SizeZ - 1] = originalData[SizeX - 1, y, 0];
+                copyMatrix[0, y, 0] = originalData[0, y, z];
+                copyMatrix[0, y, z] = originalData[0, y, 0];
+                copyMatrix[x, y, 0] = originalData[x, y, z];
+                copyMatrix[x, y, z] = originalData[x, y, 0];
             }
         }
         else
         {
+            Debug.Log("Flipping UP/DOWN or NULL");
             return;
         }
 
@@ -229,7 +245,7 @@ public class Matrix3<T>
 
         For3(this, (x, y, z) =>
         {
-            Vector3Int sweepCoord = new Vector3Int(x + direction.x, y + direction.y, z + direction.z);
+            Vector3Int sweepCoord = new Vector3Int(x + -direction.x, y + -direction.y, z + -direction.z);
 
             if (ValidCoordinate(sweepCoord))
             {

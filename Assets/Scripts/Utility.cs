@@ -79,5 +79,10 @@ namespace Thovex
 
             return (((currentValue - oldMinScale) * (newMaxScale - newMinScale)) / (oldMaxScale - oldMinScale)) + newMinScale;
         }
+
+        public static Vector3Int NegateVector3Int(Vector3Int input)
+        {
+            return new Vector3Int(-input.x, -input.y, -input.z);
+        }
     }
 }
