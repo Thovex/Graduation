@@ -137,38 +137,90 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
         }
 
 
-        Vector3Int direction = advancedRot ? Orientations.ToUnitVector(neighbourOrientationAdvancedToDisplay) : Orientations.ToUnitVector(neighbourOrientationToDisplay);
+        //Vector3Int direction = advancedRot ? Orientations.ToUnitVector(neighbourOrientationAdvancedToDisplay) : Orientations.ToUnitVector(neighbourOrientationToDisplay);
 
-        if (selectedPattern.Propagator.TryGetValue(direction, out List<int> value))
+        SyncDefault();
+        SyncAdvanced();
+    }
+
+    private void SyncDefault()
+    {
+        foreach (var direction in Orientations.OrientationUnitVectors)
         {
+            if (direction.Key == EOrientations.NULL || direction.Key == EOrientations.UP || direction.Key == EOrientations.DOWN) continue;
 
-
-            if (value.Count == 0)
+            if (selectedPattern.Propagator.TryGetValue(direction.Value, out List<int> value))
             {
 
-                Debug.LogError("No values");
-            }
-            else
-            {
-                neighbourIndexToDisplay = value.PickRandom();
 
-                Pattern neighbourPattern = training.Patterns[neighbourIndexToDisplay];
-
-                GameObject newPattern2 = new GameObject("Pattern");
-
-                newPattern2.transform.parent = patternNSpawnTransform.transform;
-                newPattern2.transform.localPosition = Vector3.zero + direction;
-
-
-                For3(neighbourPattern, (x, y, z) =>
+                if (value.Count == 0)
                 {
-                    if (neighbourPattern.MatrixData[x, y, z].Prefab != null)
+
+                    Debug.LogError("No values");
+                }
+                else
+                {
+                    neighbourIndexToDisplay = value.PickRandom();
+
+                    Pattern neighbourPattern = training.Patterns[neighbourIndexToDisplay];
+
+                    GameObject newPattern2 = new GameObject("Pattern");
+
+                    newPattern2.transform.parent = patternNSpawnTransform.transform;
+                    newPattern2.transform.localPosition = Vector3.zero + direction.Value;
+
+
+                    For3(neighbourPattern, (x, y, z) =>
                     {
-                        GameObject patternData = Instantiate(neighbourPattern.MatrixData[x, y, z].Prefab, newPattern2.transform);
-                        patternData.transform.localPosition = new Vector3(x, y, z) + direction;
-                        patternData.transform.localEulerAngles = neighbourPattern.MatrixData[x, y, z].RotationEuler;
-                    }
-                });
+                        if (neighbourPattern.MatrixData[x, y, z].Prefab != null)
+                        {
+                            GameObject patternData = Instantiate(neighbourPattern.MatrixData[x, y, z].Prefab, newPattern2.transform);
+                            patternData.transform.localPosition = new Vector3(x, y, z) + direction.Value;
+                            patternData.transform.localEulerAngles = neighbourPattern.MatrixData[x, y, z].RotationEuler;
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    private void SyncAdvanced()
+    {
+        foreach (var direction in Orientations.OrientationUnitVectorsAdvanced)
+        {
+            if (direction.Key == EOrientationsAdvanced.NULL) continue;
+
+            if (selectedPattern.Propagator.TryGetValue(direction.Value, out List<int> value))
+            {
+
+
+                if (value.Count == 0)
+                {
+
+                    Debug.LogError("No values");
+                }
+                else
+                {
+                    neighbourIndexToDisplay = value.PickRandom();
+
+                    Pattern neighbourPattern = training.Patterns[neighbourIndexToDisplay];
+
+                    GameObject newPattern2 = new GameObject("Pattern");
+
+                    newPattern2.transform.parent = patternNSpawnTransform.transform;
+                    newPattern2.transform.localPosition = Vector3.zero + direction.Value;
+
+
+                    For3(neighbourPattern, (x, y, z) =>
+                    {
+                        if (neighbourPattern.MatrixData[x, y, z].Prefab != null)
+                        {
+                            GameObject patternData = Instantiate(neighbourPattern.MatrixData[x, y, z].Prefab, newPattern2.transform);
+                            patternData.transform.localPosition = new Vector3(x, y, z) + direction.Value;
+                            patternData.transform.localEulerAngles = neighbourPattern.MatrixData[x, y, z].RotationEuler;
+                        }
+                    });
+                }
             }
         }
     }

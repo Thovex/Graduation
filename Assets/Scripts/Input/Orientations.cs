@@ -116,12 +116,22 @@ public static class Orientations
         }
     };
 
-    public static EOrientations RotateCounterClockwise(EOrientations orientation)
+    public static EOrientations RotateClockwise(EOrientations orientation)
     {
         if (orientation == EOrientations.FORWARD) return EOrientations.RIGHT;
         if (orientation == EOrientations.RIGHT) return EOrientations.BACK;
         if (orientation == EOrientations.BACK) return EOrientations.LEFT;
         if (orientation == EOrientations.LEFT) return EOrientations.FORWARD;
+
+        return EOrientations.NULL;
+    }
+
+    public static EOrientations RotateCounterClockwise(EOrientations orientation)
+    {
+        if (orientation == EOrientations.FORWARD) return EOrientations.LEFT;
+        if (orientation == EOrientations.LEFT) return EOrientations.BACK;
+        if (orientation == EOrientations.BACK) return EOrientations.RIGHT;
+        if (orientation == EOrientations.RIGHT) return EOrientations.FORWARD;
 
         return EOrientations.NULL;
     }
@@ -141,6 +151,24 @@ public static class Orientations
         if (input == EOrientations.UP) return EOrientations.DOWN;
         if (input == EOrientations.DOWN) return EOrientations.UP;
         return EOrientations.NULL;
+    }
+
+    public static EOrientationsAdvanced FlipOrientation(EOrientationsAdvanced input)
+    {
+        if (input == EOrientationsAdvanced.FORWARDLEFT) return EOrientationsAdvanced.BACKRIGHT;
+        if (input == EOrientationsAdvanced.FORWARDRIGHT) return EOrientationsAdvanced.BACKLEFT;
+        if (input == EOrientationsAdvanced.BACKLEFT) return EOrientationsAdvanced.FORWARDRIGHT;
+        if (input == EOrientationsAdvanced.BACKRIGHT) return EOrientationsAdvanced.FORWARDLEFT;
+        return EOrientationsAdvanced.NULL;
+    }
+
+    public static EOrientations[] FromAdvancedOrientation(EOrientationsAdvanced input)
+    {
+        if (input == EOrientationsAdvanced.FORWARDLEFT) return new EOrientations[] { EOrientations.FORWARD, EOrientations.LEFT };
+        if (input == EOrientationsAdvanced.FORWARDRIGHT) return new EOrientations[] { EOrientations.FORWARD, EOrientations.RIGHT };
+        if (input == EOrientationsAdvanced.BACKLEFT) return new EOrientations[] { EOrientations.BACK, EOrientations.LEFT };
+        if (input == EOrientationsAdvanced.BACKRIGHT) return new EOrientations[] { EOrientations.BACK, EOrientations.RIGHT };
+        return null;
     }
 
     public static Vector3Int CharToEulerRotation(char character)
