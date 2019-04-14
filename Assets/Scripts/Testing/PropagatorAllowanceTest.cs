@@ -140,14 +140,14 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
         //Vector3Int direction = advancedRot ? Orientations.ToUnitVector(neighbourOrientationAdvancedToDisplay) : Orientations.ToUnitVector(neighbourOrientationToDisplay);
 
         SyncDefault();
-        //SyncAdvanced();
+        SyncAdvanced();
     }
 
     private void SyncDefault()
     {
         foreach (var direction in Orientations.OrientationUnitVectors)
         {
-            if (direction.Key != EOrientations.RIGHT) continue;
+            if (direction.Key == EOrientations.NULL) continue;
 
             if (selectedPattern.Propagator.TryGetValue(direction.Value, out List<int> value))
             {
