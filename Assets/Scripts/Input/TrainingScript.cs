@@ -62,15 +62,15 @@ public class TrainingScript : SerializedMonoBehaviour
         InitializeData();
 
         AssignCoordinateToChildren();
-
-        for (int i = 0; i < 4; i++)
-        {
+        
+        //for (int i = 0; i < 4; i++)
+        //{
             if (!editMode)
             {
                 CalculateModuleNeighbours();
-                ModuleMatrix.RotateCounterClockwise(1);
+               // ModuleMatrix.RotateCounterClockwise(1);
             }
-        }
+       // }
 
         DefinePatterns();
         DisplayPatterns();
