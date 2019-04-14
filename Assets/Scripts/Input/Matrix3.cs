@@ -227,9 +227,23 @@ public class Matrix3<T>
                 copyMatrix[x, y, z] = originalData[x, y, 0];
             }
         }
+        else if (orientation == EOrientations.UP || orientation == EOrientations.DOWN)
+        {
+
+            int y = SizeY - 1;
+
+            for (int x = 0; x < SizeX; x++)
+            {
+                for (int z = 0; z < SizeZ; z++)
+                {
+                    copyMatrix[x, 0, z] = originalData[x, y, z];
+                    copyMatrix[x, y, z] = originalData[x, 0, z];
+                }
+            }
+        }
         else
         {
-            Debug.Log("Flipping UP/DOWN or NULL");
+            Debug.Log("Flipping NULL");
             return;
         }
 
