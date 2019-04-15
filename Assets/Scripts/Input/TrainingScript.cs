@@ -223,13 +223,13 @@ public class TrainingScript : SerializedMonoBehaviour
         {
             if (!Weights.ContainsKey(similarModulePair.Key))
             {
-                Weights.Add(similarModulePair.Key, similarModulePair.Value.Count);
+                Weights.Add(similarModulePair.Key, 100);
             }
             else
             {
-                Weights.TryGetValue(similarModulePair.Key, out int currentCount);
-                currentCount += similarModulePair.Value.Count;
-                Weights[similarModulePair.Key] = currentCount;
+               // Weights.TryGetValue(similarModulePair.Key, out int currentCount);
+               // currentCount += similarModulePair.Value.Count;
+                //Weights[similarModulePair.Key] = currentCount;
             }
         }
 
@@ -465,7 +465,7 @@ public class TrainingScript : SerializedMonoBehaviour
 
         foreach (Pattern pattern in Patterns)
         {
-            //pattern.BuildPropagator(this);
+            pattern.BuildPropagator(this);
         }
     }
 

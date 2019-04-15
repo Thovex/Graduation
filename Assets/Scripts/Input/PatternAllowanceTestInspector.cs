@@ -58,7 +58,17 @@ public class PatternAllowanceTestInspector : OdinEditor
             patternTest.Move(EOrientations.DOWN);
         }
         GUILayout.FlexibleSpace();
+
         EditorGUILayout.EndHorizontal();
+        if (GUILayout.Button("Init", GUILayout.Width(150), GUILayout.Height(20)))
+        {
+            patternTest.Initialize();
+        }
+
+        if (GUILayout.Button("Gen Pattern @ Coords", GUILayout.Width(150), GUILayout.Height(20)))
+        {
+            patternTest.InitializePattern();
+        }
 
 
     }

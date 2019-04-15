@@ -15,7 +15,6 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     [SerializeField] private Vector3Int outputSize;
 
     [SerializeField] private int patternIndex = 0;
-    [SerializeField] private Vector3Int patternSpawnCoordinate = Vector3Int.zero;
 
     [SerializeField] private Transform objects;
     [SerializeField] private Transform displayTarget;
@@ -26,6 +25,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     private Pattern moduleMatrix;
     private Matrix3<bool> wave;
     private Matrix3<Coefficient> coefficients;
+    private Matrix3<Pattern> patterns;
 
     private Matrix3<Vector3Int> userCoordinateMatrix = new Matrix3<Vector3Int>();
 
@@ -35,7 +35,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     {
         if (training)
         {
-            Initialize();
+            // Initialize();
         }
     }
     public void Initialize()
@@ -43,6 +43,8 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         moduleMatrix = new Pattern(outputSize);
         wave = new Matrix3<bool>(outputSize);
         coefficients = new Matrix3<Coefficient>(outputSize);
+        //patterns = new Matrix3<Pattern>(outputSize);
+
 
         for (int i = objects.childCount; i > 0; --i)
         {
@@ -59,7 +61,8 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
             coefficients.MatrixData[x, y, z] = new Coefficient(allowedData);
         });
 
-        InitializeInitialPattern();
+
+        InitializePattern(userCoordinateMatrix, training.Patterns[patternIndex]);
     }
 
 
@@ -89,28 +92,35 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         return allowedHashSet;
     }
 
-    private void InitializeInitialPattern()
+    public void InitializePattern()
     {
-        if (!(training.Patterns.Count >= patternIndex))
-        {
-            Debug.LogError("Pattern index not correct");
-            return;
-        }
-
-        Pattern initialPattern = training.Patterns.ToList()[patternIndex];
-
-        For3(initialPattern, (x, y, z) =>
-        {
-            Vector3Int patternCoord = new Vector3Int(x, y, z);
-
-            Collapse(
-                patternSpawnCoordinate + patternCoord,
-                initialPattern.GetDataAt(patternCoord).GenerateBit(training)
-            );
-        });
+        InitializePattern(userCoordinateMatrix, allowedPatterns.PickRandom());
     }
 
-    private void Collapse(Vector3Int coord, string bit)
+    private void InitializePattern(Matrix3<Vector3Int> patternSpawnCoordinate, Pattern pattern)
+    {
+        //Vector3Int location = patternSpawnCoordinate.GetDataAt(0, 0, 0);
+
+        //if (location.x % 2 == 0 && location.y % 2 == 0 && location.z % 2 == 0)
+        //{
+
+            For3(patternSpawnCoordinate, (x, y, z) =>
+            {
+                Vector3Int patternCoord = patternSpawnCoordinate.GetDataAt(x, y, z);
+
+                Collapse(
+                    patternCoord,
+                    pattern.GetDataAt(x, y, z).GenerateBit(training)//,
+                    //pattern
+                );
+            });
+
+        //}
+    }
+
+
+
+    private void Collapse(Vector3Int coord, string bit) //Pattern pattern)
     {
         if (coefficients.GetDataAt(coord).AllowedBits.Contains(bit))
         {
@@ -118,6 +128,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
             training.SpawnModule(moduleMatrix.GetDataAt(coord), coord, objects);
             coefficients.SetDataAt(coord, new Coefficient(new HashSet<string> { }));
             wave.SetDataAt(coord, false);
+           // patterns.SetDataAt(coord, pattern);
 
             foreach (var direction in Orientations.OrientationUnitVectors)
             {
@@ -158,10 +169,10 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         coefficient.AllowedBits = training.RetrieveAllowedBits(lookingFor);
         coefficients.SetDataAt(coord, coefficient);
 
-        //         if (coefficients.GetDataAt(coord).AllowedBits.Count == 1)
-        //         {
-        //             Collapse(coord, coefficients.GetDataAt(coord).AllowedBits.ToList()[0]);
-        //         }
+        if (coefficients.GetDataAt(coord).AllowedBits.Count == 1)
+        {
+            Collapse(coord, coefficients.GetDataAt(coord).AllowedBits.ToList().PickRandom());
+        }
     }
 
     public void UpdateAll()
@@ -259,31 +270,86 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
         For3(userCoordinateMatrix, (x, y, z) =>
         {
-            userCoordinateMatrix.MatrixData[x, y, z] += Orientations.ToUnitVector(orientation);
+            userCoordinateMatrix.MatrixData[x, y, z] += Orientations.ToUnitVector(orientation) * 2;
         });
 
         allowedPatterns.Clear();
 
-        Matrix3<string> bitMatrix = new Matrix3<string>(training.N);
-
-        For3(bitMatrix, (x, y, z) => { bitMatrix.MatrixData[x, y, z] = "null"; });
+        Dictionary<EOrientations, Pattern> orientationWithPattern = new Dictionary<EOrientations, Pattern>();
 
         For3(userCoordinateMatrix, (x, y, z) =>
         {
             Vector3Int coord = userCoordinateMatrix.GetDataAt(x, y, z);
 
-            if (!wave.GetDataAt(coord))
+            foreach (var direction in Orientations.OrientationUnitVectorsDefaultAngles)
             {
-                bitMatrix.MatrixData[x, y, z] = moduleMatrix.GetDataAt(coord).GenerateBit(training);
+                Vector3Int neighbourCoord = coord + direction.Value;
+
+                if (wave.ValidCoordinate(neighbourCoord))
+                {
+                    if (!wave.GetDataAt(neighbourCoord))
+                    {
+                        if (!orientationWithPattern.ContainsKey(direction.Key))
+                        {
+                            orientationWithPattern.Add(direction.Key, patterns.GetDataAt(neighbourCoord));
+                        }
+                    }
+                }
             }
         });
 
-        foreach (Pattern pattern in training.Patterns)
+        Dictionary<Pattern, int> patternAndCount = new Dictionary<Pattern, int>();
+
+        foreach (var pair in orientationWithPattern)
         {
-            if (pattern.CompareBitPatterns(training, bitMatrix))
+            pair.Value.Propagator.TryGetValue(Orientations.ToUnitVector(pair.Key), out List<int> value);
+
+            foreach (int i in value)
             {
-                allowedPatterns.Add(pattern);
+                if (patternAndCount.ContainsKey(training.Patterns[i]))
+                {
+                    patternAndCount.TryGetValue(training.Patterns[i], out int currentValue);
+                    currentValue++;
+                    patternAndCount[training.Patterns[i]] = currentValue;
+                }
+                else
+                {
+                    patternAndCount.Add(training.Patterns[i], 1);
+                }
             }
         }
+
+        foreach (var pair in patternAndCount)
+        {
+            if (pair.Value == orientationWithPattern.Count)
+            {
+                allowedPatterns.Add(pair.Key);
+            }
+        }
+
+        //         Matrix3<string> bitMatrix = new Matrix3<string>(training.N);
+        // 
+        //         For3(bitMatrix, (x, y, z) => { bitMatrix.MatrixData[x, y, z] = "null"; });
+        // 
+        //         For3(userCoordinateMatrix, (x, y, z) =>
+        //         {
+        //             Vector3Int coord = userCoordinateMatrix.GetDataAt(x, y, z);
+        // 
+        //             if (!wave.GetDataAt(coord))
+        //             {
+        //                 bitMatrix.MatrixData[x, y, z] = moduleMatrix.GetDataAt(coord).GenerateBit(training);
+        //             }
+        //         });
+        //         
+        //         // TO DO USE PROPAGATOR?
+        // 
+        // 
+        //         foreach (Pattern pattern in training.Patterns)
+        //         {
+        //             if (pattern.CompareBitPatterns(training, bitMatrix))
+        //             {
+        //                 allowedPatterns.Add(pattern);
+        //             }
+        //         }
     }
 }

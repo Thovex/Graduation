@@ -154,72 +154,8 @@ public class Pattern : Matrix3<Module>
     {
         Dictionary<Vector3Int, List<int>> allowedPatterns = new Dictionary<Vector3Int, List<int>>();
         PropagateDefaultDirections(training, allowedPatterns);
-        PropagateAdvancedDirections(training, allowedPatterns);
-
-
-        // Propagator in training script (using sketch 1)
-        // TODO VALIDATE ALL DATA USING "WHAT THE FUCK IS EVEN ALLOWED HERE" 
-        // TODO OTHER ANGLES :-D
 
         Propagator = allowedPatterns;
-
-    }
-
-    private void PropagateAdvancedDirections(TrainingScript training, Dictionary<Vector3Int, List<int>> allowedPatterns)
-    {
-        foreach (var direction in Orientations.OrientationUnitVectorsAdvanced)
-        {
-            if (direction.Key == EOrientationsAdvanced.NULL) continue;
-
-
-            Matrix3<string> bitPattern = GenerateBits(training);
-            bitPattern.PushData(direction.Value);
-
-            List<int> patternsFit = new List<int>();
-            for (int i = 0; i < training.Patterns.Count; i++)
-            {
-                Matrix3<string> checkPatternBits = training.Patterns[i].GenerateBits(training);
-                checkPatternBits.PushData(direction.Value);
-
-
-                bool isAllowed = true;
-
-                For3(checkPatternBits, (x, y, z) =>
-                {
-                    if (checkPatternBits.GetDataAt(x, y, z) != "null")
-                    {
-                        EOrientations[] directions = Orientations.FromAdvancedOrientation(direction.Key);
-
-
-                        HashSet<string>[] allowedHashSets = new HashSet<string>[] {
-                                 training.GetAllowedDataFromBitAndDirection(checkPatternBits.GetDataAt(x, y, z), Orientations.FlipOrientation(directions[0])),
-                                 training.GetAllowedDataFromBitAndDirection(checkPatternBits.GetDataAt(x, y, z), Orientations.FlipOrientation(directions[1]))
-                        };
-
-                        foreach (var allowed in allowedHashSets)
-                        {
-                            if (allowed == null)
-                            {
-                                isAllowed = false;
-                                return;
-                            }
-
-                            if (!allowed.Contains(bitPattern.GetDataAt(x, y, z)))
-                            {
-                                isAllowed = false;
-                            }
-                        }
-                    }
-                });
-
-                if (isAllowed)
-                {
-                    patternsFit.Add(i);
-                }
-            }
-
-            allowedPatterns.Add(direction.Value, patternsFit);
-        }
 
     }
 
@@ -233,18 +169,12 @@ public class Pattern : Matrix3<Module>
 
             bitPattern.Flip(direction.Key);
             bitPattern.PushData(direction.Value);
-
-
-
-            GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Clear();
-
+            
             List<int> patternsFit = new List<int>();
             for (int i = 0; i < training.Patterns.Count; i++)
             {
                 Matrix3<string> checkPatternBits = training.Patterns[i].GenerateBits(training);
                 checkPatternBits.PushData(direction.Value);
-
-
 
                 bool isAllowed = true;
                 HashSet<string> allowed = new HashSet<string>();
@@ -270,18 +200,9 @@ public class Pattern : Matrix3<Module>
 
                 if (isAllowed)
                 {
-                    GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Pattern, Color, int, HashSet<string>>(training.Patterns[i], Color.green, i, allowed));
                     patternsFit.Add(i);
                 }
-                else
-                {
-                    GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Pattern, Color, int, HashSet<string>>(training.Patterns[i], Color.red, i, allowed));
-
-                }
-
-
             }
-
             allowedPatterns.Add(direction.Value, patternsFit);
         }
     }

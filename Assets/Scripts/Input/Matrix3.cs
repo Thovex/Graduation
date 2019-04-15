@@ -184,8 +184,10 @@ public class Matrix3<T>
         }
     }
 
-    // Only supports 2D flipping (left/right & forward/back). ONLY FOR N == 2 && N == 3
+    // ONLY FOR N == 2 && N == 3
     // Todo support N>3
+
+
 
     // Example: N = 5
     // *     *     *     *     * | Matrix
@@ -194,61 +196,128 @@ public class Matrix3<T>
 
     public virtual void Flip(EOrientations orientation)
     {
-        T[,,] originalData = MatrixData;
-        T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
 
-        if (SizeX > 3) {
-            Debug.LogError("N > 3 not implemented!");
-        }
-
-        if (orientation == EOrientations.RIGHT || orientation == EOrientations.LEFT)
+        if (orientation == EOrientations.NULL)
         {
-            int x = SizeX - 1;
-            int z = SizeZ - 1;
-
-            for (int y = 0; y < SizeY; y++)
-            {
-                copyMatrix[0, y, 0] = originalData[x, y, 0];
-                copyMatrix[x, y, 0] = originalData[0, y, 0];
-                copyMatrix[0, y, z] = originalData[x, y, z];
-                copyMatrix[x, y, z] = originalData[0, y, z];
-            }
-        }
-        else if (orientation == EOrientations.FORWARD || orientation == EOrientations.BACK)
-        {
-            int x = SizeX - 1;
-            int z = SizeZ - 1;
-
-            for (int y = 0; y < SizeY; y++)
-            {
-                copyMatrix[0, y, 0] = originalData[0, y, z];
-                copyMatrix[0, y, z] = originalData[0, y, 0];
-                copyMatrix[x, y, 0] = originalData[x, y, z];
-                copyMatrix[x, y, z] = originalData[x, y, 0];
-            }
-        }
-        else if (orientation == EOrientations.UP || orientation == EOrientations.DOWN)
-        {
-
-            int y = SizeY - 1;
-
-            for (int x = 0; x < SizeX; x++)
-            {
-                for (int z = 0; z < SizeZ; z++)
-                {
-                    copyMatrix[x, 0, z] = originalData[x, y, z];
-                    copyMatrix[x, y, z] = originalData[x, 0, z];
-                }
-            }
-        }
-        else
-        {
-            Debug.Log("Flipping NULL");
+            Debug.LogError("Flipping NULL");
             return;
         }
 
-        MatrixData = copyMatrix;
+        if (SizeX > 3) {
+            Debug.LogError("N > 3 not implemented!");
+            return;
+        }
 
+        string orientationToString = Enum.GetName(typeof(EOrientations), orientation);
+        string[] orientations = orientationToString.Split('_');
+
+        foreach (string o in orientations)
+        {
+            Flip(o);
+        }
+// 
+//         if (orientation == EOrientations.RIGHT || orientation == EOrientations.LEFT)
+//         {
+//             MatrixData = FlipRightLeft();
+//         }
+//         else if (orientation == EOrientations.FORWARD || orientation == EOrientations.BACK)
+//         {
+//             MatrixData = FlipForwardBack();
+//         }
+//         else if (orientation == EOrientations.UP || orientation == EOrientations.DOWN)
+//         {
+//             MatrixData = FlipUpDown();
+//         }
+//         else if (orientation == EOrientations.NULL)
+//         {
+//             Debug.Log("Flipping NULL");
+//             return;
+//         } else
+//         {
+//            if (orientation == EOrientations.FORWARD_RIGHT)
+//             {
+//                 MatrixData = FlipForwardBack();
+//                 MatrixData = FlipRightLeft();
+//             }
+// 
+//             //EOrientations.BACK_DOWN
+//         }
+    }
+
+    public void Flip (string enumToString)
+    {
+
+        if (enumToString == "FORWARD" || enumToString == "BACK")
+        {
+            MatrixData = FlipForwardBack();
+        }
+
+        if (enumToString == "RIGHT" || enumToString == "LEFT")
+        {
+            MatrixData = FlipRightLeft();
+        }
+
+        if (enumToString == "UP" || enumToString == "DOWN")
+        {
+            MatrixData = FlipUpDown();
+        }
+    }
+
+    private T[,,] FlipRightLeft()
+    {
+        T[,,] originalData = MatrixData;
+        T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
+
+        int x = SizeX - 1;
+        int z = SizeZ - 1;
+
+        for (int y = 0; y < SizeY; y++)
+        {
+            copyMatrix[0, y, 0] = originalData[x, y, 0];
+            copyMatrix[x, y, 0] = originalData[0, y, 0];
+            copyMatrix[0, y, z] = originalData[x, y, z];
+            copyMatrix[x, y, z] = originalData[0, y, z];
+        }
+
+        return copyMatrix;
+    }
+
+    private T[,,] FlipForwardBack()
+    {
+        T[,,] originalData = MatrixData;
+        T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
+
+        int x = SizeX - 1;
+        int z = SizeZ - 1;
+
+        for (int y = 0; y < SizeY; y++)
+        {
+            copyMatrix[0, y, 0] = originalData[0, y, z];
+            copyMatrix[0, y, z] = originalData[0, y, 0];
+            copyMatrix[x, y, 0] = originalData[x, y, z];
+            copyMatrix[x, y, z] = originalData[x, y, 0];
+        }
+
+        return copyMatrix;
+    }
+
+    private T[,,] FlipUpDown()
+    {
+        T[,,] originalData = MatrixData;
+        T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
+
+        int y = SizeY - 1;
+
+        for (int x = 0; x < SizeX; x++)
+        {
+            for (int z = 0; z < SizeZ; z++)
+            {
+                copyMatrix[x, 0, z] = originalData[x, y, z];
+                copyMatrix[x, y, z] = originalData[x, 0, z];
+            }
+        }
+
+        return copyMatrix;
     }
 
     public virtual void PushData(Vector3Int direction)

@@ -6,22 +6,45 @@ public enum EOrientations
 {
     FORWARD,
     BACK,
+
     RIGHT,
     LEFT,
+
     UP,
     DOWN,
+
+    RIGHT_UP,
+    RIGHT_DOWN,
+
+    LEFT_UP,
+    LEFT_DOWN,
+
+    FORWARD_RIGHT,
+    FORWARD_LEFT,
+
+    FORWARD_UP,
+    BACK_DOWN,
+
+    FORWARD_DOWN,
+    BACK_UP,
+
+    FORWARD_UP_LEFT,
+    FORWARD_DOWN_LEFT,
+
+    FORWARD_UP_RIGHT,
+    FORWARD_DOWN_RIGHT,
+
+    BACK_RIGHT,
+    BACK_LEFT,
+
+    BACK_UP_LEFT,
+    BACK_DOWN_LEFT,
+
+    BACK_UP_RIGHT,
+    BACK_DOWN_RIGHT,
+
     NULL
 };
-
-public enum EOrientationsAdvanced
-{
-    FORWARDRIGHT,
-    FORWARDLEFT,
-    BACKRIGHT,
-    BACKLEFT,
-    NULL
-}
-
 
 public static class Orientations
 {
@@ -52,6 +75,28 @@ public static class Orientations
         }
     };
 
+    public static Dictionary<EOrientations, Vector3Int> OrientationUnitVectorsDefaultAngles = new Dictionary<EOrientations, Vector3Int>
+    {
+        {
+            EOrientations.FORWARD, new Vector3Int(0, 0, 1)
+        },
+        {
+            EOrientations.BACK, new Vector3Int(0, 0, -1)
+        },
+        {
+            EOrientations.RIGHT, Vector3Int.right
+        },
+        {
+            EOrientations.LEFT, Vector3Int.left
+        },
+        {
+            EOrientations.UP, Vector3Int.up
+        },
+        {
+            EOrientations.DOWN, Vector3Int.down
+        }
+    };
+
     public static Dictionary<EOrientations, Vector3Int> OrientationUnitVectors = new Dictionary<EOrientations, Vector3Int>
     {
         {
@@ -73,26 +118,69 @@ public static class Orientations
             EOrientations.DOWN, Vector3Int.down
         },
         {
+            EOrientations.RIGHT_UP, Vector3Int.right + Vector3Int.up
+        },
+        {
+            EOrientations.RIGHT_DOWN,  Vector3Int.right + Vector3Int.down
+        },
+        {
+            EOrientations.LEFT_UP,  Vector3Int.left + Vector3Int.up
+        },
+        {
+            EOrientations.LEFT_DOWN,  Vector3Int.left + Vector3Int.down
+        },
+        {
+            EOrientations.FORWARD_RIGHT, new Vector3Int(0, 0, 1) + Vector3Int.right
+        },
+        {
+            EOrientations.FORWARD_LEFT,new Vector3Int(0, 0, 1) + Vector3Int.left
+        },
+        {
+            EOrientations.FORWARD_UP, new Vector3Int(0, 0, 1) + Vector3Int.up
+        },
+        {
+            EOrientations.BACK_DOWN, new Vector3Int(0, 0, -1) + Vector3Int.down
+        },
+        {
+            EOrientations.FORWARD_DOWN, new Vector3Int(0, 0, 1) + Vector3Int.down
+        },
+        {
+            EOrientations.BACK_UP, new Vector3Int(0, 0, -1) + Vector3Int.up
+        },
+        {
+            EOrientations.FORWARD_UP_LEFT, new Vector3Int(0, 0, 1) + Vector3Int.up + Vector3Int.left
+        },
+        {
+            EOrientations.FORWARD_DOWN_LEFT, new Vector3Int(0, 0, 1) + Vector3Int.down + Vector3Int.left
+        },
+        {
+            EOrientations.FORWARD_UP_RIGHT, new Vector3Int(0, 0, 1) + Vector3Int.up + Vector3Int.right
+        },
+        {
+            EOrientations.FORWARD_DOWN_RIGHT, new Vector3Int(0, 0, 1) + Vector3Int.down + Vector3Int.right
+        },
+        {
+            EOrientations.BACK_RIGHT, new Vector3Int(0, 0, -1) + Vector3Int.right
+        },
+        {
+            EOrientations.BACK_LEFT, new Vector3Int(0, 0, -1) + Vector3Int.left
+        },
+        {
+            EOrientations.BACK_UP_LEFT, new Vector3Int(0, 0, -1) + Vector3Int.up + Vector3Int.left
+        },
+        {
+            EOrientations.BACK_DOWN_LEFT, new Vector3Int(0, 0, -1) + Vector3Int.down + Vector3Int.left
+        },
+        {
+            EOrientations.BACK_UP_RIGHT,  new Vector3Int(0, 0, -1) + Vector3Int.up + Vector3Int.right
+        },
+        {
+            EOrientations.BACK_DOWN_RIGHT,  new Vector3Int(0, 0, -1) + Vector3Int.down + Vector3Int.right
+        },
+        {
             EOrientations.NULL, Vector3Int.zero
         }
     };
-
-    public static Dictionary<EOrientationsAdvanced, Vector3Int> OrientationUnitVectorsAdvanced = new Dictionary<EOrientationsAdvanced, Vector3Int>
-    {
-        {
-            EOrientationsAdvanced.FORWARDRIGHT, (new Vector3Int(0, 0, 1) + Vector3Int.right)
-        },
-        {
-            EOrientationsAdvanced.FORWARDLEFT,  (new Vector3Int(0, 0, 1) + Vector3Int.left)
-        },
-        {
-            EOrientationsAdvanced.BACKRIGHT, (new Vector3Int(0, 0, -1) - Vector3Int.right)
-        },
-        {
-            EOrientationsAdvanced.BACKLEFT, (new Vector3Int(0, 0, -1) - Vector3Int.left)
-        }
-    };
-
 
     public static Dictionary<char, EOrientations> OrientationByChar = new Dictionary<char, EOrientations>
     {
@@ -116,26 +204,6 @@ public static class Orientations
         }
     };
 
-    public static EOrientations RotateClockwise(EOrientations orientation)
-    {
-        if (orientation == EOrientations.FORWARD) return EOrientations.RIGHT;
-        if (orientation == EOrientations.RIGHT) return EOrientations.BACK;
-        if (orientation == EOrientations.BACK) return EOrientations.LEFT;
-        if (orientation == EOrientations.LEFT) return EOrientations.FORWARD;
-
-        return EOrientations.NULL;
-    }
-
-    public static EOrientations RotateCounterClockwise(EOrientations orientation)
-    {
-        if (orientation == EOrientations.FORWARD) return EOrientations.LEFT;
-        if (orientation == EOrientations.LEFT) return EOrientations.BACK;
-        if (orientation == EOrientations.BACK) return EOrientations.RIGHT;
-        if (orientation == EOrientations.RIGHT) return EOrientations.FORWARD;
-
-        return EOrientations.NULL;
-    }
-
     public static EOrientations CharToOrientation(char character)
     {
         OrientationByChar.TryGetValue(character, out EOrientations orientation);
@@ -144,31 +212,8 @@ public static class Orientations
 
     public static EOrientations FlipOrientation(EOrientations input)
     {
-        if (input == EOrientations.FORWARD) return EOrientations.BACK;
-        if (input == EOrientations.BACK) return EOrientations.FORWARD;
-        if (input == EOrientations.RIGHT) return EOrientations.LEFT;
-        if (input == EOrientations.LEFT) return EOrientations.RIGHT;
-        if (input == EOrientations.UP) return EOrientations.DOWN;
-        if (input == EOrientations.DOWN) return EOrientations.UP;
-        return EOrientations.NULL;
-    }
-
-    public static EOrientationsAdvanced FlipOrientation(EOrientationsAdvanced input)
-    {
-        if (input == EOrientationsAdvanced.FORWARDLEFT) return EOrientationsAdvanced.BACKRIGHT;
-        if (input == EOrientationsAdvanced.FORWARDRIGHT) return EOrientationsAdvanced.BACKLEFT;
-        if (input == EOrientationsAdvanced.BACKLEFT) return EOrientationsAdvanced.FORWARDRIGHT;
-        if (input == EOrientationsAdvanced.BACKRIGHT) return EOrientationsAdvanced.FORWARDLEFT;
-        return EOrientationsAdvanced.NULL;
-    }
-
-    public static EOrientations[] FromAdvancedOrientation(EOrientationsAdvanced input)
-    {
-        if (input == EOrientationsAdvanced.FORWARDLEFT) return new EOrientations[] { EOrientations.FORWARD, EOrientations.LEFT };
-        if (input == EOrientationsAdvanced.FORWARDRIGHT) return new EOrientations[] { EOrientations.FORWARD, EOrientations.RIGHT };
-        if (input == EOrientationsAdvanced.BACKLEFT) return new EOrientations[] { EOrientations.BACK, EOrientations.LEFT };
-        if (input == EOrientationsAdvanced.BACKRIGHT) return new EOrientations[] { EOrientations.BACK, EOrientations.RIGHT };
-        return null;
+        OrientationUnitVectors.TryGetValue(input, out Vector3Int value);
+        return DirToOrientation(value * -1);
     }
 
     public static Vector3Int CharToEulerRotation(char character)
@@ -200,12 +245,6 @@ public static class Orientations
     public static Vector3Int ToUnitVector(EOrientations orientation)
     {
         OrientationUnitVectors.TryGetValue(orientation, out Vector3Int unitVector);
-        return unitVector;
-    }
-
-    public static Vector3Int ToUnitVector(EOrientationsAdvanced orientation)
-    {
-        OrientationUnitVectorsAdvanced.TryGetValue(orientation, out Vector3Int unitVector);
         return unitVector;
     }
 

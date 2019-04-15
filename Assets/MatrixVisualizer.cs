@@ -26,7 +26,7 @@ public class MatrixVisualizerInspector : OdinEditor
 [ExecuteAlways]
 public class MatrixVisualizer : MonoBehaviour
 {
-    public List<Tuple<Pattern, Color, int, HashSet<string>>> InMatrix = new List<Tuple<Pattern, Color, int, HashSet<string>>>();
+    public List<Tuple<Matrix3<string>, Color, int, HashSet<string>>> InMatrix = new List<Tuple<Matrix3<string>, Color, int, HashSet<string>>>();
     public Dictionary<Vector3, Pattern> Display = new Dictionary<Vector3, Pattern>();
 
     public TrainingScript training;
@@ -43,7 +43,7 @@ public class MatrixVisualizer : MonoBehaviour
         for (int i = 0; i < InMatrix.Count; i++)
         {
 
-            Matrix3<string> bits = InMatrix[i].Item1.GenerateBits(training);
+            Matrix3<string> bits = InMatrix[i].Item1;
 
             For3(InMatrix[i].Item1, (x, y, z) =>
             {
@@ -66,7 +66,7 @@ public class MatrixVisualizer : MonoBehaviour
 
             if (InMatrix[i].Item2 == Color.green)
             {
-                Display.Add(transform.position + Vector3.right * i + (new Vector3(InMatrix[i].Item1.SizeX + 1, 1, 1) / 2) + (Vector3.right * spacing * i), InMatrix[i].Item1);
+                //Display.Add(transform.position + Vector3.right * i + (new Vector3(InMatrix[i].Item1.SizeX + 1, 1, 1) / 2) + (Vector3.right * spacing * i), InMatrix[i].Item1);
                 List<string> hashSetToList = new List<string>();
 
 
@@ -91,25 +91,26 @@ public class MatrixVisualizer : MonoBehaviour
 
     private void Update()
     {
-        if (patternsHere && training)
-        {
-            for (int i = patternsHere.transform.childCount; i > 0; --i)
-            {
-                DestroyImmediate(patternsHere.transform.GetChild(0).gameObject);
-            }
-
-            foreach (var display in Display)
-            {
-                For3(display.Value, (x, y, z) =>
-                {
-                    if (display.Value.MatrixData[x, y, z].Prefab != null)
-                    {
-                        GameObject patternData = Instantiate(display.Value.MatrixData[x, y, z].Prefab, patternsHere.transform);
-                        patternData.transform.localPosition = display.Key + new Vector3(x, y, z);
-                        patternData.transform.localEulerAngles = display.Value.MatrixData[x, y, z].RotationEuler;
-                    }
-                });
-            }
-        }
+        //         if (patternsHere && training)
+        //         {
+        //             for (int i = patternsHere.transform.childCount; i > 0; --i)
+        //             {
+        //                 DestroyImmediate(patternsHere.transform.GetChild(0).gameObject);
+        //             }
+        // 
+        //             foreach (var display in Display)
+        //             {
+        //                 For3(display.Value, (x, y, z) =>
+        //                 {
+        //                     if (display.Value.MatrixData[x, y, z].Prefab != null)
+        //                     {
+        //                         GameObject patternData = Instantiate(display.Value.MatrixData[x, y, z].Prefab, patternsHere.transform);
+        //                         patternData.transform.localPosition = display.Key + new Vector3(x, y, z);
+        //                         patternData.transform.localEulerAngles = display.Value.MatrixData[x, y, z].RotationEuler;
+        //                     }
+        //                 });
+        //             }
+        //         }
+        //     }
     }
 }
