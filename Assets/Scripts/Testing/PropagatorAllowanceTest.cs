@@ -167,7 +167,7 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
                     GameObject newPattern2 = new GameObject("Pattern");
 
                     newPattern2.transform.parent = patternNSpawnTransform.transform;
-                    newPattern2.transform.localPosition = Vector3.zero + direction.Value;
+                    newPattern2.transform.localPosition = Vector3.zero+ direction.Value;
 
 
                     For3(neighbourPattern, (x, y, z) =>
@@ -175,7 +175,7 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
                         if (neighbourPattern.MatrixData[x, y, z].Prefab != null)
                         {
                             GameObject patternData = Instantiate(neighbourPattern.MatrixData[x, y, z].Prefab, newPattern2.transform);
-                            patternData.transform.localPosition = new Vector3(x, y, z) + direction.Value;
+                            patternData.transform.localPosition = new Vector3(x, y, z)+ direction.Value;
                             patternData.transform.localEulerAngles = neighbourPattern.MatrixData[x, y, z].RotationEuler;
                         }
                     });
