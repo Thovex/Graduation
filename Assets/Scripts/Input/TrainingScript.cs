@@ -54,7 +54,7 @@ public class TrainingScript : SerializedMonoBehaviour
 
     private void Update()
     {
-        Train();
+        //Train();
     }
 
     public void Train()
@@ -67,7 +67,7 @@ public class TrainingScript : SerializedMonoBehaviour
        // {
             if (!editMode)
             {
-                ModuleMatrix.RotateCounterClockwise(1);
+                //ModuleMatrix.RotateCounterClockwise(1);
 
                 CalculateModuleNeighbours();
 
