@@ -143,43 +143,92 @@ public class Matrix3<T>
         Clear();
     }
 
+    public void TransposeFlip()
+    {
+        //         for (int x = 0; x < width; x++)
+        //         {
+        //             for (int y = 0; y < height / 2 + 1; y++)
+        //             {
+        //                 int element = matrix[x, y];
+        //                 int neighbour = matrix[x, height - y - 1];
+        //                 matrix[x, y] = neighbour;
+        //                 matrix[x, height - y - 1] = element;
+        // 
+        // 
+        //             }
+        //         }
+
+        for (int x = 0; x < SizeX; x++)
+        {
+            for (int y = 0; y < SizeY; y++)
+            {
+                for (int z = 0; z < SizeZ / 2 + 1; z++)
+                {
+                    T elem = MatrixData[x, y, z];
+                    T neighbour = MatrixData[x, y, SizeZ - z - 1];
+                    MatrixData[x, y, z] = neighbour;
+                    MatrixData[x, y, SizeZ - z - 1] = elem;
+                }
+            }
+        }
+    }
+
     public virtual void RotateCounterClockwise(int times)
     {
+//         TransposeFlip();
+// 
+//         Matrix3<T> transposedMatrix = new Matrix3<T>(new Vector3Int(Size.z, Size.y, Size.x));
+// 
+//         For3(this, (x, y, z) =>
+//         {
+//             transposedMatrix.MatrixData[z, y, x] = MatrixData[x, y, z];
+//         });
+// 
+//         MatrixData = transposedMatrix.MatrixData;
+
+
+        int MinX = 0;
+        int MaxX = SizeX - 1;
+
+        int MinZ = 0;
+        int MaxZ = SizeZ - 1;
+
         for (int i = 0; i < times; i++)
         {
-
-            // Todo: Replace with Quaternion rotation
-            for (int n = 0; n < SizeX - 1; n++)
+            for (int increment = 0; increment < SizeX / 2; increment++)
             {
-
-                T[,,] originalData = MatrixData;
-                T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
-
-                For3(this, (x, y, z) =>
+                for (int n = 0 + increment; n < MaxX - increment; n++)
                 {
-                    if (x < SizeX - 1 && z == 0)
-                    {
-                        copyMatrix[x + 1, y, z] = originalData[x, y, z];
-                    }
-                    else if (x == SizeX - 1 && z < SizeZ - 1)
-                    {
-                        copyMatrix[x, y, z + 1] = originalData[x, y, z];
-                    }
-                    else if (z == SizeZ - 1 && x > 0)
-                    {
-                        copyMatrix[x - 1, y, z] = originalData[x, y, z];
-                    }
-                    else if (z > 0 && x == 0)
-                    {
-                        copyMatrix[x, y, z - 1] = originalData[x, y, z];
-                    }
-                    else
-                    {
-                        copyMatrix[x, y, z] = originalData[x, y, z];
-                    }
-                });
 
-                MatrixData = copyMatrix;
+                    T[,,] originalData = MatrixData;
+                    T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
+
+                    For3(this, (x, y, z) =>
+                    {
+                        if (x >= MinX + increment && x <= (MaxX - 1) - increment && z == MinZ + increment)
+                        {
+                            copyMatrix[x + 1, y, z] = originalData[x, y, z];
+                        }
+                        else if (x == MaxX - increment && z >= MinZ + increment && z <= (MaxZ - 1) - increment)
+                        {
+                            copyMatrix[x, y, z + 1] = originalData[x, y, z];
+                        }
+                        else if (x >= (MinX + 1) + increment && x <= MaxX - increment && z == MaxZ - increment)
+                        {
+                            copyMatrix[x - 1, y, z] = originalData[x, y, z];
+                        }
+                        else if (x == MinX + increment && z >= (MinZ + 1) + increment && z <= MaxZ - increment)
+                        {
+                            copyMatrix[x, y, z - 1] = originalData[x, y, z];
+                        }
+                        else
+                        {
+                            copyMatrix[x, y, z] = originalData[x, y, z];
+                        }
+                    });
+
+                    MatrixData = copyMatrix;
+                }
             }
         }
     }
@@ -203,7 +252,8 @@ public class Matrix3<T>
             return;
         }
 
-        if (SizeX > 3) {
+        if (SizeX > 3)
+        {
             Debug.LogError("N > 3 not implemented!");
             return;
         }
@@ -215,36 +265,10 @@ public class Matrix3<T>
         {
             Flip(o);
         }
-// 
-//         if (orientation == EOrientations.RIGHT || orientation == EOrientations.LEFT)
-//         {
-//             MatrixData = FlipRightLeft();
-//         }
-//         else if (orientation == EOrientations.FORWARD || orientation == EOrientations.BACK)
-//         {
-//             MatrixData = FlipForwardBack();
-//         }
-//         else if (orientation == EOrientations.UP || orientation == EOrientations.DOWN)
-//         {
-//             MatrixData = FlipUpDown();
-//         }
-//         else if (orientation == EOrientations.NULL)
-//         {
-//             Debug.Log("Flipping NULL");
-//             return;
-//         } else
-//         {
-//            if (orientation == EOrientations.FORWARD_RIGHT)
-//             {
-//                 MatrixData = FlipForwardBack();
-//                 MatrixData = FlipRightLeft();
-//             }
-// 
-//             //EOrientations.BACK_DOWN
-//         }
+
     }
 
-    public void Flip (string enumToString)
+    public void Flip(string enumToString)
     {
 
         if (enumToString == "FORWARD" || enumToString == "BACK")

@@ -63,18 +63,19 @@ public class TrainingScript : SerializedMonoBehaviour
 
         AssignCoordinateToChildren();
 
-       // for (int i = 0; i < 4; i++)
+        //for (int i = 0; i < 4; i++)
        // {
             if (!editMode)
             {
+                ModuleMatrix.RotateCounterClockwise(1);
+
                 CalculateModuleNeighbours();
-            //ModuleMatrix.RotateCounterClockwise(1);
 
-            DefinePatterns();
-            DisplayPatterns();
-        }
+            }
         //}
+        DefinePatterns();
 
+        DisplayPatterns();
 
 
     }
@@ -323,10 +324,10 @@ public class TrainingScript : SerializedMonoBehaviour
                 }
             }
         }
-        UpdateInputComponents();
+        //UpdateInputComponents();
     }
 
-
+    // Debug per-module
     private void UpdateInputComponents()
     {
         // Loop through all the children
@@ -365,7 +366,6 @@ public class TrainingScript : SerializedMonoBehaviour
         {
             EOrientations orientationLookingFor = lookingForItem.Item2;
 
-            // tussen de orientations heen kijken of het met elkaar matched ?
             foreach (var allowedData in AllowedData)
             {
                 var data = allowedData.Value.ToList();
