@@ -62,18 +62,20 @@ public class TrainingScript : SerializedMonoBehaviour
         InitializeData();
 
         AssignCoordinateToChildren();
-        
-        //for (int i = 0; i < 4; i++)
-        //{
+
+       // for (int i = 0; i < 4; i++)
+       // {
             if (!editMode)
             {
                 CalculateModuleNeighbours();
-               // ModuleMatrix.RotateCounterClockwise(1);
-            }
-       // }
+            //ModuleMatrix.RotateCounterClockwise(1);
 
-        DefinePatterns();
-        DisplayPatterns();
+            DefinePatterns();
+            DisplayPatterns();
+        }
+        //}
+
+
 
     }
 
@@ -227,9 +229,9 @@ public class TrainingScript : SerializedMonoBehaviour
             }
             else
             {
-               // Weights.TryGetValue(similarModulePair.Key, out int currentCount);
-               // currentCount += similarModulePair.Value.Count;
-                //Weights[similarModulePair.Key] = currentCount;
+                Weights.TryGetValue(similarModulePair.Key, out int currentCount);
+                currentCount += similarModulePair.Value.Count;
+                Weights[similarModulePair.Key] = currentCount;
             }
         }
 
@@ -355,12 +357,15 @@ public class TrainingScript : SerializedMonoBehaviour
 
     public HashSet<string> RetrieveAllowedBits(List<Tuple<string, EOrientations>> lookingFor)
     {
-        HashSet<string> allowedBits = new HashSet<string>();
+        HashSet<string> filteredBits = new HashSet<string>();
+        Dictionary<string, int> allowedBits = new Dictionary<string, int>();
+
 
         foreach (var lookingForItem in lookingFor)
         {
             EOrientations orientationLookingFor = lookingForItem.Item2;
 
+            // tussen de orientations heen kijken of het met elkaar matched ?
             foreach (var allowedData in AllowedData)
             {
                 var data = allowedData.Value.ToList();
@@ -371,14 +376,32 @@ public class TrainingScript : SerializedMonoBehaviour
                     {
                         if (dataElem.Value.AllowedBits.Contains(lookingForItem.Item1))
                         {
-                            allowedBits.Add(allowedData.Key);
+                            if (allowedBits.ContainsKey(allowedData.Key))
+                            {
+                                allowedBits.TryGetValue(allowedData.Key, out int value);
+                                allowedBits[allowedData.Key] = value + 1;
+                            }
+                            else
+                            {
+                                allowedBits.Add(allowedData.Key, 0);
+
+                            }
                             continue;
                         }
                     }
                 }
             }
         }
-        return allowedBits;
+
+        foreach (var allowed in allowedBits)
+        {
+            if (allowed.Value == lookingFor.Count - 1)
+            {
+                filteredBits.Add(allowed.Key);
+            }
+        }
+
+        return filteredBits;
     }
 
     public Module CreateModuleFromBit(string bit)
