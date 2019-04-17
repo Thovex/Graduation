@@ -80,17 +80,7 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
     [SerializeField] private TrainingScript training;
     [SerializeField] private int patternToDisplay;
 
-
-    [SerializeField] private bool advancedRot = false;
-
-    [SerializeField] private EOrientations neighbourOrientationToDisplay;
-   // [SerializeField] private EOrientationsAdvanced neighbourOrientationAdvancedToDisplay;
-
-    [SerializeField] private int neighbourIndexToDisplay;
-
-    [SerializeField] private int debugIndexToDisplay;
-
-    private float switchTimer = 5F;
+    [SerializeField] private EOrientations orientationToDisplay;
 
     [SerializeField] private Transform patternSpawnTransform;
     [SerializeField] private Transform patternNSpawnTransform;
@@ -101,8 +91,10 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
 
     public void Sync()
     {
+        training.Train();
+
         selectedPattern = training.Patterns[patternToDisplay];
-        selectedPattern.BuildPropagator(training);
+        selectedPattern.BuildPropagator(training, orientationToDisplay);
 
         for (int i = patternSpawnTransform.transform.childCount; i > 0; --i)
         {
@@ -136,53 +128,56 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
             DestroyImmediate(patternNSpawnTransform.transform.GetChild(0).gameObject);
         }
 
+        if (orientationToDisplay == EOrientations.NULL)
+        {
+            foreach (var direction in Orientations.OrientationUnitVectors)
+            {
+                if (direction.Key == EOrientations.NULL) continue;
 
-        //Vector3Int direction = advancedRot ? Orientations.ToUnitVector(neighbourOrientationAdvancedToDisplay) : Orientations.ToUnitVector(neighbourOrientationToDisplay);
+                Place(direction);
+            }
+        }
+        else
+        {
+            foreach (var direction in Orientations.OrientationUnitVectors)
+            {
+                if (direction.Key != orientationToDisplay) continue;
 
-        SyncDefault();
+                Place(direction);
+            }
+        }
     }
 
-    private void SyncDefault()
+    private void Place(KeyValuePair<EOrientations, Vector3Int> direction)
     {
-        foreach (var direction in Orientations.OrientationUnitVectors)
+        if (selectedPattern.Propagator.TryGetValue(direction.Value, out List<Pattern> value))
         {
-            if (direction.Key == EOrientations.NULL) continue;
-
-            if (selectedPattern.Propagator.TryGetValue(direction.Value, out List<int> value))
+            if (value.Count == 0)
             {
+                Debug.LogError("No values");
+            }
+            else
+            {
+                GameObject newPattern2 = new GameObject("Pattern");
 
+                newPattern2.transform.parent = patternNSpawnTransform.transform;
+                newPattern2.transform.localPosition = Vector3.zero + direction.Value * 2;
 
-                if (value.Count == 0)
+                for (int i = 0; i < value.Count; i++)
                 {
-
-                    Debug.LogError("No values");
-                }
-                else
-                {
-                    neighbourIndexToDisplay = value.PickRandom();
-
-                    Pattern neighbourPattern = training.Patterns[neighbourIndexToDisplay];
-
-                    GameObject newPattern2 = new GameObject("Pattern");
-
-                    newPattern2.transform.parent = patternNSpawnTransform.transform;
-                    newPattern2.transform.localPosition = Vector3.zero+ direction.Value;
-
-
-                    For3(neighbourPattern, (x, y, z) =>
+                    For3(value[i], (x, y, z) =>
                     {
-                        if (neighbourPattern.MatrixData[x, y, z].Prefab != null)
+                        if (value[i].MatrixData[x, y, z].Prefab != null)
                         {
-                            GameObject patternData = Instantiate(neighbourPattern.MatrixData[x, y, z].Prefab, newPattern2.transform);
-                            patternData.transform.localPosition = new Vector3(x, y, z)+ direction.Value;
-                            patternData.transform.localEulerAngles = neighbourPattern.MatrixData[x, y, z].RotationEuler;
+                            GameObject patternData = Instantiate(value[i].MatrixData[x, y, z].Prefab, newPattern2.transform);
+                            patternData.transform.localPosition = new Vector3(x, y, z) + direction.Value * 2 * i * 2;
+                            patternData.transform.localEulerAngles = value[i].MatrixData[x, y, z].RotationEuler;
                         }
                     });
                 }
             }
         }
     }
-
 
     internal void Flip(EOrientations orientation)
     {
@@ -196,33 +191,6 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
 
     private void OnDrawGizmos()
     {
-        try
-        {
-            {
-                Gizmos.color = new Color(1, 0, 1, 0.2F);
-
-                Pattern pattern = training.Patterns[patternToDisplay];
-
-                foreach (var pair in pattern.Propagator)
-                {
-                    For3(new Vector3Int(N, N, N), (x, y, z) =>
-                    {
-                        Gizmos.DrawWireCube(patternSpawnTransform.position + new Vector3Int(x, y, z) + pair.Key, Vector3.one);
-                    });
-                }
-
-                var selected = selectedPattern.debugPatterns[debugIndexToDisplay];
-
-
-                For3(selected.Item1, (x, y, z) =>
-                {
-                    Handles.Label(transform.position + selected.Item2 + new Vector3Int(x, y, z), selected.Item1.GetDataAt(x, y, z));
-                });
-
-
-            }
-        }
-        catch (Exception) { }
 
         var selectedPatternBits = selectedPattern.GenerateBits(training);
 

@@ -105,8 +105,21 @@ public class TrainingScript : SerializedMonoBehaviour
         {
             PrefabAndId.Add(i, prefabs[i]);
         }
-
     }
+
+    private int GetPrefabIDByPrefab(GameObject prefab)
+    {
+        foreach (var pair in PrefabAndId)
+        {
+            if (pair.Value == prefab)
+            {
+                return pair.Key;
+            }
+        }
+
+        return -1;
+    }
+
     private void AssignCoordinateToChildren()
     {
         // Loop through all the children
@@ -117,11 +130,13 @@ public class TrainingScript : SerializedMonoBehaviour
             // Create int XYZ coord based on child value in input grid.
             Vector3Int coord = V3ToV3I(childTransform.localPosition);
 
-            // Create new Module from it's Prefab object and it's local rotation.
-            ModuleMatrix.MatrixData[coord.x, coord.y, coord.z] = new Module(PrefabUtility.GetCorrespondingObjectFromSource(childTransform.gameObject), V3ToV3I(childTransform.localEulerAngles));
+            GameObject prefab = PrefabUtility.GetCorrespondingObjectFromSource(childTransform.gameObject);
 
-            // Change child name to (X, Y, Z) + Prefab.Name
-            childTransform.name = V3ToV3I(childTransform.localPosition).ToString() + " " + (PrefabUtility.GetCorrespondingObjectFromSource(childTransform.gameObject)).name;
+            // Create new Module from it's Prefab object and it's local rotation.
+            ModuleMatrix.MatrixData[coord.x, coord.y, coord.z] = new Module(prefab, V3ToV3I(childTransform.localEulerAngles));
+
+            // Change child name to (X, Y, Z) + Prefab.Name + ID
+            childTransform.name = V3ToV3I(childTransform.localPosition).ToString() + " (Bit: " + ModuleMatrix.MatrixData[coord.x, coord.y, coord.z].GenerateBit(this) + ") (" + prefab.name + ")";
         }
 
         // Find invalid indices
@@ -488,7 +503,7 @@ public class TrainingScript : SerializedMonoBehaviour
 
         foreach (Pattern pattern in Patterns)
         {
-            pattern.BuildPropagator(this);
+            //pattern.BuildPropagator(this);
         }
     }
 
