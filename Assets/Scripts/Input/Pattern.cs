@@ -141,6 +141,37 @@ public class Pattern : Matrix3<Module>
         return bIsEqual;
     }
 
+    public virtual bool BitEqualMatrix(Matrix3<string> thisMatrix, Matrix3<string> otherMatrix)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (thisMatrix.MatrixData.GetLength(i) != otherMatrix.MatrixData.GetLength(i))
+            {
+                return false;
+            }
+        }
+
+        bool bIsEqual = true;
+
+        For3(thisMatrix, (x, y, z) =>
+        {
+            string original = thisMatrix.MatrixData[x, y, z];
+            string comparison = otherMatrix.MatrixData[x, y, z];
+
+            if (original != "null" || comparison != "null")
+            {
+
+                if (original != comparison)
+                {
+                    bIsEqual = false;
+                }
+            }
+        });
+
+        return bIsEqual;
+
+    }
+
     public Matrix3<string> GenerateBits(TrainingScript training)
     {
         Matrix3<string> bits = new Matrix3<string>(new Vector3Int(SizeX, SizeY, SizeZ));

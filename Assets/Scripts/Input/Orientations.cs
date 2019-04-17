@@ -216,6 +216,11 @@ public static class Orientations
         return DirToOrientation(value * -1);
     }
 
+    public static Vector3Int InvertUnitVector(Vector3Int input)
+    {
+        return input * -1;
+    }
+
     public static Vector3Int CharToEulerRotation(char character)
     {
         return ToRotationEuler(CharToOrientation(character));
