@@ -501,9 +501,32 @@ public class TrainingScript : SerializedMonoBehaviour
             });
         }
 
+        List<Pattern> checkedPatterns = new List<Pattern>();
+
         foreach (Pattern pattern in Patterns)
         {
-            //pattern.BuildPropagator(this);
+            bool bIsEqual = false;
+
+            foreach (Pattern checkedPattern in checkedPatterns)
+            {
+                if (pattern.CompareBitPatterns(this, checkedPattern.GenerateBits(this)))
+                {
+                    bIsEqual = true;
+                    break;
+                }
+            }
+
+            if (!bIsEqual)
+            {
+                checkedPatterns.Add(pattern);
+            }
+        }
+
+        Patterns = checkedPatterns;
+
+        foreach (Pattern pattern in Patterns)
+        {
+            pattern.BuildPropagator(this, EOrientations.NULL);
         }
     }
 

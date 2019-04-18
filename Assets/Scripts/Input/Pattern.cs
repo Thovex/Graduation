@@ -70,7 +70,7 @@ public class Pattern : Matrix3<Module>
             string bit = bitMatrix.GetDataAt(x, y, z);
 
             // Check?
-            if (bit != "null" && bit != "0S")
+            if (bit != "null")
             {
 
                 if (bit != inMatrix.GetDataAt(x, y, z))
@@ -216,8 +216,13 @@ public class Pattern : Matrix3<Module>
     {
         Matrix3<string> bitPattern = GenerateBits(training);
 
+        GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Clear();
+
+
         bitPattern.Flip(direction.Key);
         bitPattern.PushData(direction.Value);
+
+        GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(bitPattern, Color.yellow, 0, new HashSet<string>()));
 
         List<Pattern> patternsFit = new List<Pattern>();
         for (int i = 0; i < training.Patterns.Count; i++)
@@ -225,31 +230,21 @@ public class Pattern : Matrix3<Module>
             Matrix3<string> checkPatternBits = training.Patterns[i].GenerateBits(training);
             checkPatternBits.PushData(direction.Value);
 
-            bool isAllowed = true;
-            HashSet<string> allowed = new HashSet<string>();
+            bool isAllowed = false;
 
-            For3(checkPatternBits, (x, y, z) =>
+            if (CompareBitPatterns(bitPattern, checkPatternBits))
             {
-                if (checkPatternBits.GetDataAt(x, y, z) != "null")
-                {
-                    allowed = training.GetAllowedDataFromBitAndDirection(checkPatternBits.GetDataAt(x, y, z), Orientations.FlipOrientation(direction.Key));
-
-                    if (allowed == null)
-                    {
-                        isAllowed = false;
-                        return;
-                    }
-
-                    if (!allowed.Contains(bitPattern.GetDataAt(x, y, z)))
-                    {
-                        isAllowed = false;
-                    }
-                }
-            });
+                isAllowed = true;
+            }
 
             if (isAllowed)
             {
                 patternsFit.Add(training.Patterns[i]);
+                GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(checkPatternBits, Color.green, i, new HashSet<string>()));
+            } else
+            {
+                GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(checkPatternBits, Color.red, i, new HashSet<string>()));
+
             }
         }
         allowedPatterns.Add(direction.Value, patternsFit);

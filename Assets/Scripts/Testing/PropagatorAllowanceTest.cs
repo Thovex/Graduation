@@ -170,7 +170,7 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
                         if (value[i].MatrixData[x, y, z].Prefab != null)
                         {
                             GameObject patternData = Instantiate(value[i].MatrixData[x, y, z].Prefab, newPattern2.transform);
-                            patternData.transform.localPosition = new Vector3(x, y, z) + direction.Value * 2 * i * 2;
+                            patternData.transform.localPosition = new Vector3(x, y, z) + direction.Value * 2 * (i+1) * 2;
                             patternData.transform.localEulerAngles = value[i].MatrixData[x, y, z].RotationEuler;
                         }
                     });
