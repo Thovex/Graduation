@@ -216,13 +216,13 @@ public class Pattern : Matrix3<Module>
     {
         Matrix3<string> bitPattern = GenerateBits(training);
 
-        GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Clear();
+        //GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Clear();
 
 
         bitPattern.Flip(direction.Key);
         bitPattern.PushData(direction.Value);
 
-        GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(bitPattern, Color.yellow, 0, new HashSet<string>()));
+       // GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(bitPattern, Color.yellow, 0, new HashSet<string>()));
 
         List<Pattern> patternsFit = new List<Pattern>();
         for (int i = 0; i < training.Patterns.Count; i++)
@@ -240,10 +240,10 @@ public class Pattern : Matrix3<Module>
             if (isAllowed)
             {
                 patternsFit.Add(training.Patterns[i]);
-                GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(checkPatternBits, Color.green, i, new HashSet<string>()));
+               // GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(checkPatternBits, Color.green, i, new HashSet<string>()));
             } else
             {
-                GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(checkPatternBits, Color.red, i, new HashSet<string>()));
+               // GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(checkPatternBits, Color.red, i, new HashSet<string>()));
 
             }
         }

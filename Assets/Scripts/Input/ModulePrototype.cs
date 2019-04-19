@@ -13,13 +13,4 @@ public class ModulePrototype : SerializedMonoBehaviour {
     public Dictionary<EOrientations, Coefficient> CoefficientDict { get => coefficientDict; set => coefficientDict = value; }
     public bool IsSymmetrical { get => isSymmetrical; set => isSymmetrical = value; }
 
-    public void CalculateDisplay()
-    {
-        coefficientsDisplay.Clear();
-
-        foreach (KeyValuePair<EOrientations, Coefficient> pair in coefficientDict)
-        {
-            coefficientsDisplay.Add(pair.Key, pair.Value.Print());
-        }
-    }
 }

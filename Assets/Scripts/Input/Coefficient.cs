@@ -2,34 +2,59 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct Coefficient
+public class Coefficient
 {
-    [SerializeField] private HashSet<string> _allowedBits;
-    public HashSet<string> AllowedBits { get => _allowedBits;
-        set {
-            _allowedBits = value;
-        }
+    [SerializeField] public Dictionary<Pattern, bool> allowedPatterns = new Dictionary<Pattern, bool>();
+
+    public Coefficient(Dictionary<Pattern, bool> allowedDict)
+    {
+        allowedPatterns = allowedDict;
     }
 
-    public Coefficient(HashSet<string> allowedBits)
+    public int AllowedCount ()
     {
-        _allowedBits = allowedBits;
-    }
+        int allowedCount = 0;
 
-    public void Initialize()
-    {
-        AllowedBits = new HashSet<string>();
-    }
-
-    public string Print()
-    {
-        string bitDisplay = "";
-
-        foreach (string s in _allowedBits)
+        foreach (var pair in allowedPatterns)
         {
-            bitDisplay += "{" + s + "}";
+            if (pair.Value)
+            {
+                allowedCount++;
+            }
         }
 
-        return bitDisplay;
+        return allowedCount;
+    }
+
+    public List<Pattern> GetValidPatterns()
+    {
+        List<Pattern> validPatterns = new List<Pattern>();
+
+        foreach (var pair in allowedPatterns)
+        {
+            if (pair.Value)
+            {
+                validPatterns.Add(pair.Key);
+            }
+        }
+
+        return validPatterns;
+    }
+
+    public Pattern GetLastAllowedPattern()
+    {
+        if (AllowedCount() == 1)
+        {
+            foreach (var pair in allowedPatterns)
+            {
+                if (pair.Value)
+                {
+                    return pair.Key;
+                }
+            }
+        }
+
+        Debug.LogError("Can't be here");
+        return null;
     }
 }

@@ -17,19 +17,13 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     [SerializeField] private int patternIndex = 0;
 
     [SerializeField] private Transform objects;
-    [SerializeField] private Transform displayTarget;
+    [SerializeField] private Transform displayTarget;   
 
-    [SerializeField] private List<Pattern> allowedPatterns = new List<Pattern>();
+    private Matrix3<Coefficient> wave;
+    private Stack<Vector3Int> flag;
 
-    List<Tuple<string, EOrientations>> lookingFor = new List<Tuple<string, EOrientations>>();
-    Vector3Int lastpropagated = Vector3Int.zero;
+    private List<Vector3Int> updated = new List<Vector3Int>();
 
-    private Pattern moduleMatrix;
-    private Matrix3<bool> wave;
-    private Matrix3<Coefficient> coefficients;
-    private Matrix3<Pattern> patterns;
-
-    private Matrix3<Vector3Int> userCoordinateMatrix = new Matrix3<Vector3Int>();
 
     private int mostCoefficients = 0;
 
@@ -44,157 +38,221 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     }
     public void Initialize()
     {
-        moduleMatrix = new Pattern(outputSize);
-        wave = new Matrix3<bool>(outputSize);
-        coefficients = new Matrix3<Coefficient>(outputSize);
-        //patterns = new Matrix3<Pattern>(outputSize);
+        training.Train();
 
-
-        for (int i = objects.childCount; i > 0; --i)
+        for (int i = objects.transform.childCount; i > 0; --i)
         {
-            DestroyImmediate(objects.GetChild(0).gameObject);
+            DestroyImmediate(objects.transform.GetChild(0).gameObject);
         }
 
-        InitSelectionMatrix();
 
-        HashSet<string> allowedData = ReturnAllowedData();
+        wave = new Matrix3<Coefficient>(outputSize);
+        flag = new Stack<Vector3Int>();
 
-        For3(outputSize, (x, y, z) =>
+        Dictionary<Pattern, bool> initCoefficientDictionary = new Dictionary<Pattern, bool>();
+
+        foreach (Pattern pattern in training.Patterns)
         {
-            wave.MatrixData[x, y, z] = true;
-            coefficients.MatrixData[x, y, z] = new Coefficient(allowedData);
-        });
-
-
-        InitializePattern(userCoordinateMatrix, training.Patterns[patternIndex]);
-    }
-
-
-    public void InitSelectionMatrix()
-    {
-        Vector3Int nSize = new Vector3Int(training.N, training.N, training.N);
-        userCoordinateMatrix = new Matrix3<Vector3Int>(nSize);
-
-        For3(userCoordinateMatrix, (x, y, z) =>
-        {
-            userCoordinateMatrix.MatrixData[x, y, z] = new Vector3Int(x + 3, y, z + 3);
-        });
-    }
-
-    private HashSet<string> ReturnAllowedData()
-    {
-        HashSet<string> allowedHashSet = new HashSet<string>();
-        var listData = training.AllowedData.Keys.ToList();
-
-        foreach (var data in listData)
-        {
-            allowedHashSet.Add(data);
+            initCoefficientDictionary.Add(pattern, true);
         }
 
-        mostCoefficients = allowedHashSet.Count;
+        For3(wave, (x, y, z) =>
+        {
+            Coefficient initCoefficient = new Coefficient(new Dictionary<Pattern, bool>(initCoefficientDictionary));
+            mostCoefficients = initCoefficient.AllowedCount();
+            wave.SetDataAt(x, y, z, initCoefficient);
+        });
 
-        return allowedHashSet;
+        InitialPattern();
     }
 
-    public void InitializePattern()
+    private void InitialPattern()
     {
-        try
+        Vector3Int coord = Vector3Int.zero;
+
+
+        Dictionary<Pattern, bool> exampleDict = new Dictionary<Pattern, bool>();
+        exampleDict.Add(training.Patterns[10], true);
+
+        wave.SetDataAt(coord, new Coefficient(exampleDict));
+
+        Pattern selected = wave.GetDataAt(coord).GetLastAllowedPattern();
+
+        string bit = selected.GetDataAt(0, 0, 0).GenerateBit(training);
+        Module module = training.CreateModuleFromBit(bit);
+
+        training.SpawnModule(module, coord + new Vector3Int(0, 0, 0), objects.transform);
+
+        flag.Push(coord);
+
+    }
+
+    public void Observe(Vector3Int value)
+    {
+        Vector3Int coord = value != Vector3Int.zero ? value : MinEntropyCoords();
+
+        var allowedPatterns = wave.GetDataAt(coord).allowedPatterns;
+
+        Pattern selectedPattern = GetWeightedRandomPattern(allowedPatterns.Keys.ToList());
+
+        Dictionary<Pattern, bool> newAllowedPatterns = new Dictionary<Pattern, bool>();
+
+        foreach (var allowedPattern in allowedPatterns)
         {
-            while (!IsFullyCollapsed())
+            if (allowedPattern.Key == selectedPattern)
             {
-                Vector3Int minEntropyCoords = MinEntropyCoords();
-                Collapse(minEntropyCoords, coefficients.GetDataAt(minEntropyCoords).AllowedBits.PickRandom());
+                newAllowedPatterns.Add(allowedPattern.Key, true);
             }
-        } catch (Exception)
-        {
-            drawDebug = false;
+            else
+            {
+                newAllowedPatterns.Add(allowedPattern.Key, false);
+            }
         }
+
+        wave.SetDataAt(coord, new Coefficient(newAllowedPatterns));
+
+        Pattern selected = wave.GetDataAt(coord).GetLastAllowedPattern();
+
+        string bit = selected.GetDataAt(0, 0, 0).GenerateBit(training);
+        Module module = training.CreateModuleFromBit(bit);
+
+        training.SpawnModule(module, coord + new Vector3Int(0, 0, 0), objects.transform);
+
+
+        flag.Push(coord);
     }
 
-    private void InitializePattern(Matrix3<Vector3Int> patternSpawnCoordinate, Pattern pattern)
+    private Pattern GetWeightedRandomPattern(List<Pattern> inPatterns)
     {
+        List<Pattern> weightedPatterns = new List<Pattern>();
 
-
-        For3(patternSpawnCoordinate, (x, y, z) =>
+        foreach (var allowedPattern in inPatterns)
         {
-            Vector3Int patternCoord = patternSpawnCoordinate.GetDataAt(x, y, z);
+            training.Weights.TryGetValue(allowedPattern, out int weight);
 
-            Collapse(
-                patternCoord,
-                pattern.GetDataAt(x, y, z).GenerateBit(training)
-            );
-        });
+            for (int i = 0; i < weight; i++)
+            {
+                weightedPatterns.Add(allowedPattern);
+            }
+        }
 
-
+        return weightedPatterns.PickRandom();
     }
 
-
-
-    private void Collapse(Vector3Int coord, string bit)
+    public void Propagate()
     {
+        updated.Clear();
 
-        if (coefficients.GetDataAt(coord).AllowedBits.Contains(bit))
+        while (flag.Count > 0)
         {
-            moduleMatrix.SetDataAt(coord, training.CreateModuleFromBit(bit));
-            training.SpawnModule(moduleMatrix.GetDataAt(coord), coord, objects);
-            coefficients.SetDataAt(coord, new Coefficient(new HashSet<string> { }));
-            wave.SetDataAt(coord, false);
+            Vector3Int coord = flag.Pop();
+            updated.Add(coord);
 
             foreach (var direction in Orientations.OrientationUnitVectors)
             {
-                Vector3Int neighbourCoord = coord + direction.Value;
+                if (direction.Key == EOrientations.NULL) continue;
 
+                Vector3Int neighbourCoord = coord + direction.Value;
+                    
                 if (wave.ValidCoordinate(neighbourCoord))
                 {
-                    if (wave.GetDataAt(neighbourCoord))
+                    Constrain(neighbourCoord);
+                }
+            }
+        }
+    }
+
+    public void Constrain(Vector3Int coord)
+    {
+        Dictionary<EOrientations, HashSet<Pattern>> newValidData = new Dictionary<EOrientations, HashSet<Pattern>>();
+
+        // Loop through all directions from constrained coord.
+        foreach (var direction in Orientations.OrientationUnitVectors)
+        {
+            if (direction.Key == EOrientations.NULL) continue;
+
+            Vector3Int neighbourCoord = coord + direction.Value;
+
+            // If it's a valid direction (in the matrix)
+            if (wave.ValidCoordinate(neighbourCoord))
+            {
+
+                // Create a dictionary to hold our values, we will be checking if this count is equal to
+                // the amount of patterns we check.
+                foreach (var allowedPattern in wave.GetDataAt(neighbourCoord).allowedPatterns)
+                {
+                    if (allowedPattern.Key.Propagator.TryGetValue(direction.Value * - 1, out List<Pattern> patternsAllowedInSide))
                     {
-                        Propagate(neighbourCoord);
+                        if (newValidData.ContainsKey(direction.Key))
+                        {
+                            newValidData.TryGetValue(direction.Key, out HashSet<Pattern> validHashSet);
+
+                            foreach (Pattern pattern in patternsAllowedInSide)
+                            {
+                                validHashSet.Add(pattern);
+                            }
+
+                            newValidData[direction.Key] = validHashSet;
+                        } else
+                        {
+                            HashSet<Pattern> validHashSet = new HashSet<Pattern>();
+
+                            foreach (Pattern pattern in patternsAllowedInSide)
+                            {
+                                validHashSet.Add(pattern);
+                            }
+
+                            newValidData.Add(direction.Key, validHashSet);
+                        }
                     }
                 }
             }
         }
 
+        Dictionary<Pattern, int> patternCounts = new Dictionary<Pattern, int>();
 
-    }
-
-    private void Propagate(Vector3Int coord)
-    {
-        lastpropagated = coord;
-        lookingFor = new List<Tuple<string, EOrientations>>();
-
-        foreach (var direction in Orientations.OrientationUnitVectors)
+        foreach (var validData in newValidData)
         {
-            Vector3Int neighbourCoord = coord + direction.Value;
-
-            if (wave.ValidCoordinate(neighbourCoord))
+            foreach (Pattern pattern in validData.Value)
             {
-                if (!wave.GetDataAt(neighbourCoord))
+                if (patternCounts.ContainsKey(pattern))
                 {
-                    string bit = moduleMatrix.GetDataAt(neighbourCoord).GenerateBit(training);
-
-                    lookingFor.Add(new Tuple<string, EOrientations>(bit, direction.Key));
+                    patternCounts.TryGetValue(pattern, out int count);
+                    patternCounts[pattern] = count + 1;
+                } else
+                {
+                    patternCounts.Add(pattern, 0);
                 }
             }
         }
 
-        Coefficient coefficient = coefficients.GetDataAt(coord);
-        coefficient.AllowedBits = training.RetrieveAllowedBits(lookingFor);
-        coefficients.SetDataAt(coord, coefficient);
+        Dictionary<Pattern, bool> newAllowedPatterns = wave.GetDataAt(coord).allowedPatterns;
 
-        // if (coefficients.GetDataAt(coord).AllowedBits.Count == 1)
-        //{
-        //    Collapse(coord, coefficients.GetDataAt(coord).AllowedBits.ToList().PickRandom());
-        // }
+        foreach (var patternCount in patternCounts)
+        {
+            if (patternCount.Value != newValidData.Count - 1)
+            {
+                newAllowedPatterns[patternCount.Key] = false;
+            }
+        }
+
+        wave.SetDataAt(coord, new Coefficient(newAllowedPatterns));
+
     }
 
-    public void UpdateAll()
+    public bool IsFullyCollapsed()
     {
-        Vector3Int coord = MinEntropyCoords() + Orientations.OrientationUnitVectors.Values.PickRandom();
-    }
+        int allowedCount = 0;
 
-    private bool IsFullyCollapsed()
-    {
-        return !wave.Contains(true);
+        For3(wave, (x, y, z) =>
+        {
+            if (wave.GetDataAt(x, y, z).AllowedCount() > allowedCount)
+            {
+                allowedCount = wave.GetDataAt(x, y, z).AllowedCount();
+            }
+        });
+
+        return allowedCount > 1 ? false : true;
     }
 
     private Vector3Int MinEntropyCoords()
@@ -207,7 +265,8 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         For3(outputSize, (x, y, z) =>
         {
             Vector3Int currentCoordinates = new Vector3Int(x, y, z);
-            if (coefficients.MatrixData[x, y, z].AllowedBits.Any())
+
+            if (wave.MatrixData[x, y, z].AllowedCount() > 1)
             {
                 float entropy = ShannonEntropy(currentCoordinates);
                 float entropyPlusNoise = entropy - (float)random.NextDouble() / 1000;
@@ -228,9 +287,9 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         int sumOfWeights = 0;
         float sumOfWeightsLogWeights = 0;
 
-        foreach (string pair in coefficients.GetDataAt(currentCoordinates).AllowedBits)
+        foreach (var pair in wave.GetDataAt(currentCoordinates).allowedPatterns)
         {
-            training.Weights.TryGetValue(pair, out int weight);
+            training.Weights.TryGetValue(pair.Key, out int weight);
 
             sumOfWeights += weight;
             sumOfWeightsLogWeights += weight * (float)Math.Log(weight);
@@ -242,47 +301,34 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     {
         if (drawDebug)
         {
-            try
+
+            //             Vector3Int minEntropyCoords = MinEntropyCoords();
+
+            For3(wave, (x, y, z) =>
             {
-                //Vector3Int minEntropyCoords = MinEntropyCoords();
+                Vector3Int coord = new Vector3Int(x, y, z);
 
-                For3(wave, (x, y, z) =>
-                {
-                    Vector3Int coord = new Vector3Int(x, y, z);
+                int currentAllowedCount = wave.GetDataAt(coord).AllowedCount();
 
-                    int currentAllowedCount = coefficients.GetDataAt(x, y, z).AllowedBits.Count;
+                Gizmos.color =
+                wave.GetDataAt(x, y, z).AllowedCount() > 1 ?
+                    new Color(0, 1, 0, SetScale(currentAllowedCount, 0, mostCoefficients, 0, 0.5F)) :
+                    new Color(1, 0, 0, 0.2F);
 
-                    Gizmos.color =
-                    wave.GetDataAt(x, y, z) ?
-                        new Color(0, 1, 0, SetScale(currentAllowedCount, 0, mostCoefficients, 0, 0.5F)) :
-                        new Color(1, 0, 0, 0.2F);
+                float scale = SetScale(currentAllowedCount, 0, mostCoefficients, 0.05F, .2F);
 
-                    float scale = SetScale(currentAllowedCount, 0, mostCoefficients, 1, 0.1F);
+                Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), scale);
+                Handles.Label(transform.position + new Vector3(x, y, z), currentAllowedCount.ToString());
 
-                    Gizmos.DrawCube(transform.position + new Vector3(x, y, z), new Vector3(scale, scale, scale));
-                    Handles.Label(transform.position + new Vector3(x, y, z), coefficients.GetDataAt(x, y, z).AllowedBits.Count.ToString());
+                //                 if (minEntropyCoords == coord)
+                //                 {
+                //                     Gizmos.color = new Color(1, 0, 1, 0.2F);
+                //                     Gizmos.DrawSphere(transform.position + coord, 0.25F);
+                //                 }
 
-                //if (minEntropyCoords == coord)
-                //{
-                //    Gizmos.color = new Color(1, 0, 1, 0.2F);
-                //    Gizmos.DrawSphere(transform.position + coord, 0.25F);
-                //}
+
             });
 
-                foreach (var b in lookingFor)
-                {
-                    Gizmos.DrawLine(transform.position + lastpropagated, transform.position + lastpropagated + Orientations.ToUnitVector(b.Item2));
-                }
-
-                Gizmos.color = new Color(1, 0, 1, 0.2F);
-
-                For3(userCoordinateMatrix, (x, y, z) =>
-                {
-                    Gizmos.DrawSphere(transform.position + userCoordinateMatrix.MatrixData[x, y, z], 0.25F);
-                });
-            }
-            catch (Exception) { }
         }
     }
-
 }
