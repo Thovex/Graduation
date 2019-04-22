@@ -220,6 +220,9 @@ public class TrainingScript : SerializedMonoBehaviour
 
         List<Pattern> checkedPatterns = new List<Pattern>();
 
+
+        int index = 0;
+
         foreach (Pattern pattern in Patterns)
         {
             bool bIsEqual = false;
@@ -248,7 +251,9 @@ public class TrainingScript : SerializedMonoBehaviour
 
             if (!bIsEqual)
             {
+                pattern.id = index;
                 checkedPatterns.Add(pattern);
+                index++;
             }
         }
 

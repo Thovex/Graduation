@@ -26,9 +26,9 @@ public class PatternAllowanceTestInspector : OdinEditor
 
         obj1 = EditorGUILayout.Vector3IntField("GameObject 1:", obj1);
 
-        if (GUILayout.Button("Observe", GUILayout.Width(150), GUILayout.Height(20)))
+        if (GUILayout.Button("Constrain Obj", GUILayout.Width(150), GUILayout.Height(20)))
         {
-            patternTest.Constrain(obj1);
+            patternTest.Observe(obj1);
         }
 
         if (GUILayout.Button("Propagate", GUILayout.Width(150), GUILayout.Height(20)))
@@ -36,9 +36,9 @@ public class PatternAllowanceTestInspector : OdinEditor
             patternTest.Propagate();
         }
 
-        if (GUILayout.Button("Check if is collapsed", GUILayout.Width(150), GUILayout.Height(20)))
+        if (GUILayout.Button("Test constrain all", GUILayout.Width(150), GUILayout.Height(20)))
         {
-            patternTest.IsFullyCollapsed();
+            patternTest.TestConstrainAll();
         }
 
 

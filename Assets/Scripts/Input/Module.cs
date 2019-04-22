@@ -46,6 +46,8 @@ public struct Module
     {
         if (!Prefab) return "null";
 
+        if (prefab == training.PrefabAndId[0]) return "null";
+
         return training.PrefabToId(this.Prefab).ToString();
     }
 

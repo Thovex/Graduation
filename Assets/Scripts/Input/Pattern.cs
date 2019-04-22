@@ -16,7 +16,7 @@ public class Pattern : Matrix3<Module>
     [SerializeField] private Dictionary<Vector3Int, List<Pattern>> _propagator;
     public Dictionary<Vector3Int, List<Pattern>> Propagator { get => _propagator; set => _propagator = value; }
 
-    public List<Tuple<Matrix3<string>, Vector3Int>> debugPatterns = new List<Tuple<Matrix3<string>, Vector3Int>>();
+    public int id;
 
     public int N { get => n; set => n = value; }
 

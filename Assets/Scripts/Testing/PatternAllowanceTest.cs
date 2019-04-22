@@ -17,13 +17,14 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     [SerializeField] private int patternIndex = 0;
 
     [SerializeField] private Transform objects;
-    [SerializeField] private Transform displayTarget;   
+    [SerializeField] private Transform displayTarget;
 
     private Matrix3<Coefficient> wave;
     private Stack<Vector3Int> flag;
 
     private List<Vector3Int> updated = new List<Vector3Int>();
 
+    [SerializeField] private Dictionary<Vector3Int, Pattern> patternPerCoord = new Dictionary<Vector3Int, Pattern>();
 
     private int mostCoefficients = 0;
 
@@ -45,9 +46,10 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
             DestroyImmediate(objects.transform.GetChild(0).gameObject);
         }
 
-
         wave = new Matrix3<Coefficient>(outputSize);
         flag = new Stack<Vector3Int>();
+
+        patternPerCoord = new Dictionary<Vector3Int, Pattern>();
 
         Dictionary<Pattern, bool> initCoefficientDictionary = new Dictionary<Pattern, bool>();
 
@@ -61,9 +63,10 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
             Coefficient initCoefficient = new Coefficient(new Dictionary<Pattern, bool>(initCoefficientDictionary));
             mostCoefficients = initCoefficient.AllowedCount();
             wave.SetDataAt(x, y, z, initCoefficient);
+
         });
 
-        InitialPattern();
+        //InitialPattern();
     }
 
     private void InitialPattern()
@@ -72,19 +75,25 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
 
         Dictionary<Pattern, bool> exampleDict = new Dictionary<Pattern, bool>();
-        exampleDict.Add(training.Patterns[10], true);
+        exampleDict.Add(training.Patterns[patternIndex], true);
 
         wave.SetDataAt(coord, new Coefficient(exampleDict));
 
         Pattern selected = wave.GetDataAt(coord).GetLastAllowedPattern();
 
-        string bit = selected.GetDataAt(0, 0, 0).GenerateBit(training);
-        Module module = training.CreateModuleFromBit(bit);
+        For3(selected, (x, y, z) =>
+        {
+            string bit = selected.GetDataAt(x, y, z).GenerateBit(training);
+            Module module = training.CreateModuleFromBit(bit);
 
-        training.SpawnModule(module, coord + new Vector3Int(0, 0, 0), objects.transform);
+            training.SpawnModule(module, coord + new Vector3Int(x, y, z), objects.transform);
+        });
 
+
+        patternPerCoord.Add(coord, selected);
         flag.Push(coord);
 
+        Propagate();
     }
 
     public void Observe(Vector3Int value)
@@ -93,13 +102,14 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
         var allowedPatterns = wave.GetDataAt(coord).allowedPatterns;
 
-        Pattern selectedPattern = GetWeightedRandomPattern(allowedPatterns.Keys.ToList());
+
+        Pattern selected = GetWeightedRandomPattern(allowedPatterns);
 
         Dictionary<Pattern, bool> newAllowedPatterns = new Dictionary<Pattern, bool>();
 
         foreach (var allowedPattern in allowedPatterns)
         {
-            if (allowedPattern.Key == selectedPattern)
+            if (allowedPattern.Key == selected)
             {
                 newAllowedPatterns.Add(allowedPattern.Key, true);
             }
@@ -109,30 +119,49 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
             }
         }
 
-        wave.SetDataAt(coord, new Coefficient(newAllowedPatterns));
+        Coefficient coefficient = wave.GetDataAt(coord);
+        coefficient.allowedPatterns = newAllowedPatterns;
+        wave.SetDataAt(coord, coefficient);
 
-        Pattern selected = wave.GetDataAt(coord).GetLastAllowedPattern();
+        For3(selected, (x, y, z) =>
+        {
+            string bit = selected.GetDataAt(x, y, z).GenerateBit(training);
+            Module module = training.CreateModuleFromBit(bit);
 
-        string bit = selected.GetDataAt(0, 0, 0).GenerateBit(training);
-        Module module = training.CreateModuleFromBit(bit);
-
-        training.SpawnModule(module, coord + new Vector3Int(0, 0, 0), objects.transform);
+            training.SpawnModule(module, coord + new Vector3Int(x, y, z), objects.transform);
+        });
 
 
+
+        patternPerCoord.Add(coord, selected);
         flag.Push(coord);
+
+        Propagate();
     }
 
-    private Pattern GetWeightedRandomPattern(List<Pattern> inPatterns)
+    public void TestConstrainAll()
+    {
+        while (!IsFullyCollapsed())
+        {
+            Observe(MinEntropyCoords());
+            Propagate();
+        }
+    }
+
+    private Pattern GetWeightedRandomPattern(Dictionary<Pattern, bool> inPatterns)
     {
         List<Pattern> weightedPatterns = new List<Pattern>();
 
         foreach (var allowedPattern in inPatterns)
         {
-            training.Weights.TryGetValue(allowedPattern, out int weight);
-
-            for (int i = 0; i < weight; i++)
+            if (allowedPattern.Value)
             {
-                weightedPatterns.Add(allowedPattern);
+                training.Weights.TryGetValue(allowedPattern.Key, out int weight);
+
+                for (int i = 0; i < weight; i++)
+                {
+                    weightedPatterns.Add(allowedPattern.Key);
+                }
             }
         }
 
@@ -153,10 +182,14 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                 if (direction.Key == EOrientations.NULL) continue;
 
                 Vector3Int neighbourCoord = coord + direction.Value;
-                    
+
                 if (wave.ValidCoordinate(neighbourCoord))
                 {
-                    Constrain(neighbourCoord);
+                    if (wave.GetDataAt(neighbourCoord).AllowedCount() != 1)
+                    {
+
+                        Constrain(neighbourCoord);
+                    }
                 }
             }
         }
@@ -164,6 +197,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
     public void Constrain(Vector3Int coord)
     {
+
         Dictionary<EOrientations, HashSet<Pattern>> newValidData = new Dictionary<EOrientations, HashSet<Pattern>>();
 
         // Loop through all directions from constrained coord.
@@ -176,33 +210,37 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
             // If it's a valid direction (in the matrix)
             if (wave.ValidCoordinate(neighbourCoord))
             {
-
                 // Create a dictionary to hold our values, we will be checking if this count is equal to
                 // the amount of patterns we check.
                 foreach (var allowedPattern in wave.GetDataAt(neighbourCoord).allowedPatterns)
                 {
-                    if (allowedPattern.Key.Propagator.TryGetValue(direction.Value * - 1, out List<Pattern> patternsAllowedInSide))
+                    if (allowedPattern.Value)
                     {
-                        if (newValidData.ContainsKey(direction.Key))
+                        if (allowedPattern.Key.Propagator.TryGetValue(direction.Value * -1, out List<Pattern> patternsAllowedInSide))
                         {
-                            newValidData.TryGetValue(direction.Key, out HashSet<Pattern> validHashSet);
 
-                            foreach (Pattern pattern in patternsAllowedInSide)
+                            if (newValidData.ContainsKey(direction.Key))
                             {
-                                validHashSet.Add(pattern);
+                                newValidData.TryGetValue(direction.Key, out HashSet<Pattern> validHashSet);
+
+                                foreach (Pattern pattern in patternsAllowedInSide)
+                                {
+                                    validHashSet.Add(pattern);
+                                }
+
+                                newValidData[direction.Key] = validHashSet;
                             }
-
-                            newValidData[direction.Key] = validHashSet;
-                        } else
-                        {
-                            HashSet<Pattern> validHashSet = new HashSet<Pattern>();
-
-                            foreach (Pattern pattern in patternsAllowedInSide)
+                            else
                             {
-                                validHashSet.Add(pattern);
-                            }
+                                HashSet<Pattern> validHashSet = new HashSet<Pattern>();
 
-                            newValidData.Add(direction.Key, validHashSet);
+                                foreach (Pattern pattern in patternsAllowedInSide)
+                                {
+                                    validHashSet.Add(pattern);
+                                }
+
+                                newValidData.Add(direction.Key, validHashSet);
+                            }
                         }
                     }
                 }
@@ -219,7 +257,8 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                 {
                     patternCounts.TryGetValue(pattern, out int count);
                     patternCounts[pattern] = count + 1;
-                } else
+                }
+                else
                 {
                     patternCounts.Add(pattern, 0);
                 }
@@ -228,16 +267,74 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
         Dictionary<Pattern, bool> newAllowedPatterns = wave.GetDataAt(coord).allowedPatterns;
 
+
+        Dictionary<Pattern, bool> tempNewAllowedDict = new Dictionary<Pattern, bool>(newAllowedPatterns);
+
+        int changedCount = 0;
+
+        foreach (var patternAlloweds in newAllowedPatterns)
+        {
+            if (patternAlloweds.Value)
+            {
+                changedCount++;
+            }
+
+            tempNewAllowedDict[patternAlloweds.Key] = false;
+        }
+
+        newAllowedPatterns = tempNewAllowedDict;
+
         foreach (var patternCount in patternCounts)
         {
-            if (patternCount.Value != newValidData.Count - 1)
+            if (patternCount.Value == newValidData.Count - 1)
             {
-                newAllowedPatterns[patternCount.Key] = false;
+                newAllowedPatterns[patternCount.Key] = true;
+                changedCount--;
             }
         }
 
-        wave.SetDataAt(coord, new Coefficient(newAllowedPatterns));
 
+        // Loop through all directions from constrained coord.
+        foreach (var direction in Orientations.OrientationUnitVectors)
+        {
+            if (direction.Key == EOrientations.NULL) continue;
+
+            Vector3Int neighbourCoord = coord + direction.Value;
+
+            // If it's a valid direction (in the matrix)
+            if (wave.ValidCoordinate(neighbourCoord))
+            {
+                if (changedCount > 0 && !updated.Contains(neighbourCoord))
+                {
+                    flag.Push(neighbourCoord);
+                }
+            }
+        }
+
+        Coefficient coefficient = wave.GetDataAt(coord);
+        coefficient.allowedPatterns = newAllowedPatterns;
+        wave.SetDataAt(coord, coefficient);
+
+        if (wave.GetDataAt(coord).AllowedCount() == 1)
+        {
+
+            Pattern selected = wave.GetDataAt(coord).GetLastAllowedPattern();
+
+            patternPerCoord.Add(coord, selected);
+
+
+            For3(selected, (x, y, z) =>
+            {
+                string bit = selected.GetDataAt(x, y, z).GenerateBit(training);
+                Module module = training.CreateModuleFromBit(bit);
+
+                training.SpawnModule(module, coord + new Vector3Int(x, y, z), objects.transform);
+            });
+
+        }
+
+
+        updated.Add(coord);
     }
 
     public bool IsFullyCollapsed()
@@ -320,11 +417,11 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                 Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), scale);
                 Handles.Label(transform.position + new Vector3(x, y, z), currentAllowedCount.ToString());
 
-                //                 if (minEntropyCoords == coord)
-                //                 {
-                //                     Gizmos.color = new Color(1, 0, 1, 0.2F);
-                //                     Gizmos.DrawSphere(transform.position + coord, 0.25F);
-                //                 }
+
+                if (patternPerCoord.ContainsKey(coord))
+                {
+                    Handles.Label(transform.position + new Vector3(x, y + 0.25F, z), "P" + patternPerCoord[coord].id.ToString());
+                }
 
 
             });

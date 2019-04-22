@@ -71,14 +71,8 @@ public class Matrix3<T>
 
     public T GetDataAt(Vector3Int coordinate)
     {
-        try
-        {
-            return MatrixData[coordinate.x, coordinate.y, coordinate.z];
-        }
-        catch (Exception)
-        {
-            return default;
-        }
+        return MatrixData[coordinate.x, coordinate.y, coordinate.z];
+ 
     }
 
     public T GetDataAt(int x, int y, int z)
@@ -88,7 +82,7 @@ public class Matrix3<T>
 
     public void SetDataAt(Vector3Int coordinate, T data)
     {
-        MatrixData[coordinate.x, coordinate.y, coordinate.z] = data;
+        SetDataAt(coordinate.x, coordinate.y, coordinate.z, data);
     }
 
     public void SetDataAt(int x, int y, int z, T data)
