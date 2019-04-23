@@ -81,19 +81,23 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
         Pattern selected = wave.GetDataAt(coord).GetLastAllowedPattern();
 
-        For3(selected, (x, y, z) =>
-        {
-            string bit = selected.GetDataAt(x, y, z).GenerateBit(training);
-            Module module = training.CreateModuleFromBit(bit);
-
-            training.SpawnModule(module, coord + new Vector3Int(x, y, z), objects.transform);
-        });
-
+        SpawnMod(coord, selected);
 
         patternPerCoord.Add(coord, selected);
         flag.Push(coord);
 
         Propagate();
+    }
+
+    private void SpawnMod(Vector3Int coord, Pattern selected)
+    {
+       // For3(selected, (x, y, z) =>
+      //  {
+            string bit = selected.GetDataAt(0,0,0).GenerateBit(training);
+            Module module = training.CreateModuleFromBit(bit);
+
+            training.SpawnModule(module, coord + new Vector3Int(0,0,0), objects.transform);
+      //  });
     }
 
     public void Observe(Vector3Int value)
@@ -123,13 +127,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         coefficient.allowedPatterns = newAllowedPatterns;
         wave.SetDataAt(coord, coefficient);
 
-        For3(selected, (x, y, z) =>
-        {
-            string bit = selected.GetDataAt(x, y, z).GenerateBit(training);
-            Module module = training.CreateModuleFromBit(bit);
-
-            training.SpawnModule(module, coord + new Vector3Int(x, y, z), objects.transform);
-        });
+        SpawnMod(coord, selected);
 
 
 
@@ -322,14 +320,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
             patternPerCoord.Add(coord, selected);
 
-
-            For3(selected, (x, y, z) =>
-            {
-                string bit = selected.GetDataAt(x, y, z).GenerateBit(training);
-                Module module = training.CreateModuleFromBit(bit);
-
-                training.SpawnModule(module, coord + new Vector3Int(x, y, z), objects.transform);
-            });
+            SpawnMod(coord, selected);
 
         }
 

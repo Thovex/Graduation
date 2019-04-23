@@ -22,6 +22,9 @@ public class PatternAllowanceTestInspector : OdinEditor
         if (GUILayout.Button("Init", GUILayout.Width(150), GUILayout.Height(20)))
         {
             patternTest.Initialize();
+
+            patternTest.TestConstrainAll();
+
         }
 
         obj1 = EditorGUILayout.Vector3IntField("GameObject 1:", obj1);
