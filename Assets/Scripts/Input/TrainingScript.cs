@@ -287,7 +287,7 @@ public class TrainingScript : SerializedMonoBehaviour
                 int val = index % 4;
 
                 newPattern.transform.parent = displayPatternObject.transform;
-                newPattern.transform.localPosition = (index * (_input.NValue + _input.NValue)) * (Vector3.left / (4 - 1)) / N + ((Vector3.up * (N + 1)) * val) + val * (Vector3.right / (4 - 1)) * N;
+                newPattern.transform.localPosition = ((index * (_input.NValue + _input.NValue)) * (Vector3.left / (4 - 1)) / N + ((Vector3.up * (N + 1)) * val) + val * (Vector3.right / (4 - 1)) * N)*2;
 
                 For3(pattern, (x, y, z) =>
                 {

@@ -85,8 +85,6 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
     [SerializeField] private Transform patternSpawnTransform;
     [SerializeField] private Transform patternNSpawnTransform;
 
-    [SerializeField] private int N = 2;
-
     [OdinSerialize] private Pattern selectedPattern = new Pattern(2);
 
     public void Sync()

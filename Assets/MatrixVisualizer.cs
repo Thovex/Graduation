@@ -61,8 +61,6 @@ public class MatrixVisualizer : MonoBehaviour
             Vector3 cubeSize = (Vector3)InMatrix[i].Item1.Size / 1.5F * spacing;
             cubeSize.x = 0;
 
-            Gizmos.DrawWireCube(transform.position + Vector3.right * i + (new Vector3(InMatrix[i].Item1.SizeX + 1, 1, 1) / 2) + (Vector3.right * spacing * i), cubeSize);
-
 
             if (InMatrix[i].Item2 == Color.green)
             {

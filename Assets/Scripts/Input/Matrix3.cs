@@ -289,6 +289,11 @@ public class Matrix3<T>
         int x = SizeX - 1;
         int z = SizeZ - 1;
 
+        For3(Size, (sx, sy, sz) =>
+        {
+            copyMatrix[sx, sy, sz] = originalData[sx, sy, sz];
+        });
+
         for (int y = 0; y < SizeY; y++)
         {
             copyMatrix[0, y, 0] = originalData[x, y, 0];
@@ -308,6 +313,12 @@ public class Matrix3<T>
         int x = SizeX - 1;
         int z = SizeZ - 1;
 
+
+        For3(Size, (sx, sy, sz) =>
+        {
+            copyMatrix[sx, sy, sz] = originalData[sx, sy, sz];
+        });
+
         for (int y = 0; y < SizeY; y++)
         {
             copyMatrix[0, y, 0] = originalData[0, y, z];
@@ -325,6 +336,11 @@ public class Matrix3<T>
         T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
 
         int y = SizeY - 1;
+
+        For3(Size, (sx, sy, sz) =>
+        {
+            copyMatrix[sx, sy, sz] = originalData[sx, sy, sz];
+        });
 
         for (int x = 0; x < SizeX; x++)
         {

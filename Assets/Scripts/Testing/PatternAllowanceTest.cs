@@ -17,14 +17,11 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
     [SerializeField] private int patternIndex = 0;
 
     [SerializeField] private Transform objects;
-    [SerializeField] private Transform displayTarget;
 
     private Matrix3<Coefficient> wave;
     private Stack<Vector3Int> flag;
 
     private List<Vector3Int> updated = new List<Vector3Int>();
-
-    [SerializeField] private Dictionary<Vector3Int, Pattern> patternPerCoord = new Dictionary<Vector3Int, Pattern>();
 
     private int mostCoefficients = 0;
 
@@ -49,7 +46,6 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         wave = new Matrix3<Coefficient>(outputSize);
         flag = new Stack<Vector3Int>();
 
-        patternPerCoord = new Dictionary<Vector3Int, Pattern>();
 
         Dictionary<Pattern, bool> initCoefficientDictionary = new Dictionary<Pattern, bool>();
 
@@ -81,19 +77,22 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
         Pattern selected = wave.GetDataAt(coord).GetLastAllowedPattern();
 
-        For3(selected, (x, y, z) =>
-        {
-            string bit = selected.GetDataAt(x, y, z).GenerateBit(training);
-            Module module = training.CreateModuleFromBit(bit);
+        SpawnMod(coord, selected);
 
-            training.SpawnModule(module, coord + new Vector3Int(x, y, z), objects.transform);
-        });
-
-
-        patternPerCoord.Add(coord, selected);
         flag.Push(coord);
 
         Propagate();
+    }
+
+    private void SpawnMod(Vector3Int coord, Pattern selected)
+    {
+        // For3(selected, (x, y, z) =>
+        // {
+        string bit = selected.GetDataAt(0, 0, 0).GenerateBit(training);
+        Module module = training.CreateModuleFromBit(bit);
+
+        training.SpawnModule(module, coord + new Vector3Int(0, 0, 0), objects.transform);
+        // });
     }
 
     public void Observe(Vector3Int value)
@@ -123,17 +122,9 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         coefficient.allowedPatterns = newAllowedPatterns;
         wave.SetDataAt(coord, coefficient);
 
-        For3(selected, (x, y, z) =>
-        {
-            string bit = selected.GetDataAt(x, y, z).GenerateBit(training);
-            Module module = training.CreateModuleFromBit(bit);
-
-            training.SpawnModule(module, coord + new Vector3Int(x, y, z), objects.transform);
-        });
+        SpawnMod(coord, selected);
 
 
-
-        patternPerCoord.Add(coord, selected);
         flag.Push(coord);
 
         Propagate();
@@ -320,16 +311,8 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
             Pattern selected = wave.GetDataAt(coord).GetLastAllowedPattern();
 
-            patternPerCoord.Add(coord, selected);
 
-
-            For3(selected, (x, y, z) =>
-            {
-                string bit = selected.GetDataAt(x, y, z).GenerateBit(training);
-                Module module = training.CreateModuleFromBit(bit);
-
-                training.SpawnModule(module, coord + new Vector3Int(x, y, z), objects.transform);
-            });
+            SpawnMod(coord, selected);
 
         }
 
@@ -417,11 +400,6 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
                 Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), scale);
                 Handles.Label(transform.position + new Vector3(x, y, z), currentAllowedCount.ToString());
 
-
-                if (patternPerCoord.ContainsKey(coord))
-                {
-                    Handles.Label(transform.position + new Vector3(x, y + 0.25F, z), "P" + patternPerCoord[coord].id.ToString());
-                }
 
 
             });

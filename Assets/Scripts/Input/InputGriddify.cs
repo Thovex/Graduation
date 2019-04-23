@@ -152,7 +152,7 @@ public class InputGriddify : MonoBehaviour
 
         Gizmos.DrawWireCube(transform.position + new Vector3(inputSize.x - 1, inputSize.y - 1, inputSize.z - 1) / 2, new Vector3(inputSize.x, inputSize.y, inputSize.z));
 
-        Gizmos.color = new Color(1F, 0F, 0F, .1f);
+        Gizmos.color = new Color(1F, 0F, 0F, 1f);
 
         int patternCount = 0;
         
@@ -161,8 +161,8 @@ public class InputGriddify : MonoBehaviour
                 for ( int y = 0; y < inputSize.y / NValue; y++ ){
                     for ( int z = 0; z < inputSize.z / NValue; z++ ){
                         // Only optimized for N == 2 in current state.
-                        Gizmos.DrawWireCube(transform.position + new Vector3(x * NValue + .5F, y * NValue + .5F, z * NValue + .5F), new Vector3(NValue, NValue, NValue));
-                        Handles.Label(transform.position + new Vector3(x * NValue + .5F, y * NValue + .5F, z * NValue + .5F), patternCount.ToString());
+                        Gizmos.DrawWireCube(transform.position + new Vector3(x * NValue + NValue/2, y * NValue + NValue / 2, z * NValue + NValue / 2), new Vector3(NValue, NValue, NValue));
+                        //Handles.Label(transform.position + new Vector3(x * NValue + NValue / 2, y * NValue + NValue / 2, z * NValue + NValue / 2), patternCount.ToString());
 
                         patternCount++;
                     }

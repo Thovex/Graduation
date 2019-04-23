@@ -46,18 +46,16 @@ public struct Module
     {
         if (!Prefab) return "null";
 
-        if (prefab == training.PrefabAndId[0]) return "null";
-
         return training.PrefabToId(this.Prefab).ToString();
     }
 
     public string GenerateRotation(TrainingScript training)
     {
-        if (!Prefab) return "null";
 
         ModulePrototype modulePrototype = this.Prefab.GetComponent<ModulePrototype>();
 
         string rotString = "";
+
 
         if (modulePrototype)
         {
@@ -81,6 +79,7 @@ public struct Module
     public string GenerateBit(TrainingScript training)
     {
         if (!Prefab) return "null";
+        
         return GenerateID(training) + GenerateRotation(training);
     }
 }
