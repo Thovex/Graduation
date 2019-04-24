@@ -3,13 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using static Thovex.Utility;
 
-// used for testing purposes
-[Serializable]
-public struct ViewDict
-{
-
-}
-
 [Serializable]
 public class Pattern : Matrix3<Module>
 {
@@ -70,7 +63,7 @@ public class Pattern : Matrix3<Module>
             string bit = bitMatrix.GetDataAt(x, y, z);
 
             // Check?
-            if (bit != "null")
+            if (bit != "null" || bit != "0SN")
             {
 
                 if (bit != inMatrix.GetDataAt(x, y, z))
@@ -249,4 +242,49 @@ public class Pattern : Matrix3<Module>
         }
         allowedPatterns.Add(direction.Value, patternsFit);
     }
+
+    public void Reflect(EOrientations axis)
+    {
+        if (axis == EOrientations.LEFT || axis == EOrientations.RIGHT)
+        {
+
+            Flip(EOrientations.RIGHT);
+
+            For3(this, (x, y, z) =>
+            {
+                if (MatrixData[x, y, z].RotationDir == EOrientations.FORWARD || MatrixData[x,y,z].RotationDir == EOrientations.BACK)
+                {
+                    MatrixData[x, y, z].Scale = new Vector3Int(-1, 1, 1);
+                } else
+                {
+                    MatrixData[x, y, z].RotationEuler -= new Vector3Int(0, 180, 0);
+                    MatrixData[x, y, z].Scale = new Vector3Int(-1, 1, 1);
+                }
+
+            });
+        }
+
+        if (axis == EOrientations.FORWARD || axis == EOrientations.BACK)
+        {
+            Flip(EOrientations.RIGHT);
+
+            For3(this, (x, y, z) =>
+            {
+
+                if (MatrixData[x, y, z].RotationDir == EOrientations.FORWARD || MatrixData[x, y, z].RotationDir == EOrientations.BACK)
+                {
+                    MatrixData[x, y, z].Scale = new Vector3Int(1, 1, -1);
+                    MatrixData[x, y, z].RotationEuler -= new Vector3Int(0, 180, 0);
+
+                }
+                else
+                {
+                    MatrixData[x, y, z].Scale = new Vector3Int(1, 1, -1);
+                }
+
+            });
+
+        }
+    }
+
 }

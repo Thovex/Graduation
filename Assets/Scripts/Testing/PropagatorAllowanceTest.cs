@@ -113,6 +113,7 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
             {
                 GameObject patternData = Instantiate(selectedPattern.MatrixData[x, y, z].Prefab, newPattern.transform);
                 patternData.transform.localPosition = new Vector3(x, y, z);
+                patternData.transform.localScale = selectedPattern.MatrixData[x, y, z].Scale;
                 patternData.transform.localEulerAngles = selectedPattern.MatrixData[x, y, z].RotationEuler;
             }
         });
@@ -171,6 +172,7 @@ public class PropagatorAllowanceTest : SerializedMonoBehaviour
                         {
                             GameObject patternData = Instantiate(value[i].MatrixData[x, y, z].Prefab, newPattern2.transform);
                             patternData.transform.localPosition = new Vector3(x, y, z) + direction.Value * 2 * (i+1) * 2;
+                            patternData.transform.localScale = value[i].MatrixData[x, y, z].Scale;
                             patternData.transform.localEulerAngles = value[i].MatrixData[x, y, z].RotationEuler;
                         }
                     });

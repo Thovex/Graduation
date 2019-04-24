@@ -11,9 +11,20 @@ using Vector3Int = UnityEngine.Vector3Int;
 [CustomEditor(typeof(TrainingScript))]
 public class TrainingScriptInspector : OdinEditor
 {
+    bool drawOdinEditor = false;
+
     public override void OnInspectorGUI()
     {
-        base.OnInspectorGUI();
+        drawOdinEditor = EditorGUILayout.Toggle("Draw Odin Editor", drawOdinEditor);
+        if (drawOdinEditor)
+        {
+            base.OnInspectorGUI();
+        }
+        else
+        {
+            DrawUnityInspector();
+        }
+
         TrainingScript training = (TrainingScript)target;
         if (GUILayout.Button("Update"))
         {
@@ -31,10 +42,13 @@ public class TrainingScript : SerializedMonoBehaviour
     [Header("EDIT MODE")]
     [SerializeField] private bool editMode = false;
 
-    [SerializeField] public Dictionary<int, GameObject> PrefabAndId { get; set; } = new Dictionary<int, GameObject>();
-    [SerializeField] public List<Pattern> Patterns { get; set; } = new List<Pattern>();
+    [HideInInspector] public Dictionary<int, GameObject> PrefabAndId { get; set; } = new Dictionary<int, GameObject>();
+    [HideInInspector] public List<Pattern> Patterns { get; set; } = new List<Pattern>();
     [SerializeField] public Dictionary<string, Dictionary<EOrientations, Coefficient>> AllowedData = new Dictionary<string, Dictionary<EOrientations, Coefficient>>();
-    [SerializeField] public Dictionary<Pattern, int> Weights = new Dictionary<Pattern, int>();
+    public Dictionary<Pattern, int> Weights = new Dictionary<Pattern, int>();
+
+    [SerializeField] public List<int> PatternsNotToReflect = new List<int>();
+    [SerializeField] public List<int> PatternsNotToRotate = new List<int>();
 
     public Pattern ModuleMatrix { get; set; }
 
@@ -118,7 +132,7 @@ public class TrainingScript : SerializedMonoBehaviour
             GameObject prefab = PrefabUtility.GetCorrespondingObjectFromSource(childTransform.gameObject);
 
             // Create new Module from it's Prefab object and it's local rotation.
-            ModuleMatrix.MatrixData[coord.x, coord.y, coord.z] = new Module(prefab, V3ToV3I(childTransform.localEulerAngles));
+            ModuleMatrix.MatrixData[coord.x, coord.y, coord.z] = new Module(prefab, V3ToV3I(childTransform.localEulerAngles), V3ToV3I(childTransform.localScale));
 
             // Change child name to (X, Y, Z) + Prefab.Name + ID
             childTransform.name = V3ToV3I(childTransform.localPosition).ToString() + " (Bit: " + ModuleMatrix.MatrixData[coord.x, coord.y, coord.z].GenerateBit(this) + ") (" + prefab.name + ")";
@@ -131,7 +145,7 @@ public class TrainingScript : SerializedMonoBehaviour
             {
                 // Get the 0 prefab which is "Empty" and fill the matrix with "Empty" values for unassigned blocks.
                 PrefabAndId.TryGetValue(0, out GameObject emptyPrefab);
-                ModuleMatrix.MatrixData[x, y, z] = new Module(emptyPrefab, Vector3Int.zero);
+                ModuleMatrix.MatrixData[x, y, z] = new Module(emptyPrefab, Vector3Int.zero, Vector3Int.one);
             }
         });
     }
@@ -146,6 +160,17 @@ public class TrainingScript : SerializedMonoBehaviour
 
         // Get rotation from bit by 2nd char. 
         Vector3Int rot = Orientations.CharToEulerRotation(bit[1]);
+
+        //Get scale from bit by 3rd char.
+        string scale = bit[2].ToString();
+        Vector3Int sca = Vector3Int.zero;
+
+        if (scale == "N") sca = Vector3Int.one;
+        if (scale == "X") sca = new Vector3Int(-1, 1, 1);
+        if (scale == "Z") sca = new Vector3Int(1, 1, -1);
+
+        newModule.Scale = sca;
+
 
         // Get prefab
         PrefabAndId.TryGetValue(id, out GameObject prefab);
@@ -166,6 +191,7 @@ public class TrainingScript : SerializedMonoBehaviour
         if (module.Prefab != null)
         {
             GameObject newModule = Instantiate(module.Prefab, Vector3.zero, Quaternion.Euler(module.RotationEuler), parent);
+            newModule.transform.localScale = module.Scale;
             newModule.transform.localPosition = localPosition;
             return newModule;
         }
@@ -177,49 +203,55 @@ public class TrainingScript : SerializedMonoBehaviour
     {
         N = _input.NValue;
 
+        int currentPattern = 0;
+
         if (N > 0)
         {
             For3(_input.inputSize, N, (x, y, z) =>
             {
-                Module[,,] newTrainingData = new Module[N, N, N];
-                bool isNull = true;
-                For3(new Vector3Int(N, N, N), (nx, ny, nz) =>
+                if (!PatternsNotToRotate.Contains(currentPattern))
                 {
-                    Vector3Int coordinate = new Vector3Int(x + nx, y + ny, z + nz);
-
-                    if (ModuleMatrix.ValidCoordinate(coordinate))
+                    for (int i = 0; i < 4; i++)
                     {
-                        newTrainingData[nx, ny, nz] = ModuleMatrix.GetDataAt(coordinate);
-                        isNull = false;
-                    }
-                });
-                if (!isNull)
-                {
-                    Pattern newPattern = new Pattern(newTrainingData);
-                    bool isEqual = false;
-                    foreach (Pattern pattern in Patterns)
-                    {
-                        if (newPattern.IsEqualToMatrix(pattern))
-                        {
-                            isEqual = true;
-                        }
-                    }
-                    if (!isEqual)
-                    {
-                        Patterns.Add(newPattern);
-                        for (int i = 1; i < 4; i++)
-                        {
-                            Pattern rotatedPattern = new Pattern(newTrainingData);
-                            rotatedPattern.RotateCounterClockwise(i);
-                            Patterns.Add(rotatedPattern);
-                        }
+                        Pattern rotatedPattern = new Pattern(DefineNewPatternData(x, y, z));
+                        rotatedPattern.RotateCounterClockwise(i);
+                        Patterns.Add(rotatedPattern);
                     }
                 }
+                else
+                {
+                    Pattern defaultPattern = new Pattern(DefineNewPatternData(x, y, z));
+                    Patterns.Add(defaultPattern);
+                }
+
+                if (!PatternsNotToReflect.Contains(currentPattern))
+                {
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        Pattern reflectedPattern = new Pattern(DefineNewPatternData(x, y, z));
+                        reflectedPattern.RotateCounterClockwise(i);
+
+                        if (i % 2 == 0)
+                        {
+                            reflectedPattern.Reflect(EOrientations.RIGHT);
+                        }
+                        else
+                        {
+                            reflectedPattern.Reflect(EOrientations.FORWARD);
+                        }
+
+                        Patterns.Add(reflectedPattern);
+                    }
+                }
+
+                currentPattern++;
+
             });
         }
 
-        List<Pattern> checkedPatterns = new List<Pattern>();
 
+        List<Pattern> checkedPatterns = new List<Pattern>();
 
         int index = 0;
 
@@ -227,26 +259,13 @@ public class TrainingScript : SerializedMonoBehaviour
         {
             bool bIsEqual = false;
 
-            Pattern equalTo = new Pattern(0);
-
             foreach (Pattern checkedPattern in checkedPatterns)
             {
                 if (pattern.CompareBitPatterns(this, checkedPattern.GenerateBits(this)))
                 {
                     bIsEqual = true;
-                    equalTo = checkedPattern;
                     break;
                 }
-            }
-
-            if (Weights.ContainsKey(bIsEqual ? equalTo : pattern))
-            {
-                Weights.TryGetValue(bIsEqual ? equalTo : pattern, out int value);
-                Weights[bIsEqual ? equalTo : pattern] = value + 1;
-            }
-            else
-            {
-                Weights.Add(bIsEqual ? equalTo : pattern, 1);
             }
 
             if (!bIsEqual)
@@ -262,7 +281,25 @@ public class TrainingScript : SerializedMonoBehaviour
         foreach (Pattern pattern in Patterns)
         {
             pattern.BuildPropagator(this, EOrientations.NULL);
+
+            Weights.Add(pattern, 1);
         }
+    }
+
+    private Module[,,] DefineNewPatternData(int x, int y, int z)
+    {
+        Module[,,] newTrainingData = new Module[N, N, N];
+
+        For3(new Vector3Int(N, N, N), (nx, ny, nz) =>
+        {
+            Vector3Int coordinate = new Vector3Int(x + nx, y + ny, z + nz);
+
+            if (ModuleMatrix.ValidCoordinate(coordinate))
+            {
+                newTrainingData[nx, ny, nz] = ModuleMatrix.GetDataAt(coordinate);
+            }
+        });
+        return newTrainingData;
     }
 
     private void DisplayPatterns()
@@ -279,10 +316,10 @@ public class TrainingScript : SerializedMonoBehaviour
             foreach (Pattern pattern in Patterns)
             {
                 GameObject newPattern = new GameObject("Pattern");
-                //Bitsplay newBitsplay = newPattern.AddComponent<Bitsplay>();
-
-                //newBitsplay.Training = this;
-                //newBitsplay.Pattern = pattern;
+                //                 Bitsplay newBitsplay = newPattern.AddComponent<Bitsplay>();
+                // 
+                //                 newBitsplay.Training = this;
+                //                 newBitsplay.Pattern = pattern;
 
                 int val = index % 4;
 
@@ -294,6 +331,7 @@ public class TrainingScript : SerializedMonoBehaviour
                     if (pattern.MatrixData[x, y, z].Prefab != null)
                     {
                         GameObject patternData = Instantiate(pattern.MatrixData[x, y, z].Prefab, newPattern.transform);
+                        patternData.transform.localScale = pattern.MatrixData[x, y, z].Scale;
                         patternData.transform.localPosition = new Vector3(x, y, z);
                         patternData.transform.localEulerAngles = pattern.MatrixData[x, y, z].RotationEuler;
                     }

@@ -24,7 +24,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
     private List<Vector3Int> updated = new List<Vector3Int>();
 
-    [SerializeField] private Dictionary<Vector3Int, Pattern> patternPerCoord = new Dictionary<Vector3Int, Pattern>();
+    [HideInInspector]private Dictionary<Vector3Int, Pattern> patternPerCoord = new Dictionary<Vector3Int, Pattern>();
 
     private int mostCoefficients = 0;
 

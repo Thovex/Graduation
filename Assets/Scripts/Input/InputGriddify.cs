@@ -10,6 +10,8 @@ public class InputGriddify : MonoBehaviour
 {
     public Vector3Int inputSize = new Vector3Int(5, 5, 5);
     [SerializeField] private int _nValue = 2;
+
+    [SerializeField] private TrainingScript training;
     
     private GameObject[,,] _inputMatrix;
     private bool[,,] _inputMatrixSet;
@@ -20,6 +22,8 @@ public class InputGriddify : MonoBehaviour
         get{ return _nValue; }
         set{ _nValue = value; }
     }
+
+    public bool warnUser = true;
 
 
     private void OnEnable()
@@ -155,6 +159,10 @@ public class InputGriddify : MonoBehaviour
         Gizmos.color = new Color(1F, 0F, 0F, .1f);
 
         int patternCount = 0;
+
+        GUIStyle style = new GUIStyle();
+        style.normal.textColor = Color.red;
+        style.alignment = TextAnchor.MiddleCenter;
         
         if ( NValue > 0 ){
             for ( int x = 0; x < inputSize.x / NValue; x++ ){
@@ -163,6 +171,22 @@ public class InputGriddify : MonoBehaviour
                         // Only optimized for N == 2 in current state.
                         Gizmos.DrawWireCube(transform.position + new Vector3(x * NValue + .5F, y * NValue + .5F, z * NValue + .5F), new Vector3(NValue, NValue, NValue));
                         Handles.Label(transform.position + new Vector3(x * NValue + .5F, y * NValue + .5F, z * NValue + .5F), patternCount.ToString());
+
+                        if (training)
+                        {
+                            if (warnUser)
+                            {
+                                if (training.PatternsNotToReflect.Contains(patternCount))
+                                {
+                                    Handles.Label(transform.position + new Vector3(x * NValue + .5F, y * NValue + .5F + .25F, z * NValue + .5F), "NO REFLECT", style);
+                                }
+
+                                if (training.PatternsNotToRotate.Contains(patternCount))
+                                {
+                                    Handles.Label(transform.position + new Vector3(x * NValue + .5F, y * NValue + .5F + .5F, z * NValue + .5F), "NO ROTATION", style);
+                                }
+                            }
+                        }
 
                         patternCount++;
                     }

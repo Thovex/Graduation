@@ -139,18 +139,8 @@ public class Matrix3<T>
 
     public void TransposeFlip()
     {
-        //         for (int x = 0; x < width; x++)
-        //         {
-        //             for (int y = 0; y < height / 2 + 1; y++)
-        //             {
-        //                 int element = matrix[x, y];
-        //                 int neighbour = matrix[x, height - y - 1];
-        //                 matrix[x, y] = neighbour;
-        //                 matrix[x, height - y - 1] = element;
-        // 
-        // 
-        //             }
-        //         }
+        T[,,] originalData = MatrixData;
+        T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
 
         for (int x = 0; x < SizeX; x++)
         {
@@ -158,13 +148,16 @@ public class Matrix3<T>
             {
                 for (int z = 0; z < SizeZ / 2 + 1; z++)
                 {
-                    T elem = MatrixData[x, y, z];
-                    T neighbour = MatrixData[x, y, SizeZ - z - 1];
-                    MatrixData[x, y, z] = neighbour;
-                    MatrixData[x, y, SizeZ - z - 1] = elem;
+                    T elem = originalData[x, y, z];
+                    T neighbour = originalData[x, y, SizeZ - z - 1];
+                    copyMatrix[x, y, z] = neighbour;
+                    copyMatrix[x, y, SizeZ - z - 1] = elem;
                 }
             }
         }
+
+        MatrixData = copyMatrix;
+
     }
 
     public virtual void RotateCounterClockwise(int times)
@@ -281,7 +274,7 @@ public class Matrix3<T>
         }
     }
 
-    private T[,,] FlipRightLeft()
+    protected T[,,] FlipRightLeft()
     {
         T[,,] originalData = MatrixData;
         T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
@@ -300,7 +293,7 @@ public class Matrix3<T>
         return copyMatrix;
     }
 
-    private T[,,] FlipForwardBack()
+    protected T[,,] FlipForwardBack()
     {
         T[,,] originalData = MatrixData;
         T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
@@ -319,7 +312,7 @@ public class Matrix3<T>
         return copyMatrix;
     }
 
-    private T[,,] FlipUpDown()
+    protected T[,,] FlipUpDown()
     {
         T[,,] originalData = MatrixData;
         T[,,] copyMatrix = new T[SizeX, SizeY, SizeZ];
