@@ -62,16 +62,13 @@ public class Pattern : Matrix3<Module>
         {
             string bit = bitMatrix.GetDataAt(x, y, z);
 
-            // Check?
-            if (bit != "null" || bit != "0SN")
+
+            if (bit != inMatrix.GetDataAt(x, y, z))
             {
-
-                if (bit != inMatrix.GetDataAt(x, y, z))
-                {
-                    bEqual = false;
-                }
-
+                bEqual = false;
             }
+
+
         });
 
         return bEqual;
@@ -169,7 +166,10 @@ public class Pattern : Matrix3<Module>
     {
         Matrix3<string> bits = new Matrix3<string>(new Vector3Int(SizeX, SizeY, SizeZ));
 
-        For3(bits, (x, y, z) => { bits.MatrixData[x, y, z] = MatrixData[x, y, z].GenerateBit(training); });
+        For3(bits, (x, y, z) =>
+        {
+            bits.MatrixData[x, y, z] = MatrixData[x, y, z].GenerateBit(training);
+        });
 
         return bits;
     }
@@ -194,7 +194,8 @@ public class Pattern : Matrix3<Module>
 
                 CreatePropagator(training, allowedPatterns, direction);
             }
-        } else
+        }
+        else
         {
             foreach (var direction in Orientations.OrientationUnitVectors)
             {
@@ -215,7 +216,7 @@ public class Pattern : Matrix3<Module>
         bitPattern.Flip(direction.Key);
         bitPattern.PushData(direction.Value);
 
-       // GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(bitPattern, Color.yellow, 0, new HashSet<string>()));
+        // GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(bitPattern, Color.yellow, 0, new HashSet<string>()));
 
         List<Pattern> patternsFit = new List<Pattern>();
         for (int i = 0; i < training.Patterns.Count; i++)
@@ -233,10 +234,11 @@ public class Pattern : Matrix3<Module>
             if (isAllowed)
             {
                 patternsFit.Add(training.Patterns[i]);
-               // GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(checkPatternBits, Color.green, i, new HashSet<string>()));
-            } else
+                // GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(checkPatternBits, Color.green, i, new HashSet<string>()));
+            }
+            else
             {
-               // GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(checkPatternBits, Color.red, i, new HashSet<string>()));
+                // GameObject.FindObjectOfType<MatrixVisualizer>().InMatrix.Add(new Tuple<Matrix3<string>, Color, int, HashSet<string>>(checkPatternBits, Color.red, i, new HashSet<string>()));
 
             }
         }
@@ -252,10 +254,11 @@ public class Pattern : Matrix3<Module>
 
             For3(this, (x, y, z) =>
             {
-                if (MatrixData[x, y, z].RotationDir == EOrientations.FORWARD || MatrixData[x,y,z].RotationDir == EOrientations.BACK)
+                if (MatrixData[x, y, z].RotationDir == EOrientations.FORWARD || MatrixData[x, y, z].RotationDir == EOrientations.BACK)
                 {
                     MatrixData[x, y, z].Scale = new Vector3Int(-1, 1, 1);
-                } else
+                }
+                else
                 {
                     MatrixData[x, y, z].RotationEuler -= new Vector3Int(0, 180, 0);
                     MatrixData[x, y, z].Scale = new Vector3Int(-1, 1, 1);

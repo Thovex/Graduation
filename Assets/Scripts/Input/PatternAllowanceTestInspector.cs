@@ -23,7 +23,7 @@ public class PatternAllowanceTestInspector : OdinEditor
         {
             patternTest.Initialize();
 
-            patternTest.TestConstrainAll();
+           // patternTest.TestConstrainAll();
 
         }
 
@@ -31,7 +31,7 @@ public class PatternAllowanceTestInspector : OdinEditor
 
         if (GUILayout.Button("Constrain Obj", GUILayout.Width(150), GUILayout.Height(20)))
         {
-            patternTest.Observe(obj1);
+            patternTest.Observe(Vector3Int.zero);
         }
 
         if (GUILayout.Button("Propagate", GUILayout.Width(150), GUILayout.Height(20)))

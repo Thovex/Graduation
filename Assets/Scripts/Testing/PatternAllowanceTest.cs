@@ -66,43 +66,34 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
         });
 
-        //InitialPattern();
+          InitialPattern();
     }
 
     private void InitialPattern()
     {
-        Vector3Int coord = Vector3Int.zero;
-
-
-        Dictionary<Pattern, bool> exampleDict = new Dictionary<Pattern, bool>();
-        exampleDict.Add(training.Patterns[patternIndex], true);
-
-        wave.SetDataAt(coord, new Coefficient(exampleDict));
-
-        Pattern selected = wave.GetDataAt(coord).GetLastAllowedPattern();
-
-        SpawnMod(coord, selected);
-
-        patternPerCoord.Add(coord, selected);
-        flag.Push(coord);
-
-        Propagate();
+        Observe(new Vector3Int(0, 0, 0));
     }
 
     private void SpawnMod(Vector3Int coord, Pattern selected)
     {
-       // For3(selected, (x, y, z) =>
-      //  {
-            string bit = selected.GetDataAt(0,0,0).GenerateBit(training);
-            Module module = training.CreateModuleFromBit(bit);
+//         For3(selected, (x, y, z) =>
+//         {
+//             string bit = selected.GetDataAt(x,y,z).GenerateBit(training);
+//             Module module = training.CreateModuleFromBit(bit);
+// 
+//             training.SpawnModule(module, coord + new Vector3Int(x,y,z), objects.transform);
+//        });
 
-            training.SpawnModule(module, coord + new Vector3Int(0,0,0), objects.transform);
-      //  });
+
+        string bit = selected.GetDataAt(0, 0, 0).GenerateBit(training);
+        Module module = training.CreateModuleFromBit(bit);
+
+        training.SpawnModule(module, coord + new Vector3Int(0, 0, 0), objects.transform);
     }
 
     public void Observe(Vector3Int value)
     {
-        Vector3Int coord = value != Vector3Int.zero ? value : MinEntropyCoords();
+        Vector3Int coord = value == Vector3Int.zero ? value : MinEntropyCoords();
 
         var allowedPatterns = wave.GetDataAt(coord).allowedPatterns;
 
@@ -134,7 +125,9 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         patternPerCoord.Add(coord, selected);
         flag.Push(coord);
 
+
         Propagate();
+
     }
 
     public void TestConstrainAll()
@@ -142,7 +135,6 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
         while (!IsFullyCollapsed())
         {
             Observe(MinEntropyCoords());
-            Propagate();
         }
     }
 
@@ -407,6 +399,13 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
                 Gizmos.DrawSphere(transform.position + new Vector3(x, y, z), scale);
                 Handles.Label(transform.position + new Vector3(x, y, z), currentAllowedCount.ToString());
+
+                if (wave.GetDataAt(x, y, z).AllowedCount() == 0)
+                {
+                    Gizmos.color = Color.magenta;
+                    Gizmos.DrawCube(transform.position + new Vector3(x, y, z), Vector3.one / 2);
+                }
+
 
 
                 if (patternPerCoord.ContainsKey(coord))

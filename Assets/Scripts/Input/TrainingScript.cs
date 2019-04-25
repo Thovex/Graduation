@@ -144,8 +144,8 @@ public class TrainingScript : SerializedMonoBehaviour
             if (!ModuleMatrix.Valid(x, y, z))
             {
                 // Get the 0 prefab which is "Empty" and fill the matrix with "Empty" values for unassigned blocks.
-                PrefabAndId.TryGetValue(0, out GameObject emptyPrefab);
-                ModuleMatrix.MatrixData[x, y, z] = new Module(emptyPrefab, Vector3Int.zero, Vector3Int.one);
+                //  PrefabAndId.TryGetValue(0, out GameObject emptyPrefab);
+                ModuleMatrix.MatrixData[x, y, z] = new Module(null, Vector3Int.zero, Vector3Int.one);
             }
         });
     }
@@ -257,23 +257,31 @@ public class TrainingScript : SerializedMonoBehaviour
 
         foreach (Pattern pattern in Patterns)
         {
+
             bool bIsEqual = false;
+
 
             foreach (Pattern checkedPattern in checkedPatterns)
             {
                 if (pattern.CompareBitPatterns(this, checkedPattern.GenerateBits(this)))
                 {
+
                     bIsEqual = true;
                     break;
                 }
             }
 
+
+
             if (!bIsEqual)
             {
+
+
                 pattern.id = index;
                 checkedPatterns.Add(pattern);
                 index++;
             }
+
         }
 
         Patterns = checkedPatterns;
@@ -316,10 +324,7 @@ public class TrainingScript : SerializedMonoBehaviour
             foreach (Pattern pattern in Patterns)
             {
                 GameObject newPattern = new GameObject("Pattern");
-                //                 Bitsplay newBitsplay = newPattern.AddComponent<Bitsplay>();
-                // 
-                //                 newBitsplay.Training = this;
-                //                 newBitsplay.Pattern = pattern;
+
 
                 int val = index % 4;
 
