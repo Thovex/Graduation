@@ -3,8 +3,12 @@
 
 #include "DataGrid.h"
 
-ADataGrid::ADataGrid()
+ADataGrid::ADataGrid( const FObjectInitializer& ObjectInitializer )
 {
+
+	Transform = ObjectInitializer.CreateDefaultSubobject<USceneComponent>( this, TEXT("Transform") );
+	RootComponent = Transform;
+
 	PrimaryActorTick.bCanEverTick = true;
 
 }

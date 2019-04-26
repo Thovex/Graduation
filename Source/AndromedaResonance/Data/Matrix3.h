@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "Module.h"
 #include "Matrix3.generated.h"
 
 /**
@@ -12,49 +11,117 @@
  */
 
 USTRUCT( BlueprintType )
+struct FModule {
+	GENERATED_USTRUCT_BODY()
+
+public:
+	FModule() {}
+
+	FModule( FIntVector Coordinate ) {
+		this->Coordinate = Coordinate;
+	}
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
+		FIntVector Coordinate;
+
+};
+
+USTRUCT( BlueprintType )
+struct FArrayZ {
+	GENERATED_USTRUCT_BODY()
+
+public:
+	FArrayZ() {}
+	FArrayZ( TArray<struct FModule> ZArray ) {
+		this->ZArray = ZArray;
+
+	}
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
+		TArray<struct FModule> ZArray;
+
+};
+
+USTRUCT( BlueprintType )
+struct FArrayY {
+	GENERATED_USTRUCT_BODY()
+
+public:
+	FArrayY() {}
+	FArrayY( TArray<struct FArrayZ> YArray ) {
+		this->YArray = YArray;
+
+	}
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
+		TArray<struct FArrayZ> YArray;
+
+};
+
+USTRUCT( BlueprintType )
+struct FArrayX {
+	GENERATED_USTRUCT_BODY()
+
+public:
+	FArrayX() {}
+	FArrayX( TArray<struct FArrayY> XArray ) {
+		this->XArray = XArray;
+	}
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
+		TArray<struct FArrayY> XArray;
+
+};
+
+
+USTRUCT( BlueprintType )
 struct FModuleMatrix {
 	GENERATED_USTRUCT_BODY()
 
 public:
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Settings" )
 		int32 Width;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Settings" )
 		int32 Depth;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Settings" )
 		int32 Height;
 
-	TArray < TArray < TArray<UModule> > > WidthArrays;
-	TArray < TArray < UModule > > DepthArrays;
-	TArray < UModule> HeightArrays;
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
+		FArrayX Array3D;
 
-	FModuleMatrix() {}
+	FModuleMatrix() {
+
+	}
+
+	explicit FModuleMatrix( int32 Width, int32 Depth, int32 Height, FArrayX Array3D) :
+		Width( Width ), Depth(Depth), Height(Height), Array3D(Array3D) {
+
+	}
 
 	FModuleMatrix( int32 Width, int32 Depth, int32 Height ) {
+
+
 		this->Width = Width;
 		this->Depth = Depth;
 		this->Height = Height;
 
-		for ( int32 X = 0; X < this->Width; X++ ) {
+		FArrayX ArrayXInit = FArrayX();
+		FArrayY ArrayYInit = FArrayY();
+		FArrayZ ArrayZInit = FArrayZ();
 
-			TArray<TArray<UModule>> NewDepthArray;
-			WidthArrays.Add( NewDepthArray );
-
-			for ( int32 Y = 0; Y < this->Depth; Y++ ) {
-
-				TArray<UModule> NewHeightArray;
-				DepthArrays.Add( NewHeightArray );
-
-				for ( int32 Z = 0; Z < this->Height; Z++ ) {
-
-					//UModule NewModule = UModule( FIntVector( X, Y, Z ) );
-					//HeightArrays.Add( NewModule );
-
+		for ( int X = 0; X < this->Width; X++ ) {
+			for ( int Y = 0; Y < this->Depth; Y++ ) {
+				for ( int Z = 0; Z < this->Height; Z++ ) {
+					ArrayZInit.ZArray.Add( FModule( FIntVector( X, Y, Z ) ) );
 				}
+				ArrayYInit.YArray.Add( ArrayZInit );
 			}
+			ArrayXInit.XArray.Add( ArrayYInit );
 		}
+		this->Array3D = ArrayXInit;
 	}
 };
 

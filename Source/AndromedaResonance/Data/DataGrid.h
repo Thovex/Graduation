@@ -12,17 +12,19 @@ class ANDROMEDARESONANCE_API ADataGrid : public AActor {
 	GENERATED_BODY()
 
 public:
-	ADataGrid();
+	ADataGrid( const FObjectInitializer& ObjectInitializer );
 
-	//UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Data" )
-		//UMatrix3 MatrixTest;
-
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
+		USceneComponent* Transform;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
 		int32 GridElementSize = 1.F;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
 		float GridElementSpacing = 1.F;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Data" )
+		TArray<struct FModuleMatrix> ModuleMatrices;
 
 
 protected:
