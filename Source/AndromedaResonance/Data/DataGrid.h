@@ -24,8 +24,17 @@ public:
 		float GridElementSpacing = 1.F;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Data" )
-		TArray<struct FModuleMatrix> ModuleMatrices;
+		FModuleMatrix ModuleData;
 
+public:
+	UFUNCTION( BlueprintCallable, Category = "Matrix Calls" )
+		void SetMatrix( FIntVector Coord );
+
+	UFUNCTION( BlueprintCallable, Category = "Matrix Calls" )
+		FModule GetModuleAt( FIntVector Coord );
+
+	UFUNCTION( BlueprintCallable, Category = "Matrix Calls" )
+		void SetModuleAt( FIntVector Coord, FModule Data );
 
 protected:
 	virtual void BeginPlay() override;

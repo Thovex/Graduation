@@ -6,6 +6,8 @@
 #include "UObject/NoExportTypes.h"
 #include "Matrix3.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN( LogModuleMatrix, Log, All );
+
 /**
  *
  */
@@ -27,101 +29,93 @@ public:
 };
 
 USTRUCT( BlueprintType )
-struct FArrayZ {
-	GENERATED_USTRUCT_BODY()
-
-public:
-	FArrayZ() {}
-	FArrayZ( TArray<struct FModule> ZArray ) {
-		this->ZArray = ZArray;
-
-	}
-
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
-		TArray<struct FModule> ZArray;
-
-};
-
-USTRUCT( BlueprintType )
-struct FArrayY {
-	GENERATED_USTRUCT_BODY()
-
-public:
-	FArrayY() {}
-	FArrayY( TArray<struct FArrayZ> YArray ) {
-		this->YArray = YArray;
-
-	}
-
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
-		TArray<struct FArrayZ> YArray;
-
-};
-
-USTRUCT( BlueprintType )
-struct FArrayX {
-	GENERATED_USTRUCT_BODY()
-
-public:
-	FArrayX() {}
-	FArrayX( TArray<struct FArrayY> XArray ) {
-		this->XArray = XArray;
-	}
-
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
-		TArray<struct FArrayY> XArray;
-
-};
-
-
-USTRUCT( BlueprintType )
 struct FModuleMatrix {
 	GENERATED_USTRUCT_BODY()
 
 public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Settings" )
-		int32 Width;
+		int32 SizeX;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Settings" )
-		int32 Depth;
+		int32 SizeY;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Settings" )
-		int32 Height;
+		int32 SizeZ;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
-		FArrayX Array3D;
+		TMap<FIntVector, FModule> Array3D;
 
 	FModuleMatrix() {
 
 	}
 
-	explicit FModuleMatrix( int32 Width, int32 Depth, int32 Height, FArrayX Array3D) :
-		Width( Width ), Depth(Depth), Height(Height), Array3D(Array3D) {
+	FModuleMatrix( FIntVector Size ) {
+		SetSize( Size.X, Size.Y, Size.Z );
+	}
+
+	FModuleMatrix( int32 X, int32 Y, int32 Z ) {
+		SetSize( X, Y, Z );
+	}
+
+	void SetSize( int32 X, int32 Y, int32 Z ) {
+		this->SizeX = X;
+		this->SizeY = Y;
+		this->SizeZ = Z;
+	}
+
+	void Initialize() {
+		if ( SizeX < 1 && SizeY < 1 && SizeZ < 1 ) {
+			UE_LOG( LogModuleMatrix, Error, TEXT( "Initializing FModuleMatrix with < (0, 0, 0) size." ) );
+		}
+
+		for ( int X = 0; X < this->SizeX; X++ ) {
+			for ( int Y = 0; Y < this->SizeY; Y++ ) {
+				for ( int Z = 0; Z < this->SizeZ; Z++ ) {
+					Array3D.Add( FIntVector( X, Y, Z ), FModule( FIntVector( X, Y, Z ) ) );
+				}
+			}
+		}
+
+		UE_LOG( LogModuleMatrix, Log, TEXT( "Initialization of ModuleMatrix Succesful. Size: (X: %d, Y: %d, Z: %d)" ), SizeX, SizeY, SizeZ );
 
 	}
 
-	FModuleMatrix( int32 Width, int32 Depth, int32 Height ) {
-
-
-		this->Width = Width;
-		this->Depth = Depth;
-		this->Height = Height;
-
-		FArrayX ArrayXInit = FArrayX();
-		FArrayY ArrayYInit = FArrayY();
-		FArrayZ ArrayZInit = FArrayZ();
-
-		for ( int X = 0; X < this->Width; X++ ) {
-			for ( int Y = 0; Y < this->Depth; Y++ ) {
-				for ( int Z = 0; Z < this->Height; Z++ ) {
-					ArrayZInit.ZArray.Add( FModule( FIntVector( X, Y, Z ) ) );
-				}
-				ArrayYInit.YArray.Add( ArrayZInit );
-			}
-			ArrayXInit.XArray.Add( ArrayYInit );
+	FModule GetDataAt( FIntVector Coord ) {
+		if ( IsValidCoordinate( Coord ) ) {
+			return Array3D.FindRef( Coord );
 		}
-		this->Array3D = ArrayXInit;
+
+		UE_LOG( LogModuleMatrix, Error, TEXT( "Invalid Data at GetDataAt( %s )" ), *Coord.ToString() );
+		return FModule();
+	}
+
+	void SetDataAt( FIntVector Coord, FModule Data ) {
+		Array3D.Add( Coord, Data );
+	}
+
+	bool Contains( FModule CheckModule ) {
+		for ( auto Pair : Array3D ) {
+			FModule ComparisonModule = Pair.Value;
+
+			//TODO: Keep Contains up to date with Module.
+
+			if ( ComparisonModule.Coordinate == CheckModule.Coordinate ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	bool IsValidCoordinate( FIntVector Coord ) {
+		if ( !( Coord.X > 0 && Coord.Y > 0 && Coord.Z > 0 ) ) return false;
+		if ( !( Coord.X < SizeX && Coord.Y < SizeY && Coord.Z < SizeZ ) ) return false;
+		return true;
+	}
+
+	void Clear() {
+		Array3D.Empty( SizeX * SizeY * SizeZ );
 	}
 };
 

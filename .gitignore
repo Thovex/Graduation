@@ -25,6 +25,9 @@
 *.la
 *.a
 
+# Massive Unreal Binaries
+Binaries/Win64/*.pdb
+
 # Executables
 *.exe
 *.out
@@ -54,10 +57,6 @@ Build/*
 !Build/*/
 Build/*/**
 !Build/*/PakBlacklist*.txt
-
-# Whitelist assimp
-!Binaries/Win64/assimp-vc-140-mt.lib
-!Binaries/Win64/assimp-vc-140-mt.dll
 
 # Don't ignore icon files in Build
 !Build/**/*.ico
