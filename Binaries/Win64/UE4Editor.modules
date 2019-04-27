@@ -2,6 +2,7 @@
 	"BuildId": "5660361",
 	"Modules": 
 	{
-		"AndromedaResonance": "UE4Editor-AndromedaResonance.dll"
+		"AndromedaResonance": "UE4Editor-AndromedaResonance.dll",
+		"ThovexModule": "UE4Editor-ThovexModule.dll"
 	}
 }

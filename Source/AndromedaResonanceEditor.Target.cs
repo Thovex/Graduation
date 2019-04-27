@@ -9,6 +9,6 @@ public class AndromedaResonanceEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 
-		ExtraModuleNames.AddRange( new string[] { "AndromedaResonance" } );
+		ExtraModuleNames.AddRange( new string[] { "AndromedaResonance", "ThovexModule" } );
 	}
 }

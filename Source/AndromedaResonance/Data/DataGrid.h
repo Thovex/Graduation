@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Matrix3.h"
+#include "WaveFunctionCollapse/Module.h"
+#include "Data/ModuleMatrix.h"
 #include "DataGrid.generated.h"
 
 UCLASS()
@@ -18,10 +19,16 @@ public:
 		USceneComponent* Transform;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
-		int32 GridElementSize = 1.F;
+		FIntVector NSize = FIntVector( 2, 2, 2 );
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
+		int32 GridElementSize = 10;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
 		float GridElementSpacing = 1.F;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
+		TMap<FIntVector, AModule*> ModulesMap;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Data" )
 		FModuleMatrix ModuleData;
@@ -31,15 +38,23 @@ public:
 		void SetMatrix( FIntVector Coord );
 
 	UFUNCTION( BlueprintCallable, Category = "Matrix Calls" )
-		FModule GetModuleAt( FIntVector Coord );
+		FModuleData GetModuleAt( FIntVector Coord );
 
 	UFUNCTION( BlueprintCallable, Category = "Matrix Calls" )
-		void SetModuleAt( FIntVector Coord, FModule Data );
+		void SetModuleAt( FIntVector Coord, FModuleData Data );
+
+	void ButtonPress();
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick( float DeltaTime ) override;
-
 	virtual bool ShouldTickIfViewportsOnly() const override;
+
+private:
+
+	void MapChildren();
+	void ConformToGrid();
+
+	FIntVector IncrementCoord( FIntVector Coord );
 
 };
