@@ -1,6 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "DataGrid.h"
+#include "Runtime/Engine/Public/DrawDebugHelpers.h"
+#include "Utility/UtilityLibrary.h"
+#include "Data/Orientations.h"
 
 
 ADataGrid::ADataGrid( const FObjectInitializer& ObjectInitializer ) {
@@ -11,9 +14,9 @@ ADataGrid::ADataGrid( const FObjectInitializer& ObjectInitializer ) {
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ADataGrid::SetMatrix( FIntVector Coord ) {
+void ADataGrid::SetMatrix( FIntVector Size ) {
 
-	FModuleMatrix NewModuleMatrix = FModuleMatrix( Coord );
+	FModuleMatrix NewModuleMatrix = FModuleMatrix( Size );
 
 	TMap<FIntVector, FModuleData> ModuleDataMap;
 
@@ -21,7 +24,7 @@ void ADataGrid::SetMatrix( FIntVector Coord ) {
 		if ( Pair.Value ) {
 			ModuleDataMap.Add( Pair.Key, Pair.Value->ToModuleData() );
 		} else {
-			ModuleDataMap.Add( Pair.Key, FModuleData( nullptr, true ) );
+			ModuleDataMap.Add( Pair.Key, FModuleData( nullptr, FIntVector( 0, 0, 0 ), FIntVector( 1, 1, 1 ), FName( TEXT( "Null" ) ), true ) );
 		}
 	}
 
@@ -39,7 +42,7 @@ void ADataGrid::SetModuleAt( FIntVector Coord, FModuleData Data ) {
 }
 
 void ADataGrid::ButtonPress() {
-	SetMatrix( NSize );
+
 }
 
 void ADataGrid::BeginPlay() {
@@ -52,6 +55,17 @@ void ADataGrid::Tick( float DeltaTime ) {
 	Super::Tick( DeltaTime );
 
 	MapChildren();
+
+	DrawDebugBox(
+		GetWorld(),
+		Transform->GetComponentLocation(),
+		FVector( NSize * GridElementSize / 2 ),
+		PatternStatus,
+		false,
+		-1.F,
+		0,
+		PatternStatus == FColor::Green ? 10.F : 100.F
+	);
 }
 
 void ADataGrid::MapChildren() {
@@ -75,6 +89,8 @@ void ADataGrid::MapChildren() {
 		}
 	}
 
+	// Retarded sorting goes here
+
 	ModulesMap.KeySort( [] ( FIntVector A, FIntVector B ) {
 		if ( A.X < B.X ) return true;
 		if ( A.Y < B.Y ) return true;
@@ -83,26 +99,63 @@ void ADataGrid::MapChildren() {
 	} );
 
 	ConformToGrid();
+
 }
 
 void ADataGrid::ConformToGrid() {
 
-	FVector CurrentLocation = GetActorLocation();
+	TMap<FIntVector, int32> CheckMap;
+
+	bool IsValid = true;
 
 	for ( auto& Pair : ModulesMap ) {
-
 		if ( Pair.Value ) {
-			FVector LocalLocation = CurrentLocation;
+			FVector RelativeValueLocation = Pair.Value->GetActorLocation() - GetActorLocation();
 
-			LocalLocation.X += ( Pair.Key.X * GridElementSize ) - ( GridElementSize / NSize.X );
-			LocalLocation.Y += ( Pair.Key.Y * GridElementSize ) - ( GridElementSize / NSize.Y );
-			LocalLocation.Z += ( Pair.Key.Z * GridElementSize ) - ( GridElementSize / NSize.Z );
+			FVector GridLocation = FVector(
+				FMath::RoundToInt( FMath::GridSnap( RelativeValueLocation.X, 500.F ) ),
+				FMath::RoundToInt( FMath::GridSnap( RelativeValueLocation.Y, 500.F ) ),
+				FMath::RoundToInt( FMath::GridSnap( RelativeValueLocation.Z, 500.F ) )
+			);
 
-			Pair.Value->SetActorLocation( LocalLocation );
+			FRotator WorldValueRotation = Pair.Value->GetActorRotation();
+
+			WorldValueRotation.Roll = FMath::RoundToInt( WorldValueRotation.Roll / 90 ) * 90;
+			WorldValueRotation.Pitch = FMath::RoundToInt( WorldValueRotation.Pitch / 90 ) * 90;
+			WorldValueRotation.Yaw = FMath::RoundToInt( WorldValueRotation.Yaw / 90 ) * 90;
+
+			int32 * Count = CheckMap.Find( FIntVector( GridLocation ) );
+
+			if ( Count != nullptr ) {
+				CheckMap.Add( FIntVector( GridLocation ), *Count + 1 );
+				IsValid = false;
+			} else {
+				CheckMap.Add( FIntVector( GridLocation ), 0 );
+			}
+
+			Pair.Value->SetActorLocation( GetActorLocation() + GridLocation );
+			Pair.Value->SetActorRotation( WorldValueRotation );
+		}
+	}
+
+
+	PatternStatus = IsValid ? FColor::Green : FColor::Red;
+
+	if ( IsValid ) {
+		if ( IsSelectedInEditor() ) {
+			SetMatrix( NSize );
+			return;
+		}
+		for ( auto& Pair : ModulesMap ) {
+			if ( Pair.Value ) {
+				if ( Pair.Value->IsSelectedInEditor() ) {
+					SetMatrix( NSize );
+					return;
+				}
+			}
 		}
 	}
 }
-
 
 FIntVector ADataGrid::IncrementCoord( FIntVector Coord ) {
 

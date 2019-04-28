@@ -22,10 +22,13 @@ public:
 		FIntVector NSize = FIntVector( 2, 2, 2 );
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
-		int32 GridElementSize = 10;
+		int32 GridElementSize = 1000;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
 		float GridElementSpacing = 1.F;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
+		FColor PatternStatus;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
 		TMap<FIntVector, AModule*> ModulesMap;
@@ -35,7 +38,7 @@ public:
 
 public:
 	UFUNCTION( BlueprintCallable, Category = "Matrix Calls" )
-		void SetMatrix( FIntVector Coord );
+		void SetMatrix( FIntVector SetMatrix );
 
 	UFUNCTION( BlueprintCallable, Category = "Matrix Calls" )
 		FModuleData GetModuleAt( FIntVector Coord );
@@ -52,8 +55,13 @@ protected:
 
 private:
 
+
+private:
+
 	void MapChildren();
 	void ConformToGrid();
+
+	int32 RoundUp( int32 NumToRound, int32 Multiple );
 
 	FIntVector IncrementCoord( FIntVector Coord );
 

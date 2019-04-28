@@ -55,8 +55,6 @@ public:
 
 		Array3D = InitializeMap;
 
-		UE_LOG( LogModuleMatrix, Log, TEXT( "Initialization of ModuleMatrix Succesful. Size: (X: %d, Y: %d, Z: %d)" ), SizeX, SizeY, SizeZ );
-
 	}
 
 	FModuleData GetDataAt( FIntVector Coord ) {

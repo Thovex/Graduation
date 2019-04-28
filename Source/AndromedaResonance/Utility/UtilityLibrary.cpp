@@ -7,7 +7,34 @@
 
 
 FIntVector UUtilityLibrary::Conv_VectorToIntVector( const FVector& InVector ) {
-	return FIntVector( InVector );
+	FIntVector ConvertedVector;
+
+	ConvertedVector.X = FMath::RoundToInt( InVector.X );
+	ConvertedVector.Y = FMath::RoundToInt( InVector.Y );
+	ConvertedVector.Z = FMath::RoundToInt( InVector.Z );
+
+	return ConvertedVector;
+}
+
+FIntVector UUtilityLibrary::Conv_RotatorToIntVector( const FRotator& InRotator ) {
+	FIntVector ConvertedVector;
+
+	ConvertedVector.X = FMath::RoundToInt( InRotator.Roll );
+	ConvertedVector.Y = FMath::RoundToInt( InRotator.Pitch );
+	ConvertedVector.Z = FMath::RoundToInt( InRotator.Yaw );
+
+	return ConvertedVector;
+
+}
+
+FVector UUtilityLibrary::Vector_AddIntVector( const FVector& InVector, const FIntVector& InIntVector ) {
+	FVector AddVector = InVector;
+
+	AddVector.X += InIntVector.X;
+	AddVector.Y += InIntVector.Y;
+	AddVector.Z += InIntVector.Z;
+
+	return AddVector;
 }
 
 float UUtilityLibrary::SetScale( float CurrentValue, float OldMinScale, float OldMaxScale, float NewMinScale, float NewMaxScale ) {
@@ -20,8 +47,3 @@ float UUtilityLibrary::SetScalePure( float CurrentValue, float OldMinScale, floa
 	return SetScale( CurrentValue, OldMinScale, OldMaxScale, NewMinScale, NewMaxScale );
 }
 
-void UUtilityLibrary::DebugText( const UWorld * WorldContextObject, FString Text, FVector const& Location, FColor const& Color, bool bPersistentLines, float LifeTime, uint8 DepthPriority, float Thickness, float Size, bool bRotateToCamera, bool bHasMaxDistance, int32 MaxDistance, bool bCapitalize ) {
-	if ( WorldContextObject ) {
-		DrawDebugText( WorldContextObject, Text, Location, Color, bPersistentLines, LifeTime, DepthPriority, Thickness, Size, bRotateToCamera, bHasMaxDistance, MaxDistance, bCapitalize );
-	}
-}

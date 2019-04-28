@@ -15,16 +15,29 @@ struct FModuleData {
 public:
 	FModuleData() {}
 
-	FModuleData( TSubclassOf<AModule> Module, bool Empty ) {
+	FModuleData( TSubclassOf<AModule> Module, FIntVector RotationEuler, FIntVector Scale, FName Bit, bool Empty) {
 		this->Module = Module;
+		this->RotationEuler = RotationEuler;
+		this->Scale = Scale;
+		this->Bit = Bit;
 		this->Empty = Empty;
 	}
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		bool Empty;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
+		FIntVector RotationEuler;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
+		FIntVector Scale;
+
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		TSubclassOf<AModule> Module;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Module Data" )
+		FName Bit;
 
 };
 
@@ -34,16 +47,26 @@ class ANDROMEDARESONANCE_API AModule : public AActor
 	GENERATED_BODY()
 	
 public:	
+	AModule( const FObjectInitializer& ObjectInitializer );
+
+public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
 		USceneComponent* Transform;
 
-	AModule( const FObjectInitializer& ObjectInitializer );
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
+		bool Symmetrical = false;
+
+public:
 
 	FModuleData ToModuleData();
+	FName GenerateBit();
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+
+private:
+	FIntVector GetFIntVectorEuler();
 
 };
