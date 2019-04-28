@@ -48,7 +48,6 @@ void ADataGrid::ButtonPress() {
 void ADataGrid::BeginPlay() {
 	Super::BeginPlay();
 
-	SetActorTickEnabled( false );
 }
 
 void ADataGrid::Tick( float DeltaTime ) {
@@ -185,10 +184,6 @@ FIntVector ADataGrid::IncrementCoord( FIntVector Coord ) {
 	UE_LOG( LogTemp, Error, TEXT( "DataGrid <%s> has too many values and will overwrite!" ), *GetActorLabel() );
 
 	return UpdatedCoord;
-}
-
-bool ADataGrid::ShouldTickIfViewportsOnly() const {
-	return true;
 }
 
 

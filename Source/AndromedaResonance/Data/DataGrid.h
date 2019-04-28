@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "EditorTickActor.h"
 #include "WaveFunctionCollapse/Module.h"
 #include "Data/ModuleMatrix.h"
 #include "DataGrid.generated.h"
 
 UCLASS()
-class ANDROMEDARESONANCE_API ADataGrid : public AActor {
+class ANDROMEDARESONANCE_API ADataGrid : public AEditorTickActor {
 	GENERATED_BODY()
 
 public:
@@ -51,9 +51,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick( float DeltaTime ) override;
-	virtual bool ShouldTickIfViewportsOnly() const override;
-
-private:
 
 
 private:

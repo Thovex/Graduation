@@ -15,7 +15,6 @@ AModuleAssignee::AModuleAssignee( const FObjectInitializer& ObjectInitializer ) 
 void AModuleAssignee::BeginPlay() {
 	Super::BeginPlay();
 
-	SetActorTickEnabled( false );
 }
 
 void AModuleAssignee::Tick( float DeltaTime ) {
@@ -38,11 +37,6 @@ void AModuleAssignee::Tick( float DeltaTime ) {
 			}
 		}
 	}
-}
-
-
-bool AModuleAssignee::ShouldTickIfViewportsOnly() const {
-	return true;
 }
 
 

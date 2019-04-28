@@ -8,13 +8,14 @@
 
 
 
-UCLASS( Abstract )
+UCLASS( )
 class ANDROMEDARESONANCE_API UMatrix3 : public UObject {
 
 	GENERATED_BODY()
 
 public:
 	UMatrix3();
+
 
 };
 

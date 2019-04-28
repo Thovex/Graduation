@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "EditorTickActor.h"
 #include "WaveFunctionCollapse/Module.h"
 #include "ModuleAssignee.generated.h"
 
 UCLASS()
-class ANDROMEDARESONANCE_API AModuleAssignee : public AActor
+class ANDROMEDARESONANCE_API AModuleAssignee : public AEditorTickActor
 {
 	GENERATED_BODY()
 	
@@ -24,7 +24,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick( float DeltaTime ) override;
-	virtual bool ShouldTickIfViewportsOnly() const override;
 
 
 };
