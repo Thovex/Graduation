@@ -61,8 +61,6 @@ private:
 	void MapChildren();
 	void ConformToGrid();
 
-	int32 RoundUp( int32 NumToRound, int32 Multiple );
-
 	FIntVector IncrementCoord( FIntVector Coord );
 
 };

@@ -32,7 +32,6 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		FIntVector Scale;
 
-
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		TSubclassOf<AModule> Module;
 
@@ -40,6 +39,8 @@ public:
 		FName Bit;
 
 };
+
+class AModuleAssignee;
 
 UCLASS(BlueprintType)
 class ANDROMEDARESONANCE_API AModule : public AActor
@@ -54,8 +55,14 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
 		USceneComponent* Transform;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		bool Symmetrical = false;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Module Data" )
+		FModuleData ModuleData;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Module Data" )
+		AModuleAssignee* ModuleAssignee;
 
 public:
 
@@ -68,5 +75,8 @@ protected:
 
 private:
 	FIntVector GetFIntVectorEuler();
+
+	FIntVector GetFIntVectorScale();
+	FName GetFNameFromScaleVector();
 
 };

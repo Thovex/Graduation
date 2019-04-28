@@ -25,22 +25,22 @@ const TMap<EOrientations, FIntVector> UOrientations::OrientationEulers = TMap<EO
 
 const TMap<FName, EOrientations> UOrientations::OrientationByFName = TMap<FName, EOrientations> {
 		{
-			FName( TEXT( "FORWARD" ) ), EOrientations::FORWARD
+			FName( TEXT( "F" ) ), EOrientations::FORWARD
 		},
 		{
-			FName( TEXT( "BACK" ) ), EOrientations::BACK
+			FName( TEXT( "B" ) ), EOrientations::BACK
 		},
 		{
-			FName( TEXT( "RIGHT" ) ), EOrientations::RIGHT
+			FName( TEXT( "R" ) ), EOrientations::RIGHT
 		},
 		{
-			FName( TEXT( "LEFT" ) ),  EOrientations::LEFT
+			FName( TEXT( "L" ) ),  EOrientations::LEFT
 		},
 		{
-			FName( TEXT( "UP" ) ), EOrientations::UP
+			FName( TEXT( "U" ) ), EOrientations::UP
 		},
 		{
-			FName( TEXT( "DOWN" ) ), EOrientations::DOWN
+			FName( TEXT( "D" ) ), EOrientations::DOWN
 		}
 };
 
