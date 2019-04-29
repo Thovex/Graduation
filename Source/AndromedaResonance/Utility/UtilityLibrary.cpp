@@ -27,6 +27,16 @@ FIntVector UUtilityLibrary::Conv_RotatorToIntVector( const FRotator& InRotator )
 
 }
 
+FVector UUtilityLibrary::Divide_VectorByIntVector( const FVector& InVector, const FIntVector& InIntVector ) {
+	FVector DividedVector = InVector;
+
+	DividedVector.X = InVector.X / InIntVector.X;
+	DividedVector.Y = InVector.Y / InIntVector.Y;
+	DividedVector.Z = InVector.Z / InIntVector.Z;
+
+	return DividedVector;
+}
+
 FVector UUtilityLibrary::Vector_AddIntVector( const FVector& InVector, const FIntVector& InIntVector ) {
 	FVector AddVector = InVector;
 

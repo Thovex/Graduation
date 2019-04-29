@@ -53,94 +53,142 @@ void ADataGrid::BeginPlay() {
 void ADataGrid::Tick( float DeltaTime ) {
 	Super::Tick( DeltaTime );
 
+	Errors.Empty();
+
+	SetPatternLocations();
 	MapChildren();
 
-	DrawDebugBox(
-		GetWorld(),
-		Transform->GetComponentLocation(),
-		FVector( NSize * GridElementSize / 2 ),
-		PatternStatus,
-		false,
-		-1.F,
-		0,
-		PatternStatus == FColor::Green ? 10.F : 100.F
-	);
+	PatternStatus = Errors.Num() == 0 ? FColor::Green : FColor::Red;
+
+	const UWorld* World = GetWorld();
+
+	if ( World ) {
+		for ( auto& ErrorPair : Errors ) {
+			DrawDebugLine( World, GetActorLocation() + ( FVector::UpVector * GridElementSize ), ErrorPair.Key->GetActorLocation(), FColor::Red, false, -1.F, 0, 10.F );
+			DrawDebugBox( World, ErrorPair.Key->GetActorLocation(), ErrorPair.Key->GetActorScale3D() * UUtilityLibrary::Divide_VectorByIntVector( FVector( GridElementSize ), NSize ), FColor::Red, false, -1.F, 0, 10.F );
+		}
+
+		DrawDebugBox( World, GetActorLocation(), FVector( NSize * GridElementSize / 2 ), PatternStatus, false, -1.F, 0, PatternStatus == FColor::Green ? 10.F : Errors.Num() * 50.F );
+	}
+}
+
+void ADataGrid::SetPatternLocations() {
+	PatternLocations.Empty( NSize.X * NSize.Y * NSize.Z );
+
+	for ( int32 Z = 0; Z < NSize.Z; Z++ ) {
+		for ( int32 Y = 0; Y < NSize.Y; Y++ ) {
+			for ( int32 X = 0; X < NSize.X; X++ ) {
+				PatternLocations.Add( FIntVector( X, Y, Z ), 0 );
+			}
+		}
+	}
+}
+
+FIntVector ADataGrid::DefineCoord( FIntVector RelativeValueLocation ) {
+
+	FIntVector Coord;
+
+	int32 HalfGridElement = GridElementSize / 2;
+
+	Coord.X = ( HalfGridElement + RelativeValueLocation.X ) / GridElementSize;
+	Coord.Y = ( HalfGridElement + RelativeValueLocation.Y ) / GridElementSize;
+	Coord.Z = ( HalfGridElement + RelativeValueLocation.Z ) / GridElementSize;
+	return Coord;
+}
+
+void ADataGrid::AppendError( const AActor * Actor, FString Error ) {
+	if ( Errors.Contains( Actor ) ) {
+		FString CurrentErrors = Errors.FindRef( Actor );
+		CurrentErrors += ", " + Error;
+
+		Errors.Add( Actor, CurrentErrors );
+	} else {
+		Errors.Add( Actor, Error );
+	}
+}
+
+void ADataGrid::RelativeValueLocationCheck( const AActor * Actor, const FIntVector RelativeValueLocation ) {
+	if ( RelativeValueLocation.X % GridElementSize == 0 ) {
+		AppendError( Actor, "Inconsistency at RelativeValueLocation.X" );
+	}
+
+	if ( RelativeValueLocation.Y % GridElementSize == 0 ) {
+		AppendError( Actor, "Inconsistency at RelativeValueLocation.Y" );
+	}
+
+	if ( RelativeValueLocation.Z % GridElementSize == 0 ) {
+		AppendError( Actor, "Inconsistency at RelativeValueLocation.Z" );
+	}
+}
+
+void ADataGrid::RelativeValueRotationCheck( const AActor * Actor, const FIntVector RelativeValueRotation ) {
+
+	if ( RelativeValueRotation.X != 0 ) {
+		AppendError( Actor, "Inconsistency at RelativeValueRotation.X" );
+	}
+
+	if ( RelativeValueRotation.Y != 0 ) {
+		AppendError( Actor, "Inconsistency at RelativeValueRotation.Y" );
+	}
+
+	if ( RelativeValueRotation.Z % 90 != 0 ) {
+		AppendError( Actor, "Inconsistency at RelativeValueRotation.Z" );
+	}
+}
+
+void ADataGrid::ValueScaleCheck( const AActor * Actor, const FVector ValueScale ) {
+	const TArray<FVector> AllowedScales = TArray<FVector> {
+		FVector( 1, 1, 1 ), FVector( -1, 1, 1 ), FVector( 1, -1, 1 )
+	};
+
+	if ( !AllowedScales.Contains( ValueScale ) ) {
+		AppendError( Actor, "Inconsistent Scaling on Element" );
+	}
+
 }
 
 void ADataGrid::MapChildren() {
+
 	TArray<AActor*> ChildActors;
 	GetAttachedActors( ChildActors );
 
 	ModulesMap.Empty( ChildActors.Num() );
 
-	FIntVector Coord = FIntVector( 0, 0, 0 );
 
-	for ( int32 i = 0; i < ( NSize.X * NSize.Y * NSize.Z ); i++ ) {
+	for ( int32 i = 0; i < ChildActors.Num(); i++ ) {
 
-		if ( i < ChildActors.Num() ) {
-			ModulesMap.Add( Coord, Cast<AModule>( ChildActors[i] ) );
+		FIntVector RelativeValueLocation = UUtilityLibrary::Conv_VectorToIntVector( ChildActors[i]->GetActorLocation() - GetActorLocation() );
+		FIntVector RelativeValueRotation = UUtilityLibrary::Conv_RotatorToIntVector( ChildActors[i]->GetActorRotation() - GetActorRotation() );
+		FVector ValueScale = ChildActors[i]->GetActorScale3D();
+
+		FIntVector Coord = DefineCoord( RelativeValueLocation );
+
+		RelativeValueLocationCheck( ChildActors[i], RelativeValueLocation );
+		RelativeValueRotationCheck( ChildActors[i], RelativeValueRotation );
+		ValueScaleCheck( ChildActors[i], ValueScale );
+
+		if ( PatternLocations.Contains( Coord ) ) {
+
+			int32 Count = PatternLocations.FindOrAdd( Coord );
+			PatternLocations.Add( Coord, Count + 1 );
+
+			if ( Count + 1 == 1 ) {
+				ModulesMap.Add( Coord, Cast<AModule>( ChildActors[i] ) );
+			} else {
+				AppendError( ChildActors[i], "Multiple elements at one allowed location" );
+
+			}
 		} else {
-			ModulesMap.Add( Coord, nullptr );
-		}
-
-		if ( i < NSize.X * NSize.Y * NSize.Z - 1 ) {
-			Coord = IncrementCoord( Coord );
+			AppendError( ChildActors[i], "Invalid element location" );
 		}
 	}
 
-	// Retarded sorting goes here
-
-	ModulesMap.KeySort( [] ( FIntVector A, FIntVector B ) {
-		if ( A.X < B.X ) return true;
-		if ( A.Y < B.Y ) return true;
-		if ( A.Z < B.Z ) return true;
-		return false;
-	} );
-
-	ConformToGrid();
-
+	FillEmptyData();
+	UpdateMatrix();
 }
 
-void ADataGrid::ConformToGrid() {
-
-	TMap<FIntVector, int32> CheckMap;
-
-	bool IsValid = true;
-
-	for ( auto& Pair : ModulesMap ) {
-		if ( Pair.Value ) {
-			FVector RelativeValueLocation = Pair.Value->GetActorLocation() - GetActorLocation();
-
-			FVector GridLocation = FVector(
-				FMath::RoundToInt( FMath::GridSnap( RelativeValueLocation.X, 500.F ) ),
-				FMath::RoundToInt( FMath::GridSnap( RelativeValueLocation.Y, 500.F ) ),
-				FMath::RoundToInt( FMath::GridSnap( RelativeValueLocation.Z, 500.F ) )
-			);
-
-			FRotator WorldValueRotation = Pair.Value->GetActorRotation();
-
-			WorldValueRotation.Roll = FMath::RoundToInt( WorldValueRotation.Roll / 90 ) * 90;
-			WorldValueRotation.Pitch = FMath::RoundToInt( WorldValueRotation.Pitch / 90 ) * 90;
-			WorldValueRotation.Yaw = FMath::RoundToInt( WorldValueRotation.Yaw / 90 ) * 90;
-
-			int32 * Count = CheckMap.Find( FIntVector( GridLocation ) );
-
-			if ( Count != nullptr ) {
-				CheckMap.Add( FIntVector( GridLocation ), *Count + 1 );
-				IsValid = false;
-			} else {
-				CheckMap.Add( FIntVector( GridLocation ), 0 );
-			}
-
-			Pair.Value->SetActorLocation( GetActorLocation() + GridLocation );
-			Pair.Value->SetActorRotation( WorldValueRotation );
-		}
-	}
-
-
-	PatternStatus = IsValid ? FColor::Green : FColor::Red;
-
-	if ( IsValid ) {
+void ADataGrid::UpdateMatrix() {
+	if ( Errors.Num() == 0 ) {
 		if ( IsSelectedInEditor() ) {
 			SetMatrix( NSize );
 			return;
@@ -156,34 +204,12 @@ void ADataGrid::ConformToGrid() {
 	}
 }
 
-FIntVector ADataGrid::IncrementCoord( FIntVector Coord ) {
-
-	FIntVector UpdatedCoord = Coord;
-
-	if ( UpdatedCoord.X < NSize.X - 1 ) {
-		UpdatedCoord.X++;
-		return UpdatedCoord;
-	} else {
-		UpdatedCoord.X = 0;
+void ADataGrid::FillEmptyData() {
+	for ( auto& PatternLocationPair : PatternLocations ) {
+		if ( PatternLocationPair.Value == 0 ) {
+			ModulesMap.Add( PatternLocationPair.Key, nullptr );
+		}
 	}
-
-	if ( UpdatedCoord.Y < NSize.Y - 1 ) {
-		UpdatedCoord.Y++;
-		return UpdatedCoord;
-	} else {
-		UpdatedCoord.Y = 0;
-	}
-
-	if ( UpdatedCoord.Z < NSize.Z - 1 ) {
-		UpdatedCoord.Z++;
-		return UpdatedCoord;
-	} else {
-		UpdatedCoord.Z = 0;
-	}
-
-	UE_LOG( LogTemp, Error, TEXT( "DataGrid <%s> has too many values and will overwrite!" ), *GetActorLabel() );
-
-	return UpdatedCoord;
 }
 
 

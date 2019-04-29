@@ -24,14 +24,18 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
 		int32 GridElementSize = 1000;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
-		float GridElementSpacing = 1.F;
-
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
-		FColor PatternStatus;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
 		TMap<FIntVector, AModule*> ModulesMap;
+
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Grid Settings" )
+		TMap<FIntVector, int32> PatternLocations;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Grid Debug" )
+		FColor PatternStatus;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Grid Debug" )
+		TMap<const AActor*, FString> Errors;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Data" )
 		FModuleMatrix ModuleData;
@@ -52,12 +56,21 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick( float DeltaTime ) override;
 
+	void SetPatternLocations();
 
 private:
+	FIntVector DefineCoord( FIntVector RelativeValueLocation );
+
+	void AppendError( const AActor* Actor, FString Error );
+
+	void RelativeValueLocationCheck( const AActor* Actor, const FIntVector RelativeValueLocation );
+	void RelativeValueRotationCheck( const AActor* Actor, const FIntVector RelativeValueRotation );
+	void ValueScaleCheck( const AActor* Actor, const FVector ValueScale );
 
 	void MapChildren();
-	void ConformToGrid();
 
-	FIntVector IncrementCoord( FIntVector Coord );
+	void UpdateMatrix( );
+
+	void FillEmptyData();
 
 };

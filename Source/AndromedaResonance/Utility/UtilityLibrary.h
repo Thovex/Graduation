@@ -21,6 +21,9 @@ public:
 	UFUNCTION( BlueprintPure, meta = ( DisplayName = "ToIntVector (Rotator)", CompactNodeTitle = "->", Keywords = "cast convert", BlueprintAutocast ), Category = "Math|Conversions" )
 		static FIntVector Conv_RotatorToIntVector( const FRotator& InRotator );
 
+	UFUNCTION( BlueprintPure, meta = ( DisplayName = "Divide Vector (By IntVector)", CompactNodeTitle = "->", Keywords = "cast convert", BlueprintAutocast ), Category = "Math|Conversions" )
+		static FVector Divide_VectorByIntVector( const FVector& InVector, const FIntVector& InIntVector );
+
 	UFUNCTION( BlueprintPure, meta = ( DisplayName = "ToIntVector (Vector)", CompactNodeTitle = "->", Keywords = "cast convert", BlueprintAutocast ), Category = "Math|Conversions" )
 		static FVector Vector_AddIntVector( const FVector& InVector, const FIntVector& InIntVector );
 

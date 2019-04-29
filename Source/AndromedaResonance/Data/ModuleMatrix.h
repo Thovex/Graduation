@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WaveFunctionCollapse/Module.h"
+#include "Macros.h"
 #include "ModuleMatrix.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN( LogModuleMatrix, Log, All );
@@ -48,7 +49,7 @@ public:
 		this->SizeZ = Z;
 	}
 
-	void Initialize( TMap<FIntVector, FModuleData> InitializeMap) {
+	void Initialize( TMap<FIntVector, FModuleData> InitializeMap ) {
 		if ( SizeX < 1 && SizeY < 1 && SizeZ < 1 ) {
 			UE_LOG( LogModuleMatrix, Error, TEXT( "Initializing FModuleMatrix with < (0, 0, 0) size." ) );
 		}
@@ -74,11 +75,16 @@ public:
 		for ( auto Pair : Array3D ) {
 			FModuleData ComparisonModule = Pair.Value;
 
-			//TODO: Keep Contains up to date with Module.
+			bool Equal = true;
 
-			if ( ComparisonModule.Module == CheckModule.Module ) {
-				return true;
-			}
+			if ( ComparisonModule.Module != CheckModule.Module ) Equal = false;
+			if ( ComparisonModule.RotationEuler != CheckModule.RotationEuler ) Equal = false;
+			if ( ComparisonModule.Scale != CheckModule.Scale ) Equal = false;
+			if ( ComparisonModule.Bit != CheckModule.Bit ) Equal = false;
+			if ( ComparisonModule.Empty != CheckModule.Empty ) Equal = false;
+
+			return Equal;
+
 		}
 
 		return false;
@@ -92,5 +98,47 @@ public:
 
 	void Clear() {
 		Array3D.Empty( SizeX * SizeY * SizeZ );
+	}
+
+	void RotateCounterClockwise( int Times ) {
+		int MinX = 0;
+		int MaxX = SizeX - 1;
+
+		int MinY = 0;
+		int MaxY = SizeY - 1;
+
+		for ( int32 i = 0; i < Times; i++ ) {
+			for ( int32 Increment = 0; Increment < SizeX / 2; Increment++ ) {
+				for ( int N = 0 + Increment; N < MaxX - Increment; N++ ) {
+
+					TMap<FIntVector, FModuleData> OriginalData = Array3D;
+					TMap<FIntVector, FModuleData> CopyData;
+
+					for ( int32 X = 0; X < SizeX; X++ ) {
+						for ( int32 Y = 0; Y < SizeY; Y++ ) {
+							for ( int32 Z = 0; Z < SizeZ; Z++ ) {
+
+								if ( X >= MinX + Increment && X <= ( MaxX - 1 ) - Increment && Y == MinY + Increment ) {
+									CopyData.Add( FIntVector( X + 1, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+								} else if ( X == MaxX - Increment && Y >= MinY + Increment && Y <= ( MaxY - 1 ) - Increment ) {
+									CopyData.Add( FIntVector( X, Y + 1, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+
+								} else if ( X >= ( MinX + 1 ) + Increment && X <= MaxX - Increment && Y == MaxY - Increment ) {
+									CopyData.Add( FIntVector( X - 1, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+
+								} else if ( X == MinX + Increment && Y >= ( MinY + 1 ) + Increment && Y <= MaxY - Increment ) {
+									CopyData.Add( FIntVector( X, Y - 1, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+
+								} else {
+									CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+								}
+							}
+						}
+					}
+
+					Array3D = CopyData;
+				}
+			}
+		}
 	}
 };
