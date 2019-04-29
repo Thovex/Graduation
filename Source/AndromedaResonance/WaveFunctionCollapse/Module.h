@@ -15,7 +15,12 @@ struct FModuleData {
 public:
 	FModuleData() {}
 
-	FModuleData( TSubclassOf<AModule> Module, FIntVector RotationEuler, FIntVector Scale, FName Bit, bool Empty) {
+	FModuleData( bool Empty ) {
+		this->Empty = Empty;
+		this->Bit = "Null";
+	}
+
+	FModuleData( TSubclassOf<AModule> Module, FIntVector RotationEuler, FIntVector Scale, FName Bit, bool Empty ) {
 		this->Module = Module;
 		this->RotationEuler = RotationEuler;
 		this->Scale = Scale;
@@ -38,16 +43,28 @@ public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Module Data" )
 		FName Bit;
 
+	FORCEINLINE bool operator==( const FModuleData& Other ) const {
+		bool bIsEqual = true;
+
+		if ( this->Module != Other.Module ) bIsEqual = false;
+		if ( this->RotationEuler != Other.RotationEuler ) bIsEqual = false;
+		if ( this->Scale != Other.Scale ) bIsEqual = false;
+		if ( this->Bit != Other.Bit ) bIsEqual = false;
+		if ( this->Empty != Other.Empty ) bIsEqual = false;
+
+		return bIsEqual;
+	}
+
+
 };
 
 class AModuleAssignee;
 
-UCLASS(BlueprintType)
-class ANDROMEDARESONANCE_API AModule : public AActor
-{
+UCLASS( BlueprintType )
+class ANDROMEDARESONANCE_API AModule : public AActor {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AModule( const FObjectInitializer& ObjectInitializer );
 
 public:
@@ -71,7 +88,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick( float DeltaTime ) override;
 
 private:
 	FIntVector GetFIntVectorEuler();

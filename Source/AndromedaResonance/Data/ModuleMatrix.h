@@ -71,35 +71,38 @@ public:
 		Array3D.Add( Coord, Data );
 	}
 
-	bool Contains( FModuleData CheckModule ) {
+	// CHECKED
+	bool Contains( FModuleData CheckModule, FModuleData& ContainedModule ) {
 		for ( auto Pair : Array3D ) {
-			FModuleData ComparisonModule = Pair.Value;
-
-			bool Equal = true;
-
-			if ( ComparisonModule.Module != CheckModule.Module ) Equal = false;
-			if ( ComparisonModule.RotationEuler != CheckModule.RotationEuler ) Equal = false;
-			if ( ComparisonModule.Scale != CheckModule.Scale ) Equal = false;
-			if ( ComparisonModule.Bit != CheckModule.Bit ) Equal = false;
-			if ( ComparisonModule.Empty != CheckModule.Empty ) Equal = false;
-
-			return Equal;
-
+			if ( Pair.Value == CheckModule ) {
+				ContainedModule = Pair.Value;
+				return true;
+			}
 		}
-
 		return false;
 	}
 
+	// SEMI CHECKED
 	bool IsValidCoordinate( FIntVector Coord ) {
-		if ( !( Coord.X > 0 && Coord.Y > 0 && Coord.Z > 0 ) ) return false;
-		if ( !( Coord.X < SizeX && Coord.Y < SizeY && Coord.Z < SizeZ ) ) return false;
+		if ( Coord.X < 0 ) return false;
+		if ( Coord.X >= SizeX ) return false;
+
+		if ( Coord.Y < 0 ) return false;
+		if ( Coord.Y >= SizeY ) return false;
+
+		if ( Coord.Z < 0 ) return false;
+		if ( Coord.Z >= SizeZ ) return false;
+
 		return true;
+
 	}
 
+	// UNCHECKED
 	void Clear() {
 		Array3D.Empty( SizeX * SizeY * SizeZ );
 	}
 
+	// DOUBLE CHECKED (INT TIMES 1)
 	void RotateCounterClockwise( int Times ) {
 		int MinX = 0;
 		int MaxX = SizeX - 1;
@@ -114,31 +117,48 @@ public:
 					TMap<FIntVector, FModuleData> OriginalData = Array3D;
 					TMap<FIntVector, FModuleData> CopyData;
 
-					for ( int32 X = 0; X < SizeX; X++ ) {
-						for ( int32 Y = 0; Y < SizeY; Y++ ) {
-							for ( int32 Z = 0; Z < SizeZ; Z++ ) {
+					for3( SizeX, SizeY, SizeZ,
 
-								if ( X >= MinX + Increment && X <= ( MaxX - 1 ) - Increment && Y == MinY + Increment ) {
-									CopyData.Add( FIntVector( X + 1, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
-								} else if ( X == MaxX - Increment && Y >= MinY + Increment && Y <= ( MaxY - 1 ) - Increment ) {
-									CopyData.Add( FIntVector( X, Y + 1, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						  if ( X >= MinX + Increment && X <= ( MaxX - 1 ) - Increment && Y == MinY + Increment ) {
+							  CopyData.Add( FIntVector( X + 1, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
 
-								} else if ( X >= ( MinX + 1 ) + Increment && X <= MaxX - Increment && Y == MaxY - Increment ) {
-									CopyData.Add( FIntVector( X - 1, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						  } else if ( X == MaxX - Increment && Y >= MinY + Increment && Y <= ( MaxY - 1 ) - Increment ) {
+							  CopyData.Add( FIntVector( X, Y + 1, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
 
-								} else if ( X == MinX + Increment && Y >= ( MinY + 1 ) + Increment && Y <= MaxY - Increment ) {
-									CopyData.Add( FIntVector( X, Y - 1, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						  } else if ( X >= ( MinX + 1 ) + Increment && X <= MaxX - Increment && Y == MaxY - Increment ) {
+							  CopyData.Add( FIntVector( X - 1, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
 
-								} else {
-									CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
-								}
-							}
-						}
-					}
+						  } else if ( X == MinX + Increment && Y >= ( MinY + 1 ) + Increment && Y <= MaxY - Increment ) {
+							  CopyData.Add( FIntVector( X, Y - 1, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
 
-					Array3D = CopyData;
+						  } else {
+							  CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						  }
+						  )
+
+						Array3D = CopyData;
 				}
 			}
 		}
+	}
+
+	// DOUBLE CHECKED
+	void PushData( FIntVector Direction ) {
+		TMap<FIntVector, FModuleData> OriginalData = Array3D;
+		TMap<FIntVector, FModuleData> CopyData;
+
+		for3( SizeX, SizeY, SizeZ,
+
+			  FIntVector SweepCoord = FIntVector( X + -Direction.X, Y + -Direction.Y, Z + -Direction.Z );
+
+		if ( IsValidCoordinate( SweepCoord ) ) {
+			CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( SweepCoord ) );
+		} else {
+			CopyData.Add( FIntVector( X, Y, Z ), FModuleData( true ) );
+		}
+		)
+
+			Array3D = CopyData;
+
 	}
 };

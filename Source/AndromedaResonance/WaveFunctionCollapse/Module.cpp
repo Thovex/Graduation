@@ -50,7 +50,6 @@ FName AModule::GetFNameFromScaleVector() {
 }
 
 FName AModule::GenerateBit() {
-
 	if ( !ModuleAssignee ) return FName( TEXT( "No Module Assignee" ) );
 
 	FString Bit = ModuleAssignee->AssignedNames.FindRef( this->GetClass() ).ToString();

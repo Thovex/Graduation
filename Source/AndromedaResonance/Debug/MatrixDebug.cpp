@@ -2,6 +2,7 @@
 
 
 #include "MatrixDebug.h"
+#include "Data/Orientations.h"
 
 AMatrixDebug::AMatrixDebug() {
 
@@ -48,7 +49,14 @@ void AMatrixDebug::Tick( float DeltaTime ) {
 }
 
 void AMatrixDebug::ButtonPress() {
-	this->ModuleMatrix.RotateCounterClockwise( 1 );
+	//this->ModuleMatrix.RotateCounterClockwise( 1 );
+	//this->ModuleMatrix.PushData( UOrientations::OrientationUnitVectors.FindRef( EOrientations::BACK_LEFT_UP ) );
+
+// 	if ( DataGrid ) {
+// 		FModuleData Contains;
+// 		this->ModuleMatrix.Contains( DataGrid->ModuleData.Array3D.FindRef( FIntVector( 0, 0, 0 ) ), Contains );
+// 
+// 	}
 }
 
 void AMatrixDebug::CopyModuleMatrix( FModuleMatrix ModuleMatrixToCopy ) {
