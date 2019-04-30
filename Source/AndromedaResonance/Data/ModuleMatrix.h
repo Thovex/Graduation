@@ -165,6 +165,35 @@ public:
 	}
 
 	// CHECKED
+	void Flip( EOrientations Orientation ) {
+		FString OrientationToString = UOrientations::GetEnumValueAsString<EOrientations>( "EOrientations", Orientation );
+
+		TArray<FString> OrientationsFromString;
+		OrientationToString.ParseIntoArray( OrientationsFromString, TEXT( "_" ), true );
+		OrientationsFromString[0].RemoveFromStart( "EOrientations::", ESearchCase::IgnoreCase );
+
+		for ( FString OrientationString : OrientationsFromString ) {
+
+			if ( OrientationString == "FORWARD" || OrientationString == "BACK" ) {
+				FlipForwardBack();
+				UE_LOG( LogTemp, Warning, TEXT( "F/B" ) );
+
+			}
+
+			if ( OrientationString == "RIGHT" || OrientationString == "LEFT" ) {
+				FlipRightLeft();
+				UE_LOG( LogTemp, Warning, TEXT( "L/R" ) );
+
+			}
+
+			if ( OrientationString == "UP" || OrientationString == "DOWN" ) {
+				FlipUpDown();
+				UE_LOG( LogTemp, Warning, TEXT( "U/D" ) );
+			}
+		}
+	}
+
+	// CHECKED
 	void FlipForwardBack() {
 		TMap<FIntVector, FModuleData> OriginalData = Array3D;
 		TMap<FIntVector, FModuleData> CopyData;

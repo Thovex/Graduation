@@ -62,7 +62,7 @@ void AMatrixDebug::ButtonPress() {
 // 
 // 	}
 
-	this->ModuleMatrix.FlipRightLeft();
+	this->ModuleMatrix.Flip( EOrientations::FORWARD_RIGHT );
 }
 
 void AMatrixDebug::CopyModuleMatrix( FModuleMatrix ModuleMatrixToCopy ) {

@@ -59,6 +59,16 @@ public:
 	static const TMap<EOrientations, FIntVector> OrientationUnitVectors;
 
 public:
+
+	template<typename TEnum>
+	static FORCEINLINE FString GetEnumValueAsString( const FString& Name, TEnum Value ) {
+		const UEnum* EnumPtr = FindObject<UEnum>( ANY_PACKAGE, *Name, true );
+		if ( !EnumPtr ) {
+			return FString( "Invalid" );
+		}
+		return EnumPtr->GetNameByValue( ( int64 ) Value ).ToString();
+	}
+
 	static EOrientations EulerToOrientation( FIntVector RotationVector );
 
 };

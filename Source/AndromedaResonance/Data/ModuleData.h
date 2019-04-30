@@ -92,12 +92,12 @@ public:
 
 	FORCEINLINE bool operator==( const FModuleData& Other ) const {
 		if ( this->Empty != Other.Empty ) return false;
+		if ( this->Bit != Other.Bit ) return false;
 
 		if ( this->Module != Other.Module ) return false;
-		//if ( this->ModuleAssignee != Other.ModuleAssignee ) return false;
+		if ( this->ModuleID != Other.ModuleID ) return false;
 		if ( this->RotationEuler != Other.RotationEuler ) return false;
 		if ( this->Scale != Other.Scale ) return false;
-		if ( this->Bit != Other.Bit ) return false;
 
 		return true;
 	}
