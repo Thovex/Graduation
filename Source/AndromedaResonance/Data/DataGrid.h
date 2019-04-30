@@ -25,9 +25,6 @@ public:
 		int32 GridElementSize = 1000;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Grid Settings" )
-		TMap<FIntVector, AModule*> ModulesMap;
-
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Grid Settings" )
 		TMap<FIntVector, int32> PatternLocations;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Grid Data" )
@@ -53,6 +50,8 @@ protected:
 
 private:
 	FIntVector DefineCoord( FIntVector RelativeValueLocation );
+
+	TMap<FIntVector, AModule*> ModulesMap;
 
 	void AppendError( const AActor* Actor, FString Error );
 

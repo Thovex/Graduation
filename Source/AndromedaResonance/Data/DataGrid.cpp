@@ -3,6 +3,7 @@
 #include "DataGrid.h"
 #include "Runtime/Engine/Public/DrawDebugHelpers.h"
 #include "Utility/UtilityLibrary.h"
+#include "Data/ModuleAssignee.h"
 #include "Data/Orientations.h"
 
 
@@ -22,7 +23,8 @@ void ADataGrid::SetMatrix( FIntVector Size ) {
 
 	for ( auto& Pair : ModulesMap ) {
 		if ( Pair.Value ) {
-			ModuleDataMap.Add( Pair.Key, FModuleData( Pair.Value ) );
+			FName ID = Pair.Value->ModuleAssignee->AssignedNames.FindRef( Pair.Value->GetClass() );
+			ModuleDataMap.Add( Pair.Key, FModuleData( Pair.Value, ID) );
 		} else {
 			ModuleDataMap.Add( Pair.Key, FModuleData( true ) );
 		}

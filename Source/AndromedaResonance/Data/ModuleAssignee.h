@@ -5,14 +5,15 @@
 #include "CoreMinimal.h"
 #include "EditorTickActor.h"
 #include "WaveFunctionCollapse/Module.h"
+#include "Data/ModuleMatrix.h"
 #include "ModuleAssignee.generated.h"
 
+
 UCLASS()
-class ANDROMEDARESONANCE_API AModuleAssignee : public AEditorTickActor
-{
+class ANDROMEDARESONANCE_API AModuleAssignee : public AEditorTickActor {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AModuleAssignee( const FObjectInitializer& ObjectInitializer );
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
@@ -20,6 +21,9 @@ public:
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Assignee" )
 		TMap<TSubclassOf<AModule>, FName> AssignedNames;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Patterns" )
+		TMap<int32, FModuleMatrix > Patterns;
 
 protected:
 	virtual void BeginPlay() override;

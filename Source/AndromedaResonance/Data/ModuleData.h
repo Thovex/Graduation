@@ -4,11 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Data/Orientations.h"
-#include "Data/ModuleAssignee.h"
 #include "Utility/UtilityLibrary.h"
+#include "WaveFunctionCollapse/Module.h"
 #include "ModuleData.generated.h"
-
-class AModule;
 
 DECLARE_LOG_CATEGORY_EXTERN( LogModuleData, Log, All );
 
@@ -19,12 +17,12 @@ struct FModuleData {
 public:
 	FModuleData() {}
 
-	FModuleData( AModule* Module ) {
+	FModuleData( AModule* Module, FName ModuleID ) {
 		if ( Module ) {
 			if ( Module->IsValidLowLevel() ) {
 
 				this->Module = Module->GetClass();
-				this->ModuleID = Module->ModuleAssignee->AssignedNames.FindRef( this->Module );
+				this->ModuleID = ModuleID;
 				this->RotationEuler = UUtilityLibrary::Conv_RotatorToIntVector( Module->GetActorRotation() );
 				this->Scale = UUtilityLibrary::Conv_VectorToIntVector( Module->GetActorScale3D() );
 				this->Symmetrical = Module->Symmetrical;
@@ -91,14 +89,10 @@ public:
 	}
 
 	FORCEINLINE bool operator==( const FModuleData& Other ) const {
-		if ( this->Empty != Other.Empty ) return false;
-		if ( this->Bit != Other.Bit ) return false;
+		return this->Bit == Other.Bit;
+	}
 
-		if ( this->Module != Other.Module ) return false;
-		if ( this->ModuleID != Other.ModuleID ) return false;
-		if ( this->RotationEuler != Other.RotationEuler ) return false;
-		if ( this->Scale != Other.Scale ) return false;
-
-		return true;
+	FORCEINLINE bool operator!=( const FModuleData& Other ) const {
+		return !operator==( Other );
 	}
 };

@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Macros.h"
 #include "Data/ModuleData.h"
+#include "Macros.h"
 #include "ModuleMatrix.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN( LogModuleMatrix, Log, All );
@@ -43,6 +43,16 @@ public:
 		SetSize( X, Y, Z );
 	}
 
+	FORCEINLINE bool operator==( const FModuleMatrix& Other ) const {
+		bool bIsEqual = true;
+
+		for ( auto& Pair : Array3D ) {
+			if ( Pair.Value != Other.Array3D.FindRef( Pair.Key ) ) bIsEqual = false;
+		}
+
+		return bIsEqual;
+	}
+
 	void SetSize( int32 X, int32 Y, int32 Z ) {
 		this->SizeX = X;
 		this->SizeY = Y;
@@ -72,7 +82,7 @@ public:
 	}
 
 	// CHECKED
-	bool Contains( FModuleData CheckModule, FModuleData& ContainedModule ) {
+	bool Contains( FModuleData CheckModule, FModuleData & ContainedModule ) {
 
 		if ( Array3D.Num() > 0 ) {
 			for ( auto Pair : Array3D ) {
