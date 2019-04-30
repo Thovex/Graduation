@@ -22,18 +22,25 @@ void AModuleAssignee::Tick( float DeltaTime ) {
 
 	AssignedNames.Empty();
 
-	for ( TActorIterator<AModule> ActorItr( GetWorld() ); ActorItr; ++ActorItr ) {
-		AModule* Module = *ActorItr;
-		if ( Module ) {
-			TSubclassOf<AModule> SubClass = Module->GetClass();
+	UWorld* World = GetWorld();
 
-			if ( !AssignedNames.Find( SubClass ) ) {
-				AssignedNames.Add( SubClass, FName( *FString::FromInt( AssignedNames.Num() ) ) );
+	if ( World ) {
+		for ( TActorIterator<AModule> ActorItr( World ); ActorItr; ++ActorItr ) {
+			AModule* Module = *ActorItr;
 
-			}
+			if ( Module ) {
+				if ( Module->IsValidLowLevel() ) {
+					TSubclassOf<AModule> SubClass = Module->GetClass();
 
-			if ( !Module->ModuleAssignee ) {
-				Module->ModuleAssignee = this;
+					if ( !AssignedNames.Find( SubClass ) ) {
+						AssignedNames.Add( SubClass, FName( *FString::FromInt( AssignedNames.Num() ) ) );
+
+					}
+
+					if ( !Module->ModuleAssignee ) {
+						Module->ModuleAssignee = this;
+					}
+				}
 			}
 		}
 	}

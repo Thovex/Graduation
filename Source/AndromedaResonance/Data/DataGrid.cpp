@@ -22,23 +22,15 @@ void ADataGrid::SetMatrix( FIntVector Size ) {
 
 	for ( auto& Pair : ModulesMap ) {
 		if ( Pair.Value ) {
-			ModuleDataMap.Add( Pair.Key, Pair.Value->ToModuleData() );
+			ModuleDataMap.Add( Pair.Key, FModuleData( Pair.Value ) );
 		} else {
-			ModuleDataMap.Add( Pair.Key, FModuleData( nullptr, FIntVector( 0, 0, 0 ), FIntVector( 1, 1, 1 ), FName( TEXT( "Null" ) ), true ) );
+			ModuleDataMap.Add( Pair.Key, FModuleData( true ) );
 		}
 	}
 
 	NewModuleMatrix.Initialize( ModuleDataMap );
 
 	ModuleData = NewModuleMatrix;
-}
-
-FModuleData ADataGrid::GetModuleAt( FIntVector Coord ) {
-	return ModuleData.GetDataAt( Coord );
-}
-
-void ADataGrid::SetModuleAt( FIntVector Coord, FModuleData Data ) {
-	ModuleData.SetDataAt( Coord, Data );
 }
 
 void ADataGrid::ButtonPress() {
@@ -157,29 +149,34 @@ void ADataGrid::MapChildren() {
 
 	for ( int32 i = 0; i < ChildActors.Num(); i++ ) {
 
-		FIntVector RelativeValueLocation = UUtilityLibrary::Conv_VectorToIntVector( ChildActors[i]->GetActorLocation() - GetActorLocation() );
-		FIntVector RelativeValueRotation = UUtilityLibrary::Conv_RotatorToIntVector( ChildActors[i]->GetActorRotation() - GetActorRotation() );
-		FVector ValueScale = ChildActors[i]->GetActorScale3D();
+		if ( ChildActors[i] ) {
+			if ( ChildActors[i]->IsValidLowLevel() ) {
 
-		FIntVector Coord = DefineCoord( RelativeValueLocation );
+				FIntVector RelativeValueLocation = UUtilityLibrary::Conv_VectorToIntVector( ChildActors[i]->GetActorLocation() - GetActorLocation() );
+				FIntVector RelativeValueRotation = UUtilityLibrary::Conv_RotatorToIntVector( ChildActors[i]->GetActorRotation() - GetActorRotation() );
+				FVector ValueScale = ChildActors[i]->GetActorScale3D();
 
-		RelativeValueLocationCheck( ChildActors[i], RelativeValueLocation );
-		RelativeValueRotationCheck( ChildActors[i], RelativeValueRotation );
-		ValueScaleCheck( ChildActors[i], ValueScale );
+				FIntVector Coord = DefineCoord( RelativeValueLocation );
 
-		if ( PatternLocations.Contains( Coord ) ) {
+				RelativeValueLocationCheck( ChildActors[i], RelativeValueLocation );
+				RelativeValueRotationCheck( ChildActors[i], RelativeValueRotation );
+				ValueScaleCheck( ChildActors[i], ValueScale );
 
-			int32 Count = PatternLocations.FindOrAdd( Coord );
-			PatternLocations.Add( Coord, Count + 1 );
+				if ( PatternLocations.Contains( Coord ) ) {
 
-			if ( Count + 1 == 1 ) {
-				ModulesMap.Add( Coord, Cast<AModule>( ChildActors[i] ) );
-			} else {
-				AppendError( ChildActors[i], "Multiple elements at one allowed location" );
+					int32 Count = PatternLocations.FindOrAdd( Coord );
+					PatternLocations.Add( Coord, Count + 1 );
 
+					if ( Count + 1 == 1 ) {
+						ModulesMap.Add( Coord, Cast<AModule>( ChildActors[i] ) );
+					} else {
+						AppendError( ChildActors[i], "Multiple elements at one allowed location" );
+
+					}
+				} else {
+					AppendError( ChildActors[i], "Invalid element location" );
+				}
 			}
-		} else {
-			AppendError( ChildActors[i], "Invalid element location" );
 		}
 	}
 
@@ -195,9 +192,11 @@ void ADataGrid::UpdateMatrix() {
 		}
 		for ( auto& Pair : ModulesMap ) {
 			if ( Pair.Value ) {
-				if ( Pair.Value->IsSelectedInEditor() ) {
-					SetMatrix( NSize );
-					return;
+				if ( Pair.Value->IsValidLowLevel() ) {
+					if ( Pair.Value->IsSelectedInEditor() ) {
+						SetMatrix( NSize );
+						return;
+					}
 				}
 			}
 		}

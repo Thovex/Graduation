@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WaveFunctionCollapse/Module.h"
 #include "Macros.h"
+#include "Data/ModuleData.h"
 #include "ModuleMatrix.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN( LogModuleMatrix, Log, All );
@@ -73,10 +73,13 @@ public:
 
 	// CHECKED
 	bool Contains( FModuleData CheckModule, FModuleData& ContainedModule ) {
-		for ( auto Pair : Array3D ) {
-			if ( Pair.Value == CheckModule ) {
-				ContainedModule = Pair.Value;
-				return true;
+
+		if ( Array3D.Num() > 0 ) {
+			for ( auto Pair : Array3D ) {
+				if ( Pair.Value == CheckModule ) {
+					ContainedModule = Pair.Value;
+					return true;
+				}
 			}
 		}
 		return false;
@@ -112,29 +115,29 @@ public:
 
 		for ( int32 i = 0; i < Times; i++ ) {
 			for ( int32 Increment = 0; Increment < SizeX / 2; Increment++ ) {
-				for ( int N = 0 + Increment; N < MaxX - Increment; N++ ) {
+				for ( int32 N = 0 + Increment; N < MaxX - Increment; N++ ) {
 
 					TMap<FIntVector, FModuleData> OriginalData = Array3D;
 					TMap<FIntVector, FModuleData> CopyData;
 
-					for3( SizeX, SizeY, SizeZ,
+					for3( SizeX, SizeY, SizeZ, {
 
-						  if ( X >= MinX + Increment && X <= ( MaxX - 1 ) - Increment && Y == MinY + Increment ) {
-							  CopyData.Add( FIntVector( X + 1, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						if ( X >= MinX + Increment && X <= ( MaxX - 1 ) - Increment && Y == MinY + Increment ) {
+							CopyData.Add( FIntVector( X + 1, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
 
-						  } else if ( X == MaxX - Increment && Y >= MinY + Increment && Y <= ( MaxY - 1 ) - Increment ) {
-							  CopyData.Add( FIntVector( X, Y + 1, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						} else if ( X == MaxX - Increment && Y >= MinY + Increment && Y <= ( MaxY - 1 ) - Increment ) {
+							CopyData.Add( FIntVector( X, Y + 1, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
 
-						  } else if ( X >= ( MinX + 1 ) + Increment && X <= MaxX - Increment && Y == MaxY - Increment ) {
-							  CopyData.Add( FIntVector( X - 1, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						} else if ( X >= ( MinX + 1 ) + Increment && X <= MaxX - Increment && Y == MaxY - Increment ) {
+							CopyData.Add( FIntVector( X - 1, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
 
-						  } else if ( X == MinX + Increment && Y >= ( MinY + 1 ) + Increment && Y <= MaxY - Increment ) {
-							  CopyData.Add( FIntVector( X, Y - 1, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						} else if ( X == MinX + Increment && Y >= ( MinY + 1 ) + Increment && Y <= MaxY - Increment ) {
+							CopyData.Add( FIntVector( X, Y - 1, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
 
-						  } else {
-							  CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
-						  }
-						  )
+						} else {
+							CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						}
+						  } )
 
 						Array3D = CopyData;
 				}
@@ -147,18 +150,72 @@ public:
 		TMap<FIntVector, FModuleData> OriginalData = Array3D;
 		TMap<FIntVector, FModuleData> CopyData;
 
-		for3( SizeX, SizeY, SizeZ,
+		for3( SizeX, SizeY, SizeZ, {
+			FIntVector SweepCoord = FIntVector( X + -Direction.X, Y + -Direction.Y, Z + -Direction.Z );
 
-			  FIntVector SweepCoord = FIntVector( X + -Direction.X, Y + -Direction.Y, Z + -Direction.Z );
+			if ( IsValidCoordinate( SweepCoord ) ) {
+					CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( SweepCoord ) );
+			} else {
+				CopyData.Add( FIntVector( X, Y, Z ), FModuleData( true ) );
+			}
 
-		if ( IsValidCoordinate( SweepCoord ) ) {
-			CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( SweepCoord ) );
-		} else {
-			CopyData.Add( FIntVector( X, Y, Z ), FModuleData( true ) );
-		}
-		)
+			  } )
 
 			Array3D = CopyData;
+	}
 
+	// CHECKED
+	void FlipForwardBack() {
+		TMap<FIntVector, FModuleData> OriginalData = Array3D;
+		TMap<FIntVector, FModuleData> CopyData;
+
+		int X = SizeX - 1;
+		int Y = SizeY - 1;
+
+		for ( int32 Z = 0; Z < SizeZ; Z++ ) {
+			CopyData.Add( FIntVector( 0, 0, Z ), OriginalData.FindRef( FIntVector( X, 0, Z ) ) );
+			CopyData.Add( FIntVector( X, 0, Z ), OriginalData.FindRef( FIntVector( 0, 0, Z ) ) );
+			CopyData.Add( FIntVector( 0, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+			CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( 0, Y, Z ) ) );
+		}
+
+		Array3D = CopyData;
+
+	}
+
+	// CHECKED
+	void FlipRightLeft() {
+		TMap<FIntVector, FModuleData> OriginalData = Array3D;
+		TMap<FIntVector, FModuleData> CopyData;
+
+		int X = SizeX - 1;
+		int Y = SizeY - 1;
+
+		for ( int32 Z = 0; Z < SizeZ; Z++ ) {
+
+			CopyData.Add( FIntVector( 0, 0, Z ), OriginalData.FindRef( FIntVector( 0, Y, Z ) ) );
+			CopyData.Add( FIntVector( 0, Y, Z ), OriginalData.FindRef( FIntVector( 0, 0, Z ) ) );
+			CopyData.Add( FIntVector( X, 0, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+			CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, 0, Z ) ) );
+		}
+
+		Array3D = CopyData;
+	}
+
+	// CHECKED
+	void FlipUpDown() {
+		TMap<FIntVector, FModuleData> OriginalData = Array3D;
+		TMap<FIntVector, FModuleData> CopyData;
+
+		int Z = SizeZ - 1;
+
+		for ( int32 X = 0; X < SizeX; X++ ) {
+			for ( int32 Y = 0; Y < SizeY; Y++ ) {
+				CopyData.Add( FIntVector( X, Y, 0 ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+				CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, 0 ) ) );
+			}
+		}
+
+		Array3D = CopyData;
 	}
 };

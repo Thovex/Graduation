@@ -24,6 +24,10 @@ void AMatrixDebug::PostEditChangeProperty( FPropertyChangedEvent& PropertyChange
 	Super::PostEditChangeProperty( PropertyChangedEvent );
 
 	bIsSet = false;
+
+	if ( DataGrid ) {
+		CopyModuleMatrix( DataGrid->ModuleData );
+	}
 }
 
 void AMatrixDebug::Tick( float DeltaTime ) {
@@ -57,16 +61,12 @@ void AMatrixDebug::ButtonPress() {
 // 		this->ModuleMatrix.Contains( DataGrid->ModuleData.Array3D.FindRef( FIntVector( 0, 0, 0 ) ), Contains );
 // 
 // 	}
+
+	this->ModuleMatrix.FlipRightLeft();
 }
 
 void AMatrixDebug::CopyModuleMatrix( FModuleMatrix ModuleMatrixToCopy ) {
-	this->ModuleMatrix = FModuleMatrix();
-
-	this->ModuleMatrix.SizeX = ModuleMatrixToCopy.SizeX;
-	this->ModuleMatrix.SizeY = ModuleMatrixToCopy.SizeY;
-	this->ModuleMatrix.SizeZ = ModuleMatrixToCopy.SizeZ;
-
-	this->ModuleMatrix.Array3D = ModuleMatrixToCopy.Array3D;
+	this->ModuleMatrix = ModuleMatrixToCopy;
 
 	bIsSet = true;
 }

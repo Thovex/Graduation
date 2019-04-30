@@ -24,12 +24,14 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
 		int32 GridElementSize = 1000;
 
-
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
+	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Grid Settings" )
 		TMap<FIntVector, AModule*> ModulesMap;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Grid Settings" )
 		TMap<FIntVector, int32> PatternLocations;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Grid Data" )
+		FModuleMatrix ModuleData;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Grid Debug" )
 		FColor PatternStatus;
@@ -37,18 +39,9 @@ public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Grid Debug" )
 		TMap<const AActor*, FString> Errors;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Data" )
-		FModuleMatrix ModuleData;
-
 public:
 	UFUNCTION( BlueprintCallable, Category = "Matrix Calls" )
 		void SetMatrix( FIntVector SetMatrix );
-
-	UFUNCTION( BlueprintCallable, Category = "Matrix Calls" )
-		FModuleData GetModuleAt( FIntVector Coord );
-
-	UFUNCTION( BlueprintCallable, Category = "Matrix Calls" )
-		void SetModuleAt( FIntVector Coord, FModuleData Data );
 
 	void ButtonPress();
 
