@@ -7,6 +7,8 @@
 #include "Macros.h"
 #include "ModuleMatrix.generated.h"
 
+class AModuleAssignee;
+
 DECLARE_LOG_CATEGORY_EXTERN( LogModuleMatrix, Log, All );
 
 /**
@@ -147,9 +149,17 @@ public:
 						} else {
 							CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
 						}
-						  } )
 
-						Array3D = CopyData;
+						FModuleData ToRotate = CopyData.FindRef( FIntVector( X,Y,Z ) );
+
+						if ( ToRotate.Bit != FName( TEXT( "Null" ) ) ) {
+							// is it left or is it right
+							ToRotate.RotationEuler += UOrientations::OrientationEulers.FindRef( EOrientations::LEFT );
+							CopyData.Add( FIntVector( X,Y,Z ), ToRotate );
+							}
+						} )
+
+					Array3D = CopyData;
 				}
 			}
 		}
@@ -169,7 +179,7 @@ public:
 				CopyData.Add( FIntVector( X, Y, Z ), FModuleData( true ) );
 			}
 
-			  } )
+			 } )
 
 			Array3D = CopyData;
 	}

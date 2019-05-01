@@ -43,7 +43,14 @@ void AModuleAssignee::Tick( float DeltaTime ) {
 		for ( TActorIterator<ADataGrid> ActorItr( World ); ActorItr; ++ActorItr ) {
 			ADataGrid* DataGrid = *ActorItr;
 
-			Patterns.Add( Patterns.Num(), DataGrid->ModuleData );
+			FModuleMatrix& CopyModuleData = DataGrid->ModuleData;
+
+			for ( int32 i = 0; i < 4; i++ ) {
+				FModuleMatrix RotationCopy = CopyModuleData;
+				RotationCopy.RotateCounterClockwise( i );
+				Patterns.Add( Patterns.Num(), RotationCopy );
+
+			}
 
 			// Todo: Rotate & Reflect.
 		}

@@ -32,6 +32,25 @@ public:
 		}
 	}
 
+	FModuleData( FName Bit ) {
+		if ( Bit == FName( TEXT( "Null" ) ) ) {
+			this->Empty = true;
+			this->Bit = FName( TEXT( "Null" ) );
+		} else {
+			this->Empty = false;
+
+			FString BitString = Bit.ToString();
+			FString ModuleString = BitString;
+			ModuleString.RemoveAt( 1, 2, true );
+
+			// moduleassignee different? :l
+
+			//this->Module = *ModuleAssignee->AssignedNames.FindKey( FName( *ModuleString ) );
+			this->ModuleID = FName( *ModuleString );
+			// Make rotation from bit, scale from bit, etc
+		}
+	}
+
 	FModuleData( bool Empty ) {
 		this->Empty = Empty;
 		this->Bit = FName( TEXT( "Null" ) );
@@ -57,7 +76,6 @@ public:
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Module Data" )
 		FName Bit;
-
 
 	FORCEINLINE FName GenerateBit() {
 
