@@ -107,6 +107,7 @@ public:
 	}
 
 	FORCEINLINE bool operator==( const FModuleData& Other ) const {
+		if (Other.Bit == "Null") return true;
 		return this->Bit == Other.Bit;
 	}
 

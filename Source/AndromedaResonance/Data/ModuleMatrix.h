@@ -5,90 +5,101 @@
 #include "CoreMinimal.h"
 #include "Data/ModuleData.h"
 #include "Macros.h"
+#include "Data/ModulePropagator.h"
+#include "Data/Orientations.h"
 #include "ModuleMatrix.generated.h"
 
 class AModuleAssignee;
 
-DECLARE_LOG_CATEGORY_EXTERN( LogModuleMatrix, Log, All );
+DECLARE_LOG_CATEGORY_EXTERN(LogModuleMatrix, Log, All);
 
 /**
  *
  */
 
-USTRUCT( BlueprintType )
+USTRUCT(BlueprintType)
 struct FModuleMatrix {
 	GENERATED_USTRUCT_BODY()
 
 public:
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Settings" )
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Matrix Settings")
 		int32 SizeX;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Settings" )
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Matrix Settings")
 		int32 SizeY;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Settings" )
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Matrix Settings")
 		int32 SizeZ;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Matrix Data")
 		TMap<FIntVector, FModuleData> Array3D;
 
-	FModuleMatrix() {
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Matrix Data")
+		TMap < EOrientations, FModulePropagator > Propagator;
 
+	FModuleMatrix() { }
+
+	FModuleMatrix(FModuleMatrix* ModuleMatrix)
+	{
+		if (ModuleMatrix) {
+			SetSize(ModuleMatrix->SizeX, ModuleMatrix->SizeY, ModuleMatrix->SizeZ);
+			Array3D = ModuleMatrix->Array3D;
+		}
 	}
 
-	FModuleMatrix( FIntVector Size ) {
-		SetSize( Size.X, Size.Y, Size.Z );
+	FModuleMatrix(const FIntVector Size) {
+		SetSize(Size.X, Size.Y, Size.Z);
 	}
 
-	FModuleMatrix( int32 X, int32 Y, int32 Z ) {
-		SetSize( X, Y, Z );
+	FModuleMatrix(const int32 X, const int32 Y, const int32 Z) {
+		SetSize(X, Y, Z);
 	}
 
-	FORCEINLINE bool operator==( const FModuleMatrix& Other ) const {
+	FORCEINLINE bool operator==(const FModuleMatrix& Other) const {
 		bool bIsEqual = true;
 
-		for ( auto& Pair : Array3D ) {
-			if ( Pair.Value != Other.Array3D.FindRef( Pair.Key ) ) bIsEqual = false;
+		for (auto& Pair : Array3D) {
+			if (Pair.Value != Other.Array3D.FindRef(Pair.Key)) bIsEqual = false;
 		}
 
 		return bIsEqual;
 	}
 
-	void SetSize( int32 X, int32 Y, int32 Z ) {
+	void SetSize(const int32 X, const int32 Y, const int32 Z) {
 		this->SizeX = X;
 		this->SizeY = Y;
 		this->SizeZ = Z;
 	}
 
-	void Initialize( TMap<FIntVector, FModuleData> InitializeMap ) {
-		if ( SizeX < 1 && SizeY < 1 && SizeZ < 1 ) {
-			UE_LOG( LogModuleMatrix, Error, TEXT( "Initializing FModuleMatrix with < (0, 0, 0) size." ) );
+	void Initialize(const TMap<FIntVector, FModuleData> InitializeMap) {
+		if (SizeX < 1 && SizeY < 1 && SizeZ < 1) {
+			UE_LOG(LogModuleMatrix, Error, TEXT("Initializing FModuleMatrix with < (0, 0, 0) size."));
 		}
 
 		Array3D = InitializeMap;
 
 	}
 
-	FModuleData GetDataAt( FIntVector Coord ) {
-		if ( IsValidCoordinate( Coord ) ) {
-			return Array3D.FindRef( Coord );
+	FModuleData GetDataAt(const FIntVector Coord) {
+		if (IsValidCoordinate(Coord)) {
+			return Array3D.FindRef(Coord);
 		}
 
-		UE_LOG( LogModuleMatrix, Error, TEXT( "Invalid Data at GetDataAt( %s )" ), *Coord.ToString() );
+		UE_LOG(LogModuleMatrix, Error, TEXT("Invalid Data at GetDataAt( %s )"), *Coord.ToString());
 		return FModuleData();
 	}
 
-	void SetDataAt( FIntVector Coord, FModuleData Data ) {
-		Array3D.Add( Coord, Data );
+	void SetDataAt(const FIntVector Coord, const FModuleData Data) {
+		Array3D.Add(Coord, Data);
 	}
 
 	// CHECKED
-	bool Contains( FModuleData CheckModule, FModuleData & ContainedModule ) {
+	bool Contains(const FModuleData CheckModule, FModuleData& ContainedModule) {
 
-		if ( Array3D.Num() > 0 ) {
-			for ( auto Pair : Array3D ) {
-				if ( Pair.Value == CheckModule ) {
+		if (Array3D.Num() > 0) {
+			for (auto Pair : Array3D) {
+				if (Pair.Value == CheckModule) {
 					ContainedModule = Pair.Value;
 					return true;
 				}
@@ -98,15 +109,16 @@ public:
 	}
 
 	// SEMI CHECKED
-	bool IsValidCoordinate( FIntVector Coord ) {
-		if ( Coord.X < 0 ) return false;
-		if ( Coord.X >= SizeX ) return false;
+	bool IsValidCoordinate(const FIntVector Coord)
+	{
+		if (Coord.X < 0) return false;
+		if (Coord.X >= SizeX) return false;
 
-		if ( Coord.Y < 0 ) return false;
-		if ( Coord.Y >= SizeY ) return false;
+		if (Coord.Y < 0) return false;
+		if (Coord.Y >= SizeY) return false;
 
-		if ( Coord.Z < 0 ) return false;
-		if ( Coord.Z >= SizeZ ) return false;
+		if (Coord.Z < 0) return false;
+		if (Coord.Z >= SizeZ) return false;
 
 		return true;
 
@@ -114,118 +126,124 @@ public:
 
 	// UNCHECKED
 	void Clear() {
-		Array3D.Empty( SizeX * SizeY * SizeZ );
+		Array3D.Empty(SizeX * SizeY * SizeZ);
 	}
 
 	// DOUBLE CHECKED (INT TIMES 1)
-	void RotateCounterClockwise( int Times ) {
-		int MinX = 0;
-		int MaxX = SizeX - 1;
+	void RotateCounterClockwise(const int Times) {
+		const int MinX = 0;
+		const int MaxX = SizeX - 1;
 
-		int MinY = 0;
-		int MaxY = SizeY - 1;
+		const int MinY = 0;
+		const int MaxY = SizeY - 1;
 
-		for ( int32 i = 0; i < Times; i++ ) {
-			for ( int32 Increment = 0; Increment < SizeX / 2; Increment++ ) {
-				for ( int32 N = 0 + Increment; N < MaxX - Increment; N++ ) {
+		for (int32 i = 0; i < Times; i++) {
+			for (int32 Increment = 0; Increment < SizeX / 2; Increment++) {
+				for (int32 N = 0 + Increment; N < MaxX - Increment; N++) {
 
 					TMap<FIntVector, FModuleData> OriginalData = Array3D;
 					TMap<FIntVector, FModuleData> CopyData;
 
-					for3( SizeX, SizeY, SizeZ, {
+					for3(SizeX, SizeY, SizeZ, {
 
-						if ( X >= MinX + Increment && X <= ( MaxX - 1 ) - Increment && Y == MinY + Increment ) {
-							CopyData.Add( FIntVector( X + 1, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						if (X >= MinX + Increment && X <= (MaxX - 1) - Increment && Y == MinY + Increment) {
+							CopyData.Add(FIntVector(X + 1, Y, Z), OriginalData.FindRef(FIntVector(X, Y, Z)));
 
-						} else if ( X == MaxX - Increment && Y >= MinY + Increment && Y <= ( MaxY - 1 ) - Increment ) {
-							CopyData.Add( FIntVector( X, Y + 1, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						}
+						 else if (X == MaxX - Increment && Y >= MinY + Increment && Y <= (MaxY - 1) - Increment) {
+						  CopyData.Add(FIntVector(X, Y + 1, Z), OriginalData.FindRef(FIntVector(X, Y, Z)));
 
-						} else if ( X >= ( MinX + 1 ) + Increment && X <= MaxX - Increment && Y == MaxY - Increment ) {
-							CopyData.Add( FIntVector( X - 1, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						}
+						else if (X >= (MinX + 1) + Increment && X <= MaxX - Increment && Y == MaxY - Increment) {
+						 CopyData.Add(FIntVector(X - 1, Y, Z), OriginalData.FindRef(FIntVector(X, Y, Z)));
 
-						} else if ( X == MinX + Increment && Y >= ( MinY + 1 ) + Increment && Y <= MaxY - Increment ) {
-							CopyData.Add( FIntVector( X, Y - 1, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						}
+						else if (X == MinX + Increment && Y >= (MinY + 1) + Increment && Y <= MaxY - Increment) {
+						 CopyData.Add(FIntVector(X, Y - 1, Z), OriginalData.FindRef(FIntVector(X, Y, Z)));
 
-						} else {
-							CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
+						}
+						else {
+						 CopyData.Add(FIntVector(X, Y, Z), OriginalData.FindRef(FIntVector(X, Y, Z)));
 						}
 
-						FModuleData ToRotate = CopyData.FindRef( FIntVector( X,Y,Z ) );
+						FModuleData ToRotate = CopyData.FindRef(FIntVector(X,Y,Z));
 
-						if ( ToRotate.Bit != FName( TEXT( "Null" ) ) ) {
+						if (ToRotate.Bit != FName(TEXT("Null"))) {
 							// is it left or is it right
-							ToRotate.RotationEuler += UOrientations::OrientationEulers.FindRef( EOrientations::LEFT );
-							CopyData.Add( FIntVector( X,Y,Z ), ToRotate );
+							ToRotate.RotationEuler += UOrientations::OrientationEulers.FindRef(EOrientations::LEFT);
+							ToRotate.Bit = ToRotate.GenerateBit();
+							CopyData.Add(FIntVector(X,Y,Z), ToRotate);
 							}
-						} )
+						})
 
-					Array3D = CopyData;
+						Array3D = CopyData;
 				}
 			}
 		}
 	}
 
 	// DOUBLE CHECKED
-	void PushData( FIntVector Direction ) {
-		TMap<FIntVector, FModuleData> OriginalData = Array3D;
+	void PushData(const FIntVector Direction) {
+		const TMap<FIntVector, FModuleData> OriginalData = Array3D;
 		TMap<FIntVector, FModuleData> CopyData;
 
-		for3( SizeX, SizeY, SizeZ, {
-			FIntVector SweepCoord = FIntVector( X + -Direction.X, Y + -Direction.Y, Z + -Direction.Z );
+		for3(SizeX, SizeY, SizeZ, {
+			FIntVector SweepCoord = FIntVector(X + -Direction.X, Y + -Direction.Y, Z + -Direction.Z);
 
-			if ( IsValidCoordinate( SweepCoord ) ) {
-					CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( SweepCoord ) );
-			} else {
-				CopyData.Add( FIntVector( X, Y, Z ), FModuleData( true ) );
+			if (IsValidCoordinate(SweepCoord)) {
+					CopyData.Add(FIntVector(X, Y, Z), OriginalData.FindRef(SweepCoord));
+			}
+			 else {
+			  CopyData.Add(FIntVector(X, Y, Z), FModuleData(true));
 			}
 
-			 } )
+			})
 
-			Array3D = CopyData;
+		Array3D = CopyData;
 	}
 
 	// CHECKED
-	void Flip( EOrientations Orientation ) {
-		FString OrientationToString = UOrientations::GetEnumValueAsString<EOrientations>( "EOrientations", Orientation );
+	void Flip(const EOrientations Orientation) {
+		const FString OrientationToString = UOrientations::GetEnumValueAsString<EOrientations>("EOrientations", Orientation);
 
 		TArray<FString> OrientationsFromString;
-		OrientationToString.ParseIntoArray( OrientationsFromString, TEXT( "_" ), true );
-		OrientationsFromString[0].RemoveFromStart( "EOrientations::", ESearchCase::IgnoreCase );
+		OrientationToString.ParseIntoArray(OrientationsFromString, TEXT("_"), true);
+		OrientationsFromString[0].RemoveFromStart("EOrientations::", ESearchCase::IgnoreCase);
 
-		for ( FString OrientationString : OrientationsFromString ) {
+		for (FString OrientationString : OrientationsFromString) {
 
-			if ( OrientationString == "FORWARD" || OrientationString == "BACK" ) {
+			if (OrientationString == "FORWARD" || OrientationString == "BACK") {
 				FlipForwardBack();
-				UE_LOG( LogTemp, Warning, TEXT( "F/B" ) );
+				UE_LOG(LogTemp, Warning, TEXT("F/B"));
 
 			}
 
-			if ( OrientationString == "RIGHT" || OrientationString == "LEFT" ) {
+			if (OrientationString == "RIGHT" || OrientationString == "LEFT") {
 				FlipRightLeft();
-				UE_LOG( LogTemp, Warning, TEXT( "L/R" ) );
+				UE_LOG(LogTemp, Warning, TEXT("L/R"));
 
 			}
 
-			if ( OrientationString == "UP" || OrientationString == "DOWN" ) {
+			if (OrientationString == "UP" || OrientationString == "DOWN") {
 				FlipUpDown();
-				UE_LOG( LogTemp, Warning, TEXT( "U/D" ) );
+				UE_LOG(LogTemp, Warning, TEXT("U/D"));
 			}
 		}
 	}
 
 	// CHECKED
 	void FlipForwardBack() {
-		TMap<FIntVector, FModuleData> OriginalData = Array3D;
+		const TMap<FIntVector, FModuleData> OriginalData = Array3D;
 		TMap<FIntVector, FModuleData> CopyData;
 
-		int X = SizeX - 1;
-		int Y = SizeY - 1;
+		const int X = SizeX - 1;
+		const int Y = SizeY - 1;
 
-		for ( int32 Z = 0; Z < SizeZ; Z++ ) {
-			CopyData.Add( FIntVector( 0, 0, Z ), OriginalData.FindRef( FIntVector( X, 0, Z ) ) );
-			CopyData.Add( FIntVector( X, 0, Z ), OriginalData.FindRef( FIntVector( 0, 0, Z ) ) );
-			CopyData.Add( FIntVector( 0, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
-			CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( 0, Y, Z ) ) );
+		for (int32 Z = 0; Z < SizeZ; Z++) {
+			CopyData.Add(FIntVector(0, 0, Z), OriginalData.FindRef(FIntVector(X, 0, Z)));
+			CopyData.Add(FIntVector(X, 0, Z), OriginalData.FindRef(FIntVector(0, 0, Z)));
+			CopyData.Add(FIntVector(0, Y, Z), OriginalData.FindRef(FIntVector(X, Y, Z)));
+			CopyData.Add(FIntVector(X, Y, Z), OriginalData.FindRef(FIntVector(0, Y, Z)));
 		}
 
 		Array3D = CopyData;
@@ -234,18 +252,18 @@ public:
 
 	// CHECKED
 	void FlipRightLeft() {
-		TMap<FIntVector, FModuleData> OriginalData = Array3D;
+		const TMap<FIntVector, FModuleData> OriginalData = Array3D;
 		TMap<FIntVector, FModuleData> CopyData;
 
-		int X = SizeX - 1;
-		int Y = SizeY - 1;
+		const int X = SizeX - 1;
+		const int Y = SizeY - 1;
 
-		for ( int32 Z = 0; Z < SizeZ; Z++ ) {
+		for (int32 Z = 0; Z < SizeZ; Z++) {
 
-			CopyData.Add( FIntVector( 0, 0, Z ), OriginalData.FindRef( FIntVector( 0, Y, Z ) ) );
-			CopyData.Add( FIntVector( 0, Y, Z ), OriginalData.FindRef( FIntVector( 0, 0, Z ) ) );
-			CopyData.Add( FIntVector( X, 0, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
-			CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, 0, Z ) ) );
+			CopyData.Add(FIntVector(0, 0, Z), OriginalData.FindRef(FIntVector(0, Y, Z)));
+			CopyData.Add(FIntVector(0, Y, Z), OriginalData.FindRef(FIntVector(0, 0, Z)));
+			CopyData.Add(FIntVector(X, 0, Z), OriginalData.FindRef(FIntVector(X, Y, Z)));
+			CopyData.Add(FIntVector(X, Y, Z), OriginalData.FindRef(FIntVector(X, 0, Z)));
 		}
 
 		Array3D = CopyData;
@@ -253,18 +271,43 @@ public:
 
 	// CHECKED
 	void FlipUpDown() {
-		TMap<FIntVector, FModuleData> OriginalData = Array3D;
+		const TMap<FIntVector, FModuleData> OriginalData = Array3D;
 		TMap<FIntVector, FModuleData> CopyData;
 
-		int Z = SizeZ - 1;
+		const int Z = SizeZ - 1;
 
-		for ( int32 X = 0; X < SizeX; X++ ) {
-			for ( int32 Y = 0; Y < SizeY; Y++ ) {
-				CopyData.Add( FIntVector( X, Y, 0 ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
-				CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, 0 ) ) );
+		for (int32 X = 0; X < SizeX; X++) {
+			for (int32 Y = 0; Y < SizeY; Y++) {
+				CopyData.Add(FIntVector(X, Y, 0), OriginalData.FindRef(FIntVector(X, Y, Z)));
+				CopyData.Add(FIntVector(X, Y, Z), OriginalData.FindRef(FIntVector(X, Y, 0)));
 			}
 		}
 
 		Array3D = CopyData;
+	}
+
+	void BuildPropagator()
+	{
+		for (auto& Direction : UOrientations::OrientationUnitVectors)
+		{
+			if (Direction.Key == EOrientations::NONE) continue;
+
+			TArray<FModuleMatrix*> AllowedBits;
+
+			/*
+			FModuleMatrix& CopyModuleData = FModuleMatrix(this);
+
+			CopyModuleData.Flip(Direction.Key);
+			CopyModuleData.PushData(Direction.Value);
+
+			for3(CopyModuleData.SizeX, CopyModuleData.SizeY, CopyModuleData.SizeZ,
+				{
+					UE_LOG(LogTemp, Warning, TEXT("%s"), *CopyModuleData.Array3D.FindRef(FIntVector(X,Y,Z)).Bit.ToString());
+				}
+			);
+			*/
+
+			Propagator.Add(Direction.Key, FModulePropagator(AllowedBits));
+		}
 	}
 };
