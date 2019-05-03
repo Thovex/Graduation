@@ -6,6 +6,7 @@
 #include "EditorTickActor.h"
 #include "Data/ModuleMatrix.h"
 #include "Data/DataGrid.h"
+#include "Data/ModuleAssignee.h"
 #include "Runtime/Engine/Classes/Components/TextRenderComponent.h"
 #include "MatrixDebug.generated.h"
 

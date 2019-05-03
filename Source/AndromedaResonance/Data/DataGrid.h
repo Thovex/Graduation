@@ -8,6 +8,8 @@
 #include "Data/ModuleMatrix.h"
 #include "DataGrid.generated.h"
 
+class AModuleAssignee;
+
 UCLASS()
 class ANDROMEDARESONANCE_API ADataGrid : public AEditorTickActor {
 	GENERATED_BODY()
@@ -17,6 +19,9 @@ public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
 		USceneComponent* Transform;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Required" )
+		AModuleAssignee* ModuleAssignee;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
 		FIntVector NSize = FIntVector( 2, 2, 2 );
@@ -61,7 +66,7 @@ private:
 
 	void MapChildren();
 
-	void UpdateMatrix( );
+	void UpdateMatrix();
 
 	void FillEmptyData();
 

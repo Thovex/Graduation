@@ -9,20 +9,17 @@
  *
  */
 
-struct FModuleMatrix;
-
-USTRUCT(BlueprintType)
+USTRUCT( BlueprintType )
 struct FModulePropagator {
 	GENERATED_USTRUCT_BODY()
 
 public:
-	FModulePropagator() { }
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly )
+		TArray<int32> Array;
 
-	FModulePropagator(TArray<FModuleMatrix*> Array)
-	{
+	FModulePropagator() {}
+
+	FModulePropagator( TArray<int32> Array ) {
 		this->Array = Array;
 	}
-
-	TArray<FModuleMatrix*> Array;
-
 };

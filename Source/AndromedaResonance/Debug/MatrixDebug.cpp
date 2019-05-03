@@ -62,7 +62,11 @@ void AMatrixDebug::ButtonPress() {
 // 
 // 	}
 
-	this->ModuleMatrix.Flip( EOrientations::FORWARD_RIGHT );
+	if ( DataGrid ) {
+		if ( DataGrid->ModuleAssignee ) {
+			this->ModuleMatrix.BuildPropagator( DataGrid->ModuleAssignee->Patterns );
+		}
+	}
 }
 
 void AMatrixDebug::CopyModuleMatrix( FModuleMatrix ModuleMatrixToCopy ) {
