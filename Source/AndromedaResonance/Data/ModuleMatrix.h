@@ -283,8 +283,7 @@ public:
 				if ( Direction.Key == EOrientations::NONE ) continue;
 
 				TArray<int32> AllowedBits;
-
-				FModuleMatrix & CopyModuleData = *this;
+				FModuleMatrix CopyModuleData = *this;
 
 				CopyModuleData.Flip( Direction.Key );
 				CopyModuleData.PushData( Direction.Value );

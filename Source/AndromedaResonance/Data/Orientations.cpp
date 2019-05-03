@@ -1,4 +1,4 @@
-// FUck Vibe
+// ye
 
 #include "Orientations.h"
 
@@ -137,6 +137,18 @@ const TMap<EOrientations, FIntVector> UOrientations::OrientationUnitVectors = TM
 		}
 };
 
+TMap<EOrientations, FIntVector> UOrientations::GetOrientationEulers() {
+	return OrientationEulers;
+}
+
+TMap<FName, EOrientations> UOrientations::GetOrientationByFName() {
+	return OrientationByFName;
+}
+
+TMap<EOrientations, FIntVector> UOrientations::GetOrientationUnitVectors() {
+	return OrientationUnitVectors;
+}
+
 EOrientations UOrientations::EulerToOrientation( FIntVector RotationVector ) {
 	int32 RotationValue = RotationVector.Z;
 
@@ -162,3 +174,4 @@ EOrientations UOrientations::EulerToOrientation( FIntVector RotationVector ) {
 
 	return EOrientations::NONE;
 }
+

@@ -58,6 +58,15 @@ public:
 	static const TMap<FName, EOrientations> OrientationByFName;
 	static const TMap<EOrientations, FIntVector> OrientationUnitVectors;
 
+	UFUNCTION( BlueprintCallable, BlueprintPure, meta = ( BlueprintThreadSafe ), Category = "Orientations", meta = ( WorldContext = "WorldContextObject" ) )
+		static TMap<EOrientations, FIntVector> GetOrientationEulers();
+
+	UFUNCTION( BlueprintCallable, BlueprintPure, meta = ( BlueprintThreadSafe ), Category = "Orientations", meta = ( WorldContext = "WorldContextObject" ) )
+		static TMap<FName, EOrientations> GetOrientationByFName();
+
+	UFUNCTION( BlueprintCallable, BlueprintPure, meta = ( BlueprintThreadSafe ), Category = "Orientations", meta = ( WorldContext = "WorldContextObject" ) )
+		static TMap<EOrientations, FIntVector> GetOrientationUnitVectors();
+
 public:
 
 	template<typename TEnum>
