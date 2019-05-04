@@ -15,11 +15,18 @@ UChildActorComponent* UWaveFunctionLibrary::CreateModule( UObject* WorldContextO
 
 		ChildActor->RegisterComponent();
 		ChildActor->SetWorldLocation( Location );
+
+		ChildActor->SetWorldRotation( UUtilityLibrary::Conv_IntVectorToRotator( ModuleData.RotationEuler ) );
+
+		// This is still quite odd but turning on two-sided materials fixes this issue for now, it's some material 
+		// related issue, the code seems fine :-/
+		ChildActor->SetWorldScale3D( FVector( ModuleData.Scale ) );
+
 		ChildActor->AttachToComponent( ParentActor->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform );
 
 		return ChildActor;
 	}
-	
+
 	return nullptr;
 }
 

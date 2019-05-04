@@ -34,6 +34,9 @@ public:
 		TMap<FIntVector, UTextRenderComponent*> MatrixTestRenderers;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Debug" )
+		TArray<UChildActorComponent*> DisplayModules;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Debug" )
 		bool bIsSet = false;
 
 public:
@@ -47,6 +50,9 @@ protected:
 	virtual void Tick( float DeltaTime ) override;
 
 private:
+
+private:
 	void CopyModuleMatrix( FModuleMatrix ModuleMatrixToCopy );
+
 
 };
