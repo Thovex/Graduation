@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Data/ModuleData.h"
+#include "Data/ModuleMatrix.h"
 #include "WaveFunctionCollapse/Module.h"
 #include "Runtime/CoreUObject/Public/UObject/NoExportTypes.h"
 #include "Runtime/Engine/Classes/Engine/World.h"
@@ -23,7 +24,10 @@ public:
 		static UChildActorComponent * CreateModule( UObject * WorldContextObject, FModuleData ModuleData, AActor * ParentActor, FVector Location );
 
 	UFUNCTION( BlueprintCallable, Category = "Wave", meta = ( WorldContext = "WorldContextObject" ) )
-		static TArray< UChildActorComponent*> CreatePattern( UObject* WorldContextObject, AActor* ParentActor, AModuleAssignee* ModuleAssignee, int32 PatternIndex, FVector Location );
+		static TArray< UChildActorComponent*> CreatePatternIndex( UObject* WorldContextObject, AActor* ParentActor, AModuleAssignee* ModuleAssignee, int32 PatternIndex, FVector Location );
+
+	UFUNCTION( BlueprintCallable, Category = "Wave", meta = ( WorldContext = "WorldContextObject" ) )
+		static TArray< UChildActorComponent*> CreatePatternData( UObject* WorldContextObject, AActor* ParentActor, AModuleAssignee* ModuleAssignee, FModuleMatrix Pattern, FVector Location );
 
 	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "Wave", meta = ( WorldContext = "WorldContextObject" ) )
 		static FModuleData CreateModuleDataFromBit( FName Bit, AModuleAssignee * ModuleAssignee );

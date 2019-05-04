@@ -940,14 +940,6 @@
 			"Type": "SymbolFile"
 		},
 		{
-			"Path": "$(ProjectDir)/Binaries/Win64/UE4Editor-ThovexModule.dll",
-			"Type": "DynamicLibrary"
-		},
-		{
-			"Path": "$(ProjectDir)/Binaries/Win64/UE4Editor-ThovexModule.pdb",
-			"Type": "SymbolFile"
-		},
-		{
 			"Path": "$(EngineDir)/Binaries/Win64/UE4Editor-BuildSettings.dll",
 			"Type": "DynamicLibrary"
 		},

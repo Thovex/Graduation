@@ -30,7 +30,7 @@ UChildActorComponent* UWaveFunctionLibrary::CreateModule( UObject* WorldContextO
 	return nullptr;
 }
 
-TArray<UChildActorComponent*> UWaveFunctionLibrary::CreatePattern( UObject* WorldContextObject, AActor* ParentActor, AModuleAssignee* ModuleAssignee, int32 PatternIndex, FVector Location ) {
+TArray<UChildActorComponent*> UWaveFunctionLibrary::CreatePatternIndex( UObject* WorldContextObject, AActor* ParentActor, AModuleAssignee* ModuleAssignee, int32 PatternIndex, FVector Location ) {
 	TArray<UChildActorComponent*> Components;
 
 	FModuleMatrix SelectedPatternMatrix = ModuleAssignee->Patterns.FindRef( PatternIndex );
@@ -44,10 +44,29 @@ TArray<UChildActorComponent*> UWaveFunctionLibrary::CreatePattern( UObject* Worl
 	for3( Size.X, Size.Y, Size.Z, {
 		UChildActorComponent * NewModule = CreateModule( WorldContextObject, SelectedPatternMatrix.GetDataAt( FIntVector( X,Y,Z ) ), ParentActor, Location + FVector( X,Y,Z ) * 1000 );
 		Components.Add( NewModule );
-	})
+		  } )
 
-	return  Components;
+		return Components;
 }
+
+TArray<UChildActorComponent*> UWaveFunctionLibrary::CreatePatternData( UObject * WorldContextObject, AActor * ParentActor, AModuleAssignee * ModuleAssignee, FModuleMatrix Pattern, FVector Location ) {
+
+	TArray<UChildActorComponent*> Components;
+
+	FIntVector Size = FIntVector( ForceInit );
+
+	Size.X = Pattern.SizeX;
+	Size.Y = Pattern.SizeY;
+	Size.Z = Pattern.SizeZ;
+
+	for3( Size.X, Size.Y, Size.Z, {
+		UChildActorComponent * NewModule = CreateModule( WorldContextObject, Pattern.GetDataAt( FIntVector( X,Y,Z ) ), ParentActor, Location + FVector( X,Y,Z ) * 1000 );
+		Components.Add( NewModule );
+	} )
+
+	return Components;
+}
+
 
 FModuleData UWaveFunctionLibrary::CreateModuleDataFromBit( FName Bit, AModuleAssignee * ModuleAssignee ) {
 	if ( ModuleAssignee ) {

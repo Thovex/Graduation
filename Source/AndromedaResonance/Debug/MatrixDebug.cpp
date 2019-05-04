@@ -2,6 +2,7 @@
 
 
 #include "MatrixDebug.h"
+#include "Utility/WaveFunctionLibrary.h"
 #include "Data/Orientations.h"
 
 AMatrixDebug::AMatrixDebug( const FObjectInitializer& ObjectInitializer ) {
@@ -65,23 +66,23 @@ void AMatrixDebug::ButtonPress( FName Bit ) {
 // 
 // 	}
 
- 	if ( DataGrid ) {
- 		if ( DataGrid->ModuleAssignee ) {
- 			this->ModuleMatrix.BuildPropagator( DataGrid->ModuleAssignee->Patterns );
+	if ( DataGrid ) {
+		if ( DataGrid->ModuleAssignee ) {
+			this->ModuleMatrix.BuildPropagator( DataGrid->ModuleAssignee->Patterns );
+			//UWaveFunctionLibrary::CreatePatternData( this, this, DataGrid->ModuleAssignee, Matrix, GetActorLocation() + ( FVector::ForwardVector * 5000 ) );
 
+		}
+	}
 
- 		}
- 	}
-
-// 	if ( DataGrid ) {
-// 		if ( DataGrid->ModuleAssignee ) {
-// 			TMap<TSubclassOf<AModule>, FName> Map = DataGrid->ModuleAssignee->AssignedNames;
-// 
-// 			if ( Bit != TEXT( "" ) ) {
-// 				FModuleData NewData = FModuleData( Bit, Map, true);
-// 			}
-// 		}
-// 	}
+	// 	if ( DataGrid ) {
+	// 		if ( DataGrid->ModuleAssignee ) {
+	// 			TMap<TSubclassOf<AModule>, FName> Map = DataGrid->ModuleAssignee->AssignedNames;
+	// 
+	// 			if ( Bit != TEXT( "" ) ) {
+	// 				FModuleData NewData = FModuleData( Bit, Map, true);
+	// 			}
+	// 		}
+	// 	}
 
 }
 

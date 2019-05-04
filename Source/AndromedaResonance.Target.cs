@@ -11,6 +11,6 @@ public class AndromedaResonanceTarget : TargetRules
 
         CppStandard = CppStandardVersion.Cpp17;
 
-        ExtraModuleNames.AddRange( new string[] { "AndromedaResonance", "ThovexModule" } );
+        ExtraModuleNames.AddRange( new string[] { "AndromedaResonance" } );
 	}
 }

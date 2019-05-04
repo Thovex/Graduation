@@ -2,6 +2,7 @@
 
 #include "DataGrid.h"
 #include "Runtime/Engine/Public/DrawDebugHelpers.h"
+#include "Utility/WaveFunctionLibrary.h"
 #include "Utility/UtilityLibrary.h"
 #include "Data/ModuleAssignee.h"
 #include "Data/Orientations.h"
@@ -24,7 +25,7 @@ void ADataGrid::SetMatrix( FIntVector Size ) {
 	for ( auto& Pair : ModulesMap ) {
 		if ( Pair.Value ) {
 			FName ID = Pair.Value->ModuleAssignee->AssignedNames.FindRef( Pair.Value->GetClass() );
-			ModuleDataMap.Add( Pair.Key, FModuleData( Pair.Value, ID) );
+			ModuleDataMap.Add( Pair.Key, FModuleData( Pair.Value, ID ) );
 		} else {
 			ModuleDataMap.Add( Pair.Key, FModuleData( true ) );
 		}
@@ -63,6 +64,33 @@ void ADataGrid::Tick( float DeltaTime ) {
 		}
 
 		DrawDebugBox( World, GetActorLocation(), FVector( NSize * GridElementSize / 2 ), PatternStatus, false, -1.F, 0, PatternStatus == FColor::Green ? 10.F : Errors.Num() * 50.F );
+	}
+}
+
+void ADataGrid::DisplayRotatedPatterns() {
+
+	RotatedPatterns.Empty();
+
+	FModuleMatrix& CopyModuleData = ModuleData;
+
+	for ( int32 i = 1; i < 4; i++ ) {
+		FModuleMatrix RotationCopy = CopyModuleData;
+		RotationCopy.RotateCounterClockwise( i );
+		RotatedPatterns.Add( RotationCopy );
+	}
+
+	for ( int32 i = 0; i < RotatedPatterns.Num(); i++ ) {
+		TArray<UChildActorComponent*> ChildComps = UWaveFunctionLibrary::CreatePatternData( this, this, ModuleAssignee, RotatedPatterns[i], GetActorLocation() + ( FVector::UpVector * 3000 * (i + 1) ) + (FVector::LeftVector * 500));
+
+		for ( UChildActorComponent* ChildComp : ChildComps ) {
+			if ( ChildComp ) {
+				if ( ChildComp->GetChildActor() ) {
+					AActor* CastedChildComp = Cast<AActor>( ChildComp->GetChildActor() );
+					CastedChildComp->Tags.Add( FName( TEXT( "DisplayOnly" ) ) );
+					DisplayModules.Add( ChildComp );
+				}
+			}
+		}
 	}
 }
 
@@ -146,37 +174,38 @@ void ADataGrid::MapChildren() {
 	TArray<AActor*> ChildActors;
 	GetAttachedActors( ChildActors );
 
-	ModulesMap.Empty( ChildActors.Num() );
-
+	ModulesMap.Empty();
 
 	for ( int32 i = 0; i < ChildActors.Num(); i++ ) {
 
 		if ( ChildActors[i] ) {
 			if ( ChildActors[i]->IsValidLowLevel() ) {
+				if ( !ChildActors[i]->Tags.Contains( FName( TEXT( "DisplayOnly" ) ) ) ) {
 
-				FIntVector RelativeValueLocation = UUtilityLibrary::Conv_VectorToIntVector( ChildActors[i]->GetActorLocation() - GetActorLocation() );
-				FIntVector RelativeValueRotation = UUtilityLibrary::Conv_RotatorToIntVector( ChildActors[i]->GetActorRotation() - GetActorRotation() );
-				FVector ValueScale = ChildActors[i]->GetActorScale3D();
+					FIntVector RelativeValueLocation = UUtilityLibrary::Conv_VectorToIntVector( ChildActors[i]->GetActorLocation() - GetActorLocation() );
+					FIntVector RelativeValueRotation = UUtilityLibrary::Conv_RotatorToIntVector( ChildActors[i]->GetActorRotation() - GetActorRotation() );
+					FVector ValueScale = ChildActors[i]->GetActorScale3D();
 
-				FIntVector Coord = DefineCoord( RelativeValueLocation );
+					FIntVector Coord = DefineCoord( RelativeValueLocation );
 
-				RelativeValueLocationCheck( ChildActors[i], RelativeValueLocation );
-				RelativeValueRotationCheck( ChildActors[i], RelativeValueRotation );
-				ValueScaleCheck( ChildActors[i], ValueScale );
+					RelativeValueLocationCheck( ChildActors[i], RelativeValueLocation );
+					RelativeValueRotationCheck( ChildActors[i], RelativeValueRotation );
+					ValueScaleCheck( ChildActors[i], ValueScale );
 
-				if ( PatternLocations.Contains( Coord ) ) {
+					if ( PatternLocations.Contains( Coord ) ) {
 
-					int32 Count = PatternLocations.FindOrAdd( Coord );
-					PatternLocations.Add( Coord, Count + 1 );
+						int32 Count = PatternLocations.FindOrAdd( Coord );
+						PatternLocations.Add( Coord, Count + 1 );
 
-					if ( Count + 1 == 1 ) {
-						ModulesMap.Add( Coord, Cast<AModule>( ChildActors[i] ) );
+						if ( Count + 1 == 1 ) {
+							ModulesMap.Add( Coord, Cast<AModule>( ChildActors[i] ) );
+						} else {
+							AppendError( ChildActors[i], "Multiple elements at one allowed location" );
+
+						}
 					} else {
-						AppendError( ChildActors[i], "Multiple elements at one allowed location" );
-
+						AppendError( ChildActors[i], "Invalid element location" );
 					}
-				} else {
-					AppendError( ChildActors[i], "Invalid element location" );
 				}
 			}
 		}

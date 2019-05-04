@@ -32,6 +32,12 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Grid Settings" )
 		TMap<FIntVector, int32> PatternLocations;
 
+	UPROPERTY ( EditAnywhere, BlueprintReadWrite, Category = "Grid Debug")
+		TArray<FModuleMatrix> RotatedPatterns;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Debug" )
+		TArray<UChildActorComponent*> DisplayModules;
+
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Grid Data" )
 		FModuleMatrix ModuleData;
 
@@ -44,6 +50,10 @@ public:
 public:
 	UFUNCTION( BlueprintCallable, Category = "Matrix Calls" )
 		void SetMatrix( FIntVector SetMatrix );
+
+	UFUNCTION( BlueprintCallable, Category = "DataGrid Calls" )
+		void DisplayRotatedPatterns();
+
 
 	void ButtonPress();
 
@@ -65,7 +75,6 @@ private:
 	void ValueScaleCheck( const AActor* Actor, const FVector ValueScale );
 
 	void MapChildren();
-
 	void UpdateMatrix();
 
 	void FillEmptyData();

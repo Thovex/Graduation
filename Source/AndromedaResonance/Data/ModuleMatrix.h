@@ -159,20 +159,20 @@ public:
 						} else {
 							CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
 						}
+					})
 
-						FModuleData ToRotate = CopyData.FindRef( FIntVector( X,Y,Z ) );
-
-						if ( ToRotate.Bit != FName( TEXT( "Null" ) ) ) {
-							// is it left or is it right
-							ToRotate.RotationEuler += UOrientations::OrientationEulers.FindRef( EOrientations::LEFT );
-							ToRotate.Bit = ToRotate.GenerateBit();
-							CopyData.Add( FIntVector( X,Y,Z ), ToRotate );
-							}
-						  } )
-
-						Array3D = CopyData;
+					Array3D = CopyData;
 				}
 			}
+
+			for3( SizeX, SizeY, SizeZ, {
+				FModuleData ToRotate = Array3D.FindRef( FIntVector( X, Y, Z ) );
+
+				if ( ToRotate.Bit != FName( TEXT( "Null" ) ) ) {
+					ToRotate.SetRotationEuler( EOrientations::RIGHT );
+					Array3D.Add( FIntVector( X, Y, Z ), ToRotate );
+				}
+			})
 		}
 	}
 
@@ -277,7 +277,7 @@ public:
 		Array3D = CopyData;
 	}
 
-	void BuildPropagator( const TMap<int32, FModuleMatrix> &Patterns ) {
+	void BuildPropagator( const TMap<int32, FModuleMatrix>& Patterns ) {
 		if ( Patterns.Num() > 0 ) {
 			for ( auto& Direction : UOrientations::OrientationUnitVectors ) {
 				if ( Direction.Key == EOrientations::NONE ) continue;
@@ -286,7 +286,9 @@ public:
 				FModuleMatrix CopyModuleData = *this;
 
 				CopyModuleData.Flip( Direction.Key );
+
 				CopyModuleData.PushData( Direction.Value );
+				CopyModuleData.PushData( Direction.Value * -1 );
 
 				for ( auto& Pattern : Patterns ) {
 					if ( Pattern.Value == CopyModuleData ) {

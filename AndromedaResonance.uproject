@@ -12,11 +12,6 @@
 				"Engine",
 				"CoreUObject"
 			]
-		},
-		{
-			"Name": "ThovexModule",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [
