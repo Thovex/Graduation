@@ -4,7 +4,10 @@
 #include "MatrixDebug.h"
 #include "Data/Orientations.h"
 
-AMatrixDebug::AMatrixDebug() {
+AMatrixDebug::AMatrixDebug( const FObjectInitializer& ObjectInitializer ) {
+
+	Transform = ObjectInitializer.CreateDefaultSubobject<USceneComponent>( this, TEXT( "Transform" ) );
+	RootComponent = Transform;
 
 	const UWorld* World = GetWorld();
 
@@ -52,7 +55,7 @@ void AMatrixDebug::Tick( float DeltaTime ) {
 	}
 }
 
-void AMatrixDebug::ButtonPress() {
+void AMatrixDebug::ButtonPress( FName Bit ) {
 	//this->ModuleMatrix.RotateCounterClockwise( 1 );
 	//this->ModuleMatrix.PushData( UOrientations::OrientationUnitVectors.FindRef( EOrientations::BACK_LEFT_UP ) );
 
@@ -62,11 +65,21 @@ void AMatrixDebug::ButtonPress() {
 // 
 // 	}
 
-	if ( DataGrid ) {
-		if ( DataGrid->ModuleAssignee ) {
-			this->ModuleMatrix.BuildPropagator( DataGrid->ModuleAssignee->Patterns );
-		}
-	}
+// 	if ( DataGrid ) {
+// 		if ( DataGrid->ModuleAssignee ) {
+// 			this->ModuleMatrix.BuildPropagator( DataGrid->ModuleAssignee->Patterns );
+// 		}
+// 	}
+
+// 	if ( DataGrid ) {
+// 		if ( DataGrid->ModuleAssignee ) {
+// 			TMap<TSubclassOf<AModule>, FName> Map = DataGrid->ModuleAssignee->AssignedNames;
+// 
+// 			if ( Bit != TEXT( "" ) ) {
+// 				FModuleData NewData = FModuleData( Bit, Map, true);
+// 			}
+// 		}
+// 	}
 }
 
 void AMatrixDebug::CopyModuleMatrix( FModuleMatrix ModuleMatrixToCopy ) {

@@ -6,6 +6,7 @@
 #include "Data/Orientations.h"
 #include "Utility/UtilityLibrary.h"
 #include "WaveFunctionCollapse/Module.h"
+#include "Runtime/Core/Public/Containers/UnrealString.h"
 #include "ModuleData.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN( LogModuleData, Log, All );
@@ -32,7 +33,15 @@ public:
 		}
 	}
 
-	FModuleData( FName Bit ) {
+	FModuleData( FName Bit, TMap<TSubclassOf<AModule>, FName> AssigneeMap, bool Log = false ) {
+
+		int32 Length = Bit.ToString().Len();
+
+		if ( Length < 3 || Length > 4 ) {
+			UE_LOG( LogModuleData, Warning, TEXT( "INVALID MODULE BIT" ) );
+			return;
+		}
+
 		if ( Bit == FName( TEXT( "Null" ) ) ) {
 			this->Empty = true;
 			this->Bit = FName( TEXT( "Null" ) );
@@ -40,14 +49,58 @@ public:
 			this->Empty = false;
 
 			FString BitString = Bit.ToString();
-			FString ModuleString = BitString;
-			ModuleString.RemoveAt( 1, 2, true );
+			FString ModuleIDString = BitString;
+			ModuleIDString.RemoveAt( 1, 2, true );
 
-			// moduleassignee different? :l
+			this->ModuleID = FName( *ModuleIDString );
 
-			//this->Module = *ModuleAssignee->AssignedNames.FindKey( FName( *ModuleString ) );
-			this->ModuleID = FName( *ModuleString );
-			// Make rotation from bit, scale from bit, etc
+			if ( !*AssigneeMap.FindKey( this->ModuleID ) ) {
+				UE_LOG( LogModuleData, Warning, TEXT( "INVALID MODULE ID" ) );
+				return;
+			}
+
+			this->Module = *AssigneeMap.FindKey( this->ModuleID );
+
+			FString RotationEulerString = BitString;
+			RotationEulerString.RemoveAt( 0, 1, true );
+			RotationEulerString.RemoveAt( 1, 1, true );
+
+			FName RotationEulerChar = FName( *RotationEulerString );
+
+			if ( RotationEulerChar == FName( TEXT( "S" ) ) ) {
+				this->RotationEuler = FIntVector( 0, 0, 0 );
+				this->Symmetrical = true;
+			} else {
+
+				EOrientations RotationOrientation = UOrientations::OrientationByFName.FindRef( RotationEulerChar );
+				this->RotationEuler = UOrientations::OrientationEulers.FindRef( RotationOrientation );
+				this->Symmetrical = false;
+			}
+
+			FString ScaleString = BitString;
+			ScaleString.RemoveAt( 0, 2, true );
+
+			if ( ScaleString == "N" ) {
+				this->Scale = FIntVector( 1, 1, 1 );
+			} else if ( ScaleString == "X" ) {
+				this->Scale = FIntVector( -1, 1, 1 );
+			} else if ( ScaleString == "Y" ) {
+				this->Scale = FIntVector( 1, -1, 1 );
+			}
+
+			this->Bit = Bit;
+
+			if ( Log ) {
+				UE_LOG( LogModuleData, Warning, TEXT( "=== FMODULE CREATED START ===" ) );
+				UE_LOG( LogModuleData, Warning, TEXT( "this.Module = %s" ), *this->Module->GetFName().ToString() );
+				UE_LOG( LogModuleData, Warning, TEXT( "this.ModuleID = %s" ), *this->ModuleID.ToString() );
+				UE_LOG( LogModuleData, Warning, TEXT( "this.RotationEuler = %s" ), *this->RotationEuler.ToString() );
+				UE_LOG( LogModuleData, Warning, TEXT( "this.Scale = %s" ), *this->Scale.ToString() );
+				UE_LOG( LogModuleData, Warning, TEXT( "this.Symmetrical = %s" ), this->Symmetrical ? TEXT( "true" ) : TEXT( "false" ) );
+				UE_LOG( LogModuleData, Warning, TEXT( "this.Empty = %s" ), this->Empty ? TEXT( "true" ) : TEXT( "false" ) );
+				UE_LOG( LogModuleData, Warning, TEXT( "this.Bit = %s" ), *this->Bit.ToString() );
+				UE_LOG( LogModuleData, Warning, TEXT( "=== FMODULE CREATED END ===" ) );
+			}
 		}
 	}
 
@@ -56,25 +109,25 @@ public:
 		this->Bit = FName( TEXT( "Null" ) );
 	}
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Module Data" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		TSubclassOf<AModule> Module;
 
-	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Module Data" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		FName ModuleID;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Module Data" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		FIntVector RotationEuler;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Module Data" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		FIntVector Scale;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Module Data" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		bool Symmetrical;
 
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Module Data" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		bool Empty;
 
-	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Module Data" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		FName Bit;
 
 	FORCEINLINE FName GenerateBit() {
@@ -106,12 +159,12 @@ public:
 		return FName( *GeneratedBit );
 	}
 
-	FORCEINLINE bool operator==( const FModuleData& Other ) const {
-		if (Other.Bit == "Null") return true;
+	FORCEINLINE bool operator==( const FModuleData & Other ) const {
+		if ( Other.Bit == "Null" ) return true;
 		return this->Bit == Other.Bit;
 	}
 
-	FORCEINLINE bool operator!=( const FModuleData& Other ) const {
+	FORCEINLINE bool operator!=( const FModuleData & Other ) const {
 		return !operator==( Other );
 	}
 };

@@ -54,7 +54,7 @@ FReply FCustomDetailsPanel::ClickedOnButton()
 		AMatrixDebug* MatrixDebug = Cast<AMatrixDebug>( Object.Get() );
 
 		if ( MatrixDebug ) {
-			MatrixDebug->ButtonPress();
+			//MatrixDebug->ButtonPress();
 		}
 	}
 	return FReply::Handled();

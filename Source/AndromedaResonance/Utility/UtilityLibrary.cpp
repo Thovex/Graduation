@@ -24,6 +24,16 @@ FIntVector UUtilityLibrary::Conv_RotatorToIntVector( const FRotator& InRotator )
 	ConvertedVector.Z = FMath::RoundToInt( InRotator.Yaw );
 
 	return ConvertedVector;
+}
+
+FRotator UUtilityLibrary::Conv_IntVectorToRotator( const FIntVector& InIntVector ) {
+	FRotator ConvertedRotator;
+
+	ConvertedRotator.Roll = InIntVector.X;
+	ConvertedRotator.Pitch = InIntVector.Y;
+	ConvertedRotator.Yaw = InIntVector.Z;
+
+	return ConvertedRotator;
 
 }
 

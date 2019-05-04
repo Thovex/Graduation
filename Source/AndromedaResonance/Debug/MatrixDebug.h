@@ -19,7 +19,10 @@ class ANDROMEDARESONANCE_API AMatrixDebug : public AEditorTickActor {
 
 
 public:
-	AMatrixDebug();
+	AMatrixDebug( const FObjectInitializer& ObjectInitializer );
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
+		USceneComponent* Transform;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, meta = ( ExposeOnSpawn = true ), Category = "Debug" )
 		ADataGrid * DataGrid;
@@ -36,7 +39,7 @@ public:
 public:
 
 	UFUNCTION( BlueprintCallable )
-		void ButtonPress();
+		void ButtonPress( FName Bit );
 
 protected:
 	virtual void BeginPlay() override;
