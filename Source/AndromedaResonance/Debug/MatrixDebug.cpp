@@ -65,11 +65,13 @@ void AMatrixDebug::ButtonPress( FName Bit ) {
 // 
 // 	}
 
-// 	if ( DataGrid ) {
-// 		if ( DataGrid->ModuleAssignee ) {
-// 			this->ModuleMatrix.BuildPropagator( DataGrid->ModuleAssignee->Patterns );
-// 		}
-// 	}
+ 	if ( DataGrid ) {
+ 		if ( DataGrid->ModuleAssignee ) {
+ 			this->ModuleMatrix.BuildPropagator( DataGrid->ModuleAssignee->Patterns );
+
+
+ 		}
+ 	}
 
 // 	if ( DataGrid ) {
 // 		if ( DataGrid->ModuleAssignee ) {
@@ -80,6 +82,7 @@ void AMatrixDebug::ButtonPress( FName Bit ) {
 // 			}
 // 		}
 // 	}
+
 }
 
 void AMatrixDebug::CopyModuleMatrix( FModuleMatrix ModuleMatrixToCopy ) {

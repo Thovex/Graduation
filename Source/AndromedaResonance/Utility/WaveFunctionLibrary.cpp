@@ -30,7 +30,26 @@ UChildActorComponent* UWaveFunctionLibrary::CreateModule( UObject* WorldContextO
 	return nullptr;
 }
 
-FModuleData UWaveFunctionLibrary::CreateModuleDataFromBit( FName Bit, AModuleAssignee* ModuleAssignee ) {
+TArray<UChildActorComponent*> UWaveFunctionLibrary::CreatePattern( UObject* WorldContextObject, AActor* ParentActor, AModuleAssignee* ModuleAssignee, int32 PatternIndex, FVector Location ) {
+	TArray<UChildActorComponent*> Components;
+
+	FModuleMatrix SelectedPatternMatrix = ModuleAssignee->Patterns.FindRef( PatternIndex );
+
+	FIntVector Size = FIntVector( ForceInit );
+
+	Size.X = SelectedPatternMatrix.SizeX;
+	Size.Y = SelectedPatternMatrix.SizeY;
+	Size.Z = SelectedPatternMatrix.SizeZ;
+
+	for3( Size.X, Size.Y, Size.Z, {
+		UChildActorComponent * NewModule = CreateModule( WorldContextObject, SelectedPatternMatrix.GetDataAt( FIntVector( X,Y,Z ) ), ParentActor, Location + FVector( X,Y,Z ) * 1000 );
+		Components.Add( NewModule );
+	})
+
+	return  Components;
+}
+
+FModuleData UWaveFunctionLibrary::CreateModuleDataFromBit( FName Bit, AModuleAssignee * ModuleAssignee ) {
 	if ( ModuleAssignee ) {
 		TMap<TSubclassOf<AModule>, FName> Map = ModuleAssignee->AssignedNames;
 
