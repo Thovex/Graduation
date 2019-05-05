@@ -66,12 +66,14 @@ void AMatrixDebug::ButtonPress( FName Bit ) {
 // 
 // 	}
 
+
 	if ( DataGrid ) {
+
+
 		if ( DataGrid->ModuleAssignee ) {
 
 			//this->ModuleMatrix.Flip( EOrientations::UP );
 
-			UE_LOG( LogTemp, Warning, TEXT( "%s" ), *this->ModuleMatrix.ToString() );
 			this->ModuleMatrix.BuildPropagator( DataGrid->ModuleAssignee->Patterns );
 			//UWaveFunctionLibrary::CreatePatternData( this, this, DataGrid->ModuleAssignee, Matrix, GetActorLocation() + ( FVector::ForwardVector * 5000 ) );
 

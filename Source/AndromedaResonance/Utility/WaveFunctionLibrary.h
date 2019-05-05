@@ -20,6 +20,12 @@ class ANDROMEDARESONANCE_API UWaveFunctionLibrary : public UBlueprintFunctionLib
 
 public:
 
+	template <typename ObjClass>
+	static FORCEINLINE ObjClass* LoadObjFromPath( const FName& Path ) {
+		if ( Path == NAME_None ) return NULL;
+		return Cast<ObjClass>( StaticLoadObject( ObjClass::StaticClass(), NULL, *Path.ToString() ) );
+	}
+
 	UFUNCTION( BlueprintCallable, Category = "Wave", meta = ( WorldContext = "WorldContextObject" ) )
 		static UChildActorComponent * CreateModule( UObject * WorldContextObject, FModuleData ModuleData, AActor * ParentActor, FVector Location );
 
