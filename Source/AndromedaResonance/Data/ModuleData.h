@@ -160,7 +160,7 @@ public:
 	}
 
 	FORCEINLINE void SetRotationEuler( EOrientations Rotation ) {
-		FIntVector RotationDirection =  UOrientations::OrientationEulers.FindRef( Rotation );
+		FIntVector RotationDirection = UOrientations::OrientationEulers.FindRef( Rotation );
 		RotationEuler += RotationDirection;
 		GenerateBit();
 	}
@@ -172,5 +172,18 @@ public:
 
 	FORCEINLINE bool operator!=( const FModuleData & Other ) const {
 		return !operator==( Other );
+	}
+
+	FString ToString() const {
+
+		if ( Module ) {
+			return FString::Printf( TEXT( "[Bit:%s][Module:%s][ID:%s][RotationEuler:%s][Scale:%s][Symmetrical:%s]" ),
+									*Bit.ToString(), *Module->GetFName().ToString(), *ModuleID.ToString(), *RotationEuler.ToString(), *Scale.ToString(),
+									Symmetrical ? TEXT( "TRUE" ) : TEXT( "FALSE" ) );
+		} else {
+			return FString::Printf( TEXT( "[Bit:%s]" ),
+									 *Bit.ToString() );
+		}
+
 	}
 };

@@ -159,9 +159,9 @@ public:
 						} else {
 							CopyData.Add( FIntVector( X, Y, Z ), OriginalData.FindRef( FIntVector( X, Y, Z ) ) );
 						}
-					})
+						  } )
 
-					Array3D = CopyData;
+						Array3D = CopyData;
 				}
 			}
 
@@ -172,7 +172,7 @@ public:
 					ToRotate.SetRotationEuler( EOrientations::RIGHT );
 					Array3D.Add( FIntVector( X, Y, Z ), ToRotate );
 				}
-			})
+				  } )
 		}
 	}
 
@@ -277,7 +277,7 @@ public:
 		Array3D = CopyData;
 	}
 
-	void BuildPropagator( const TMap<int32, FModuleMatrix>& Patterns ) {
+	void BuildPropagator( TMap<int32, FModuleMatrix>& Patterns ) {
 		if ( Patterns.Num() > 0 ) {
 			for ( auto& Direction : UOrientations::OrientationUnitVectors ) {
 				if ( Direction.Key == EOrientations::NONE ) continue;
@@ -286,18 +286,41 @@ public:
 				FModuleMatrix CopyModuleData = *this;
 
 				CopyModuleData.Flip( Direction.Key );
-
 				CopyModuleData.PushData( Direction.Value );
-				CopyModuleData.PushData( Direction.Value * -1 );
 
 				for ( auto& Pattern : Patterns ) {
-					if ( Pattern.Value == CopyModuleData ) {
+					FModuleMatrix CompareMatrix = Pattern.Value;
+
+					CompareMatrix.PushData( Direction.Value );
+
+					if ( CompareMatrix == CopyModuleData ) {
 						AllowedBits.Add( Pattern.Key );
+
+
 					}
 				}
 
 				Propagator.Add( Direction.Key, FModulePropagator( AllowedBits ) );
 			}
 		}
+	}
+
+	FString ToString() const {
+		FString StringValue = FString();
+		StringValue.Append( LINE_TERMINATOR );
+		StringValue.Append( TEXT( "== Begin Matrix ==" ) );
+		StringValue.Append( LINE_TERMINATOR );
+
+		for ( auto& Pair : Array3D ) {
+			StringValue.Append( *Pair.Key.ToString() );
+			StringValue.Append( *Pair.Value.ToString() );
+			StringValue.Append( LINE_TERMINATOR );
+		}
+
+		StringValue.Append( LINE_TERMINATOR );
+		StringValue.Append( TEXT( "== End Matrix ==" ) );
+		StringValue.Append( LINE_TERMINATOR );
+
+		return StringValue;
 	}
 };
