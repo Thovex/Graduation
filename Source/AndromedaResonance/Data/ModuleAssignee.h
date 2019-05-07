@@ -25,6 +25,9 @@ public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Patterns" )
 		TMap<int32, FModuleMatrix > Patterns;
 
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Patterns" )
+		TMap<int32, int32 > Weights;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick( float DeltaTime ) override;

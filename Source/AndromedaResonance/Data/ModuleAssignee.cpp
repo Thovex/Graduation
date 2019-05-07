@@ -79,6 +79,10 @@ void AModuleAssignee::Tick( float DeltaTime ) {
 		for ( int32 Similar : SimilarityIndices ) {
 			Patterns.Remove( Similar );
 		}
+
+		for ( auto& Pattern : Patterns ) {
+			Weights.Add( Pattern.Key, 1 );
+		}
 	}
 }
 
