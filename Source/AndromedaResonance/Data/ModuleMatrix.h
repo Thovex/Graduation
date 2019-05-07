@@ -33,10 +33,10 @@ public:
 		int32 SizeZ;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
-		TMap<FIntVector, FModuleData> Array3D;
+		TMap< FIntVector, FModuleData> Array3D;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Matrix Data" )
-		TMap < EOrientations, FModulePropagator > Propagator;
+		TMap < FIntVector, FModulePropagator > Propagator;
 
 	FModuleMatrix() {}
 
@@ -172,7 +172,7 @@ public:
 					ToRotate.SetRotationEuler( EOrientations::RIGHT );
 					Array3D.Add( FIntVector( X, Y, Z ), ToRotate );
 				}
-			} )
+				  } )
 		}
 	}
 
@@ -301,7 +301,7 @@ public:
 					}
 				}
 
-				Propagator.Add( Direction.Key, FModulePropagator( AllowedBits ) );
+				Propagator.Add( Direction.Value, FModulePropagator( AllowedBits ) );
 			}
 		}
 	}

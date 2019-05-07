@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "EditorTickActor.h"
 #include "Data/ModuleAssignee.h"
+#include "Data/WaveMatrix.h"
 #include "WaveFunctionCollapse/Coefficient.h"
 #include "WFC.generated.h"
 
@@ -25,7 +26,7 @@ public:
 		AModuleAssignee* ModuleAssignee;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "WFC" )
-		TMap <FIntVector, FCoefficient> Wave;
+		FWaveMatrix Wave;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Spawned" )
 		TArray<UChildActorComponent*> SpawnedComponents;
@@ -42,10 +43,12 @@ protected:
 
 private:
 	TArray<FIntVector> Flag;
+	TArray<FIntVector> Updated;
 
 private:
 	void Observe( FIntVector ObserveValue );
 	void Propagate();
+	void Constrain( FIntVector Coord );
 
 	void SpawnMod( FIntVector Coord, int32 Selected );
 

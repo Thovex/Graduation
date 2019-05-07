@@ -3,6 +3,8 @@
 
 #include "WFC.h"
 #include "DrawDebugHelpers.h"
+#include "Data/Orientations.h"
+#include "Data/ModulePropagator.h"
 #include "Utility/WaveFunctionLibrary.h"
 
 AWFC::AWFC( const FObjectInitializer& ObjectInitializer ) {
@@ -55,6 +57,8 @@ void AWFC::Initialize() {
 
 	if ( !ModuleAssignee ) return;
 
+	Wave = FWaveMatrix( OutputSize );
+
 	TMap<int32, bool> InitMap;
 
 	for ( auto& Pattern : ModuleAssignee->Patterns ) {
@@ -63,7 +67,7 @@ void AWFC::Initialize() {
 
 	for3( OutputSize.X, OutputSize.Y, OutputSize.Z,
 		  {
-			  Wave.Add( FIntVector( X, Y, Z ), FCoefficient( InitMap ) );
+			  Wave.AddData( FIntVector( X, Y, Z ), FCoefficient( InitMap ) );
 		  }
 	)
 
@@ -72,7 +76,7 @@ void AWFC::Initialize() {
 
 void AWFC::Observe( FIntVector ObserveValue ) {
 	FIntVector Coord = ObserveValue == FIntVector::ZeroValue ? ObserveValue : MinEntropyCoords();
-	FCoefficient Coefficient = Wave.FindRef( Coord );
+	FCoefficient Coefficient = Wave.GetDataAt( Coord );
 
 	int32 Selected = GetWeightedPattern( Coefficient.AllowedPatterns );
 
@@ -87,16 +91,52 @@ void AWFC::Observe( FIntVector ObserveValue ) {
 	}
 
 	Coefficient.AllowedPatterns = NewAllowedPatterns;
-	Wave.Add( Coord, Coefficient );
+	Wave.AddData( Coord, Coefficient );
 
 	SpawnMod( Coord, Selected );
 	Flag.Push( Coord );
 
-	Propagate();
+	//Propagate();
 }
 
 void AWFC::Propagate() {
 
+	Updated.Empty();
+
+	while ( Flag.Num() > 0 ) {
+		FIntVector Coord = Flag.Pop();
+		Updated.Add( Coord );
+
+		for ( auto& Direction : UOrientations::OrientationUnitVectors ) {
+			if ( Direction.Key == EOrientations::NONE ) continue;
+
+			FIntVector NeighbourCoord = Coord + Direction.Value;
+
+			if ( Wave.IsValidCoordinate( NeighbourCoord ) ) {
+				if ( Wave.GetDataAt( NeighbourCoord ).AllowedPatterns.Num() != 1 ) {
+					Constrain( NeighbourCoord );
+				}
+			}
+		}
+	}
+}
+
+void AWFC::Constrain( FIntVector Coord ) {
+	for ( auto& Direction : UOrientations::OrientationUnitVectors ) {
+		if ( Direction.Key == EOrientations::NONE ) continue;
+
+		FIntVector NeighbourCoord = Coord + Direction.Value;
+
+		if ( Wave.IsValidCoordinate( NeighbourCoord ) ) {
+			for ( auto& AllowedPattern : Wave.GetDataAt( NeighbourCoord ).AllowedPatterns ) {
+				if ( AllowedPattern.Value ) {
+					FModulePropagator AllowedPatternByPropagator = ModuleAssignee->Patterns.FindRef( AllowedPattern.Key ).Propagator.FindRef( Direction.Value * -1 );
+
+					// Line 209 In C#
+				}
+			}
+		}
+	}
 }
 
 void AWFC::SpawnMod( FIntVector Coord, int32 Selected ) {
@@ -121,7 +161,12 @@ int32 AWFC::GetWeightedPattern( TMap<int32, bool> InPatterns ) {
 		}
 	}
 
-	return WeightedPatterns[FMath::RandRange( 0, WeightedPatterns.Num() - 1 )];
+	if ( WeightedPatterns.Num() > 0 ) {
+
+		return WeightedPatterns[FMath::RandRange( 0, WeightedPatterns.Num() - 1 )];
+	}
+
+	return -1;
 }
 
 FIntVector AWFC::MinEntropyCoords() {
@@ -134,7 +179,7 @@ FIntVector AWFC::MinEntropyCoords() {
 		  {
 			  FIntVector CurrentCoordinates = FIntVector( X, Y, Z );
 
-			  if ( Wave.FindRef( CurrentCoordinates ).AllowedPatterns.Num() > 1 ) {
+			  if ( Wave.GetDataAt( CurrentCoordinates ).AllowedPatterns.Num() > 1 ) {
 				  float Entropy = ShannonEntropy( CurrentCoordinates );
 				  float EntropyPlusNoise = Entropy - RandomStream.FRand();
 
@@ -153,7 +198,7 @@ float AWFC::ShannonEntropy( FIntVector CurrentCoordinates ) {
 	int32 SumOfWeights = 0;
 	int32 SumOfWeightsLogWeights = 0;
 
-	for ( auto& Pair : Wave.FindRef( CurrentCoordinates ).AllowedPatterns ) {
+	for ( auto& Pair : Wave.GetDataAt( CurrentCoordinates ).AllowedPatterns ) {
 
 		int32 Weight = ModuleAssignee->Weights.FindRef( Pair.Key );
 
