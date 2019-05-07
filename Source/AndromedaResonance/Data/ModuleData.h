@@ -162,11 +162,10 @@ public:
 	FORCEINLINE void SetRotationEuler( EOrientations Rotation ) {
 		FIntVector RotationDirection = UOrientations::OrientationEulers.FindRef( Rotation );
 		RotationEuler += RotationDirection;
-		GenerateBit();
+		Bit = GenerateBit();
 	}
 
 	FORCEINLINE bool operator==( const FModuleData & Other ) const {
-		if ( Other.Bit == "Null" ) return true;
 		return this->Bit == Other.Bit;
 	}
 

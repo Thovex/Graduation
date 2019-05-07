@@ -285,15 +285,11 @@ public:
 
 				if ( Direction.Key == EOrientations::NONE ) continue;
 
-
-
 				TArray<int32> AllowedBits;
 				FModuleMatrix CopyModuleData = *this;
 
 				CopyModuleData.Flip( Direction.Key );
 				CopyModuleData.PushData( Direction.Value );
-
-
 
 				for ( auto& Pattern : Patterns ) {
 					FModuleMatrix CompareMatrix = Pattern.Value;
@@ -302,16 +298,7 @@ public:
 
 					if ( CompareMatrix == CopyModuleData ) {
 						AllowedBits.Add( Pattern.Key );
-					} else {
-
-// 						UE_LOG( LogTemp, Warning, TEXT( "1" ) );
-// 						UE_LOG( LogTemp, Warning, TEXT( "%s" ), *CopyModuleData.ToString() );
-// 
-// 						UE_LOG( LogTemp, Warning, TEXT( "2" ) );
-// 						UE_LOG( LogTemp, Warning, TEXT( "%s" ), *CompareMatrix.ToString() );
 					}
-
-
 				}
 
 				Propagator.Add( Direction.Key, FModulePropagator( AllowedBits ) );

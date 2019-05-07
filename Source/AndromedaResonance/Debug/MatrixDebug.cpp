@@ -75,7 +75,6 @@ void AMatrixDebug::ButtonPress( FName Bit ) {
 			//this->ModuleMatrix.Flip( EOrientations::UP );
 
 			this->ModuleMatrix.BuildPropagator( DataGrid->ModuleAssignee->Patterns );
-			//UWaveFunctionLibrary::CreatePatternData( this, this, DataGrid->ModuleAssignee, Matrix, GetActorLocation() + ( FVector::ForwardVector * 5000 ) );
 
 		}
 	}
