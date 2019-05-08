@@ -5,7 +5,6 @@
 #include "Utility/WaveFunctionLibrary.h"
 #include "Utility/UtilityLibrary.h"
 #include "Data/ModuleAssignee.h"
-#include "Data/Orientations.h"
 
 
 ADataGrid::ADataGrid( const FObjectInitializer& ObjectInitializer ) {
@@ -106,15 +105,14 @@ void ADataGrid::SetPatternLocations() {
 	}
 }
 
-FIntVector ADataGrid::DefineCoord( FIntVector RelativeValueLocation ) {
-
+FIntVector ADataGrid::DefineCoord( FIntVector RelativeValueLocation ) const {
 	FIntVector Coord;
-
-	int32 HalfGridElement = GridElementSize / 2;
+	const int32 HalfGridElement = GridElementSize / 2;
 
 	Coord.X = ( HalfGridElement + RelativeValueLocation.X ) / GridElementSize;
 	Coord.Y = ( HalfGridElement + RelativeValueLocation.Y ) / GridElementSize;
 	Coord.Z = ( HalfGridElement + RelativeValueLocation.Z ) / GridElementSize;
+
 	return Coord;
 }
 
@@ -182,11 +180,11 @@ void ADataGrid::MapChildren() {
 			if ( ChildActors[i]->IsValidLowLevel() ) {
 				if ( !ChildActors[i]->Tags.Contains( FName( TEXT( "DisplayOnly" ) ) ) ) {
 
-					FIntVector RelativeValueLocation = UUtilityLibrary::Conv_VectorToIntVector( ChildActors[i]->GetActorLocation() - GetActorLocation() );
-					FIntVector RelativeValueRotation = UUtilityLibrary::Conv_RotatorToIntVector( ChildActors[i]->GetActorRotation() - GetActorRotation() );
-					FVector ValueScale = ChildActors[i]->GetActorScale3D();
+					const FIntVector RelativeValueLocation = UUtilityLibrary::Conv_VectorToIntVector( ChildActors[i]->GetActorLocation() - GetActorLocation() );
+					const FIntVector RelativeValueRotation = UUtilityLibrary::Conv_RotatorToIntVector( ChildActors[i]->GetActorRotation() - GetActorRotation() );
+					const FVector ValueScale = ChildActors[i]->GetActorScale3D();
 
-					FIntVector Coord = DefineCoord( RelativeValueLocation );
+					const FIntVector Coord = DefineCoord( RelativeValueLocation );
 
 					RelativeValueLocationCheck( ChildActors[i], RelativeValueLocation );
 					RelativeValueRotationCheck( ChildActors[i], RelativeValueRotation );
@@ -194,7 +192,7 @@ void ADataGrid::MapChildren() {
 
 					if ( PatternLocations.Contains( Coord ) ) {
 
-						int32 Count = PatternLocations.FindOrAdd( Coord );
+						const int32 Count = PatternLocations.FindOrAdd( Coord );
 						PatternLocations.Add( Coord, Count + 1 );
 
 						if ( Count + 1 == 1 ) {

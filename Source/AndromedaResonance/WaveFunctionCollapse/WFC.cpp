@@ -71,7 +71,7 @@ void AWFC::Initialize() {
 		  }
 	)
 
-		Observe( FIntVector( 0, 0, 0 ) );
+	Observe( FIntVector( 0, 0, 0 ) );
 }
 
 void AWFC::Observe( FIntVector ObserveValue ) {

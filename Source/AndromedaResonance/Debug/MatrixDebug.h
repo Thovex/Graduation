@@ -52,6 +52,7 @@ protected:
 private:
 
 private:
+	void Clean();
 	void CopyModuleMatrix( FModuleMatrix ModuleMatrixToCopy );
 
 
