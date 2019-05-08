@@ -241,5 +241,3 @@ void ADataGrid::FillEmptyData() {
 		}
 	}
 }
-
-
