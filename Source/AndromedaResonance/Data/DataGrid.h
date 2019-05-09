@@ -64,7 +64,7 @@ protected:
 	void SetPatternLocations();
 
 private:
-	FIntVector DefineCoord( FIntVector RelativeValueLocation );
+	FIntVector DefineCoord( FIntVector RelativeValueLocation ) const;
 
 	TMap<FIntVector, AModule*> ModulesMap;
 
