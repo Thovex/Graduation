@@ -7,6 +7,7 @@
 #include "Data/ModuleAssignee.h"
 #include "Data/WaveMatrix.h"
 #include "WaveFunctionCollapse/Coefficient.h"
+#include "Runtime/Engine/Classes/Components/TextRenderComponent.h"
 #include "WFC.generated.h"
 
 USTRUCT(BlueprintType)
@@ -41,13 +42,26 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WFC")
 		FWaveMatrix Wave;
 
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "WFC" )
+		bool bInitialized = false;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawned")
 		TArray<UChildActorComponent*> SpawnedComponents;
+
 
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "WFC")
 		void Initialize();
+	
+	UFUNCTION( BlueprintCallable, Category = "WFC" )
+		void StartWFC();
+
+	UFUNCTION(BlueprintCallable, Category = "WFC" )
+		void Observe( FIntVector ObserveValue, int32 Selected );
+
+	UFUNCTION( BlueprintCallable, Category = "WFC" )
+		FIntVector MinEntropyCoords();
 
 
 protected:
@@ -59,15 +73,15 @@ private:
 	TArray<FIntVector> Updated;
 
 private:
-	void Observe(FIntVector ObserveValue);
 	void Propagate();
 	void Constrain(FIntVector Coord);
 
 	void SpawnMod(FIntVector Coord, int32 Selected);
 
+	bool IsFullyCollapsed();
+
 	int32 GetWeightedPattern(TMap<int32, bool> InPatterns);
 
-	FIntVector MinEntropyCoords();
 	float ShannonEntropy(FIntVector CurrentCoordinates);
 
 };

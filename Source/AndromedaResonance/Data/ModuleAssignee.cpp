@@ -53,15 +53,12 @@ void AModuleAssignee::Tick( float DeltaTime ) {
 
 			FModuleMatrix& CopyModuleData = DataGrid->ModuleData;
 
-			// TODO: Revert 1 to 4 to rotate
 			for ( int32 i = 0; i < 4; i++ ) {
 				FModuleMatrix RotationCopy = CopyModuleData;
 				RotationCopy.RotateCounterClockwise( i );
 				Patterns.Add( Patterns.Num(), RotationCopy );
 
 			}
-
-
 		}
 
 		TArray<int32> SimilarityIndices;
@@ -82,6 +79,7 @@ void AModuleAssignee::Tick( float DeltaTime ) {
 
 		for ( auto& Pattern : Patterns ) {
 			Weights.Add( Pattern.Key, 1 );
+			Pattern.Value.BuildPropagator( Patterns );
 		}
 	}
 }

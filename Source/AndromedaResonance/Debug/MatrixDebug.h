@@ -25,7 +25,10 @@ public:
 		USceneComponent* Transform;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, meta = ( ExposeOnSpawn = true ), Category = "Debug" )
-		ADataGrid * DataGrid;
+		int32 PatternIndex;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, meta = ( ExposeOnSpawn = true ), Category = "Debug" )
+		AModuleAssignee * ModuleAssignee;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Debug" )
 		FModuleMatrix ModuleMatrix;

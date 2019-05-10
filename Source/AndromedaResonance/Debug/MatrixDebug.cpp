@@ -5,16 +5,16 @@
 #include "Utility/WaveFunctionLibrary.h"
 #include "Data/Orientations.h"
 
-AMatrixDebug::AMatrixDebug(const FObjectInitializer& ObjectInitializer) {
+AMatrixDebug::AMatrixDebug( const FObjectInitializer& ObjectInitializer ) {
 
-	Transform = ObjectInitializer.CreateDefaultSubobject<USceneComponent>(this, TEXT("Transform"));
+	Transform = ObjectInitializer.CreateDefaultSubobject<USceneComponent>( this, TEXT( "Transform" ) );
 	RootComponent = Transform;
 
 	const UWorld* World = GetWorld();
 
-	if (World) {
-		if (DataGrid) {
-			CopyModuleMatrix(DataGrid->ModuleData);
+	if ( World ) {
+		if ( ModuleAssignee ) {
+			CopyModuleMatrix( ModuleAssignee->Patterns.FindRef( PatternIndex ) );
 		}
 	}
 
@@ -26,16 +26,15 @@ void AMatrixDebug::BeginPlay() {
 
 }
 
-void AMatrixDebug::Clean()
-{
-	for (auto& Spawned : DisplayModules) {
-		if (Spawned) {
-			if (Spawned->IsValidLowLevel()) {
+void AMatrixDebug::Clean() {
+	for ( auto& Spawned : DisplayModules ) {
+		if ( Spawned ) {
+			if ( Spawned->IsValidLowLevel() ) {
 
 				TArray<USceneComponent*> ChildComponents;
-				Spawned->GetChildrenComponents(true, ChildComponents);
+				Spawned->GetChildrenComponents( true, ChildComponents );
 
-				for (USceneComponent* ChildComponent : ChildComponents) {
+				for ( USceneComponent* ChildComponent : ChildComponents ) {
 					ChildComponent->DestroyComponent();
 				}
 
@@ -47,41 +46,33 @@ void AMatrixDebug::Clean()
 	DisplayModules.Empty();
 }
 
-void AMatrixDebug::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) {
-	Super::PostEditChangeProperty(PropertyChangedEvent);
+void AMatrixDebug::PostEditChangeProperty( FPropertyChangedEvent& PropertyChangedEvent ) {
+	Super::PostEditChangeProperty( PropertyChangedEvent );
 
 	bIsSet = false;
 
 	Clean();
 
-	if (DataGrid) {
-		CopyModuleMatrix(DataGrid->ModuleData);
-
-		for (auto& Pair : this->ModuleMatrix.Array3D) {
-			UTextRenderComponent* TextRenderer = MatrixTestRenderers.FindRef(Pair.Key);
-
-			if (TextRenderer) {
-				TextRenderer->SetText(FText::FromName(Pair.Value.Bit));
-			}
-		}
+	if ( ModuleAssignee ) {
+		CopyModuleMatrix( ModuleAssignee->Patterns.FindRef( PatternIndex ) );
 	}
 }
 
-void AMatrixDebug::Tick(float DeltaTime) {
-	Super::Tick(DeltaTime);
+void AMatrixDebug::Tick( float DeltaTime ) {
+	Super::Tick( DeltaTime );
 
 	const UWorld* World = GetWorld();
 
-	if (World) {
-		if (!bIsSet) {
-			if (DataGrid) {
-				CopyModuleMatrix(DataGrid->ModuleData);
+	if ( World ) {
+		if ( !bIsSet ) {
+			if ( ModuleAssignee ) {
+				CopyModuleMatrix( ModuleAssignee->Patterns.FindRef( PatternIndex ) );
 			}
 		}
 	}
 }
 
-void AMatrixDebug::ButtonPress(FName Bit) {
+void AMatrixDebug::ButtonPress( FName Bit ) {
 	//this->ModuleMatrix.RotateCounterClockwise( 1 );
 	//this->ModuleMatrix.PushData( UOrientations::OrientationUnitVectors.FindRef( EOrientations::BACK_LEFT_UP ) );
 
@@ -92,17 +83,17 @@ void AMatrixDebug::ButtonPress(FName Bit) {
 // 	}
 
 
-	if (DataGrid) {
-
-
-		if (DataGrid->ModuleAssignee) {
-
-			//this->ModuleMatrix.Flip( EOrientations::UP );
-
-			this->ModuleMatrix.BuildPropagator(DataGrid->ModuleAssignee->Patterns);
-
-		}
-	}
+// 	if (DataGrid) {
+// 
+// 
+// 		if (DataGrid->ModuleAssignee) {
+// 
+// 			//this->ModuleMatrix.Flip( EOrientations::UP );
+// 
+// 			this->ModuleMatrix.BuildPropagator(DataGrid->ModuleAssignee->Patterns);
+// 
+// 		}
+// 	}
 
 	// 	if ( DataGrid ) {
 	// 		if ( DataGrid->ModuleAssignee ) {
@@ -116,7 +107,7 @@ void AMatrixDebug::ButtonPress(FName Bit) {
 
 }
 
-void AMatrixDebug::CopyModuleMatrix(FModuleMatrix ModuleMatrixToCopy) {
+void AMatrixDebug::CopyModuleMatrix( FModuleMatrix ModuleMatrixToCopy ) {
 	this->ModuleMatrix = ModuleMatrixToCopy;
 
 	bIsSet = true;

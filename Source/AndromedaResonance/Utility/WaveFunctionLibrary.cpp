@@ -29,32 +29,32 @@ UChildActorComponent* UWaveFunctionLibrary::CreateModule( UObject* WorldContextO
 
 		ChildActor->AttachToComponent( ParentActor->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform );
 
-		UTextRenderComponent* ChildActorBitRenderer = NewObject<UTextRenderComponent>( ChildActor, UTextRenderComponent::StaticClass() );
-		ChildActorBitRenderer->RegisterComponent();
-
-		ChildActorBitRenderer->AttachToComponent( ChildActor, FAttachmentTransformRules::SnapToTargetIncludingScale );
-		ChildActorBitRenderer->SetText( FText::FromString( ModuleData.Bit.ToString() ) );
-
-		ChildActorBitRenderer->SetXScale( 15 );
-		ChildActorBitRenderer->SetYScale( 15 );
-		ChildActorBitRenderer->SetHorizontalAlignment( EHorizTextAligment::EHTA_Center );
-		ChildActorBitRenderer->SetVerticalAlignment( EVerticalTextAligment::EVRTA_TextCenter );
-
-		ChildActorBitRenderer->SetWorldLocation( ChildActorBitRenderer->GetComponentLocation() + FVector::UpVector * 500 );
-		ChildActorBitRenderer->SetWorldRotation( FRotator( 0, -90, 0 ) );
-		ChildActorBitRenderer->SetWorldScale3D( FVector(1, 1, -1) );
-
-		UMaterial * TextMaterial = LoadObjFromPath<UMaterial>( FName( TEXT( "/Game/Materials/M_Text_FacingCamera.M_Text_FacingCamera" ) ) );
-
-		UMaterialInstanceDynamic * TextMaterialInstance;
-
-		if ( TextMaterial ) {
-			TextMaterialInstance = UMaterialInstanceDynamic::Create( TextMaterial, WorldContextObject );
-
-			if ( TextMaterialInstance ) {
-				ChildActorBitRenderer->SetTextMaterial( TextMaterialInstance );
-			}
-		}
+// 		UTextRenderComponent* ChildActorBitRenderer = NewObject<UTextRenderComponent>( ChildActor, UTextRenderComponent::StaticClass() );
+// 		ChildActorBitRenderer->RegisterComponent();
+// 
+// 		ChildActorBitRenderer->AttachToComponent( ChildActor, FAttachmentTransformRules::SnapToTargetIncludingScale );
+// 		ChildActorBitRenderer->SetText( FText::FromString( ModuleData.Bit.ToString() ) );
+// 
+// 		ChildActorBitRenderer->SetXScale( 15 );
+// 		ChildActorBitRenderer->SetYScale( 15 );
+// 		ChildActorBitRenderer->SetHorizontalAlignment( EHorizTextAligment::EHTA_Center );
+// 		ChildActorBitRenderer->SetVerticalAlignment( EVerticalTextAligment::EVRTA_TextCenter );
+// 
+// 		ChildActorBitRenderer->SetWorldLocation( ChildActorBitRenderer->GetComponentLocation() + FVector::UpVector * 500 );
+// 		ChildActorBitRenderer->SetWorldRotation( FRotator( 0, -90, 0 ) );
+// 		ChildActorBitRenderer->SetWorldScale3D( FVector(1, 1, -1) );
+// 
+// 		UMaterial * TextMaterial = LoadObjFromPath<UMaterial>( FName( TEXT( "/Game/Materials/M_Text_FacingCamera.M_Text_FacingCamera" ) ) );
+// 
+// 		UMaterialInstanceDynamic * TextMaterialInstance;
+// 
+// 		if ( TextMaterial ) {
+// 			TextMaterialInstance = UMaterialInstanceDynamic::Create( TextMaterial, WorldContextObject );
+// 
+// 			if ( TextMaterialInstance ) {
+// 				ChildActorBitRenderer->SetTextMaterial( TextMaterialInstance );
+// 			}
+// 		}
 
 		return ChildActor;
 	}

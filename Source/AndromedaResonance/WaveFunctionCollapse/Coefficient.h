@@ -16,7 +16,32 @@ public:
 		this->AllowedPatterns = AllowedPatterns;
 	}
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Coefficient")
+	int32 AllowedCount() {
+		int32 InAllowedCount = 0;
+
+		for ( auto& Pair : AllowedPatterns ) {
+			if ( Pair.Value ) {
+				InAllowedCount++;
+			}
+		}
+
+		return InAllowedCount;
+	}
+
+	int32 LastAllowedPatternIndex() {
+		//if ( AllowedCount() == 1 ) {
+			for( auto& Pair : AllowedPatterns ) {
+				if ( Pair.Value ) {
+					return Pair.Key;
+				}
+			}
+		//}
+
+		return -1;
+	}
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Coefficient" )
 		TMap<int32, bool> AllowedPatterns;
+
 
 };
