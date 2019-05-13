@@ -60,7 +60,7 @@ void AModuleAssignee::Training() {
 
 			if ( DataGrid ) {
 				DataGrid->ModuleAssignee = this;
-				DataGrid->Training(true);
+				DataGrid->Training( true );
 			}
 		}
 
@@ -94,7 +94,11 @@ void AModuleAssignee::Training() {
 		}
 
 		for ( auto& Pattern : Patterns ) {
-			Weights.Add( Pattern.Key, 1 );
+
+			if ( !Weights.Contains( Pattern.Key ) ) {
+				Weights.Add( Pattern.Key, FMath::RandRange(1, 100) );
+			}
+
 			Pattern.Value.BuildPropagator( Patterns );
 		}
 

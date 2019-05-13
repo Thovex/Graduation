@@ -45,11 +45,9 @@ UChildActorComponent* UWaveFunctionLibrary::CreateModule( UObject* WorldContextO
  		ChildActorBitRenderer->SetWorldScale3D( FVector(1, 1, -1) );
  
  		UMaterial * TextMaterial = LoadObjFromPath<UMaterial>( FName( TEXT( "/Game/Materials/M_Text_FacingCamera.M_Text_FacingCamera" ) ) );
- 
- 		UMaterialInstanceDynamic * TextMaterialInstance;
- 
- 		if ( TextMaterial ) {
- 			TextMaterialInstance = UMaterialInstanceDynamic::Create( TextMaterial, WorldContextObject );
+
+		if ( TextMaterial ) {
+ 			UMaterialInstanceDynamic* TextMaterialInstance = UMaterialInstanceDynamic::Create(TextMaterial, WorldContextObject);
  
  			if ( TextMaterialInstance ) {
  				ChildActorBitRenderer->SetTextMaterial( TextMaterialInstance );
