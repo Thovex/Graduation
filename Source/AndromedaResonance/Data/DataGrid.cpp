@@ -23,8 +23,13 @@ void ADataGrid::SetMatrix( FIntVector Size ) {
 
 	for ( auto& Pair : ModulesMap ) {
 		if ( Pair.Value ) {
-			FName ID = Pair.Value->ModuleAssignee->AssignedNames.FindRef( Pair.Value->GetClass() );
-			ModuleDataMap.Add( Pair.Key, FModuleData( Pair.Value, ID ) );
+			if ( Pair.Value->ModuleAssignee ) {
+				FName ID = Pair.Value->ModuleAssignee->AssignedNames.FindRef( Pair.Value->GetClass() );
+				ModuleDataMap.Add( Pair.Key, FModuleData( Pair.Value, ID ) );
+			} else
+			{
+				ModuleDataMap.Add( Pair.Key, FModuleData( true ) );
+			}
 		} else {
 			ModuleDataMap.Add( Pair.Key, FModuleData( true ) );
 		}
@@ -56,9 +61,9 @@ void ADataGrid::Training( bool bBeginPlay ) {
 void ADataGrid::Tick( float DeltaTime ) {
 	Super::Tick( DeltaTime );
 
-	Errors.Empty();
-
 	if ( !bEnabled ) return;
+
+	Errors.Empty();
 
 	Training( false );
 

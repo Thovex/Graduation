@@ -33,12 +33,11 @@ void AModuleAssignee::Tick( float DeltaTime ) {
 }
 
 void AModuleAssignee::Training() {
+	if ( !bEnabled ) return;
+
 	AssignedNames.Empty();
 	Patterns.Empty();
 	Weights.Empty();
-
-	if ( !bEnabled ) return;
-
 
 	UWorld* World = GetWorld();
 
@@ -99,7 +98,6 @@ void AModuleAssignee::Training() {
 			Pattern.Value.BuildPropagator( Patterns );
 		}
 
-		if ( GEngine ) GEngine->AddOnScreenDebugMessage( -1, 2.0f, FColor::Cyan, TEXT( "Updated to Latest Data!" ) );
 	}
 }
 
