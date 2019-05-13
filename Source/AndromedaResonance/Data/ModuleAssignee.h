@@ -19,6 +19,9 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
 		USceneComponent* Transform;
 
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Enabled" )
+		bool bEnabled = false;
+
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Assignee" )
 		TMap<TSubclassOf<AModule>, FName> AssignedNames;
 
@@ -31,6 +34,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick( float DeltaTime ) override;
+
+	void Training();
 
 
 };

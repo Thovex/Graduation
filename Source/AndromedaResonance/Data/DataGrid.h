@@ -20,6 +20,9 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
 		USceneComponent* Transform;
 
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Enabled" )
+		bool bEnabled;
+
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Required" )
 		AModuleAssignee* ModuleAssignee;
 
@@ -55,6 +58,7 @@ public:
 		void DisplayRotatedPatterns();
 
 
+	void Training( bool bBeginPlay );
 	void ButtonPress();
 
 protected:

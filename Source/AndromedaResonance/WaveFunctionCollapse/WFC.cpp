@@ -78,7 +78,18 @@ void AWFC::Initialize() {
 		  }
 	)
 
-		bInitialized = true;
+	for3( OutputSize.X, OutputSize.Y, OutputSize.Z,
+		{
+			FCoefficient WaveDataAtCoord = Wave.GetDataAt( FIntVector( X, Y, Z ) );
+
+			if ( WaveDataAtCoord.AllowedCount() == 0 ) {
+				UE_LOG( LogTemp, Error, TEXT( "Invalid construction in WFC... Retrying!" ) );
+				Initialize();
+			}
+		}
+	)
+
+	bInitialized = true;
 }
 
 void AWFC::Observe( FIntVector ObserveValue, int32 Selected = -1 ) {
@@ -256,13 +267,22 @@ bool AWFC::IsFullyCollapsed() {
 
 	for3( OutputSize.X, OutputSize.Y, OutputSize.Z,
 		  {
-				if ( Wave.GetDataAt( FIntVector( X, Y, Z ) ).AllowedCount() > AllowedCount ) {
+				FCoefficient WaveDataAtCoord = Wave.GetDataAt( FIntVector( X, Y, Z ) );
+
+				if ( WaveDataAtCoord.AllowedCount() == 0) {
+					UE_LOG( LogTemp, Error, TEXT( "Invalid construction in WFC... Retrying!" ) );
+
+					Initialize();
+					StartWFC();
+				}
+
+				if ( WaveDataAtCoord.AllowedCount() > AllowedCount ) {
 					AllowedCount = Wave.GetDataAt( FIntVector( X, Y, Z ) ).AllowedCount();
 				}
 		  }
 	)
 
-		return AllowedCount > 1 ? false : true;
+	return AllowedCount > 1 ? false : true;
 }
 
 void AWFC::StartWFC() {

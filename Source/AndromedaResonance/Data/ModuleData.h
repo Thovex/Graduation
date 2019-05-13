@@ -156,6 +156,8 @@ public:
 		} else if ( Scale == FIntVector( 1, -1, 1 ) ) {
 			GeneratedBit.Append( "Y" );
 		}
+
+
 		return FName( *GeneratedBit );
 	}
 

@@ -44,13 +44,23 @@ void ADataGrid::BeginPlay() {
 
 }
 
+void ADataGrid::Training( bool bBeginPlay ) {
+	SetPatternLocations();
+	MapChildren();
+
+	if ( bBeginPlay ) {
+		SetMatrix( NSize );
+	}
+}
+
 void ADataGrid::Tick( float DeltaTime ) {
 	Super::Tick( DeltaTime );
 
 	Errors.Empty();
 
-	SetPatternLocations();
-	MapChildren();
+	if ( !bEnabled ) return;
+
+	Training( false );
 
 	PatternStatus = Errors.Num() == 0 ? FColor::Green : FColor::Red;
 
@@ -79,7 +89,7 @@ void ADataGrid::DisplayRotatedPatterns() {
 	}
 
 	for ( int32 i = 0; i < RotatedPatterns.Num(); i++ ) {
-		TArray<UChildActorComponent*> ChildComps = UWaveFunctionLibrary::CreatePatternData( this, this, ModuleAssignee, RotatedPatterns[i], GetActorLocation() + ( FVector::UpVector * 3000 * (i + 1) ) + (FVector::LeftVector * 500));
+		TArray<UChildActorComponent*> ChildComps = UWaveFunctionLibrary::CreatePatternData( this, this, ModuleAssignee, RotatedPatterns[i], GetActorLocation() + ( FVector::UpVector * 3000 * ( i + 1 ) ) + ( FVector::LeftVector * 500 ) );
 
 		for ( UChildActorComponent* ChildComp : ChildComps ) {
 			if ( ChildComp ) {
@@ -216,7 +226,6 @@ void ADataGrid::MapChildren() {
 void ADataGrid::UpdateMatrix() {
 	if ( Errors.Num() == 0 ) {
 		if ( IsSelectedInEditor() ) {
-			SetMatrix( NSize );
 			return;
 		}
 		for ( auto& Pair : ModulesMap ) {

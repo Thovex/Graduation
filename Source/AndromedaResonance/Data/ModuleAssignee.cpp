@@ -4,6 +4,7 @@
 #include "ModuleAssignee.h"
 #include "Data/DataGrid.h"
 #include "EngineUtils.h"
+#include "Engine/Engine.h"
 
 
 AModuleAssignee::AModuleAssignee( const FObjectInitializer& ObjectInitializer ) {
@@ -16,13 +17,28 @@ AModuleAssignee::AModuleAssignee( const FObjectInitializer& ObjectInitializer ) 
 void AModuleAssignee::BeginPlay() {
 	Super::BeginPlay();
 
+	SetActorTickEnabled( false );
+
+	bEnabled = true;
+
+	Training();
+
 }
 
 void AModuleAssignee::Tick( float DeltaTime ) {
 	Super::Tick( DeltaTime );
 
+	Training();
+
+}
+
+void AModuleAssignee::Training() {
 	AssignedNames.Empty();
 	Patterns.Empty();
+	Weights.Empty();
+
+	if ( !bEnabled ) return;
+
 
 	UWorld* World = GetWorld();
 
@@ -45,6 +61,7 @@ void AModuleAssignee::Tick( float DeltaTime ) {
 
 			if ( DataGrid ) {
 				DataGrid->ModuleAssignee = this;
+				DataGrid->Training(true);
 			}
 		}
 
@@ -81,6 +98,8 @@ void AModuleAssignee::Tick( float DeltaTime ) {
 			Weights.Add( Pattern.Key, 1 );
 			Pattern.Value.BuildPropagator( Patterns );
 		}
+
+		if ( GEngine ) GEngine->AddOnScreenDebugMessage( -1, 2.0f, FColor::Cyan, TEXT( "Updated to Latest Data!" ) );
 	}
 }
 
