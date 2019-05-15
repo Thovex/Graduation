@@ -42,7 +42,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WFC")
 		FWaveMatrix Wave;
 
-	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "WFC" )
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "WFC" )
 		bool bInitialized = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawned")
