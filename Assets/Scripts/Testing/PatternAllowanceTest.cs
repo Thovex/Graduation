@@ -66,7 +66,7 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
         });
 
-          InitialPattern();
+          //InitialPattern();
     }
 
     private void InitialPattern()
@@ -76,19 +76,24 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
     private void SpawnMod(Vector3Int coord, Pattern selected)
     {
-//         For3(selected, (x, y, z) =>
-//         {
-//             string bit = selected.GetDataAt(x,y,z).GenerateBit(training);
-//             Module module = training.CreateModuleFromBit(bit);
-// 
-//             training.SpawnModule(module, coord + new Vector3Int(x,y,z), objects.transform);
-//        });
+        
+         For3(selected, (x, y, z) =>
+         {
+             if (wave.ValidCoordinate(coord + new Vector3Int(x, y, z))) {
+                 string bit = selected.GetDataAt(x, y, z).GenerateBit(training);
+                 Module module = training.CreateModuleFromBit(bit);
 
+                 training.SpawnModule(module, coord + new Vector3Int(x, y, z), objects.transform);
+             }
+        });
+        
+        /*
 
         string bit = selected.GetDataAt(0, 0, 0).GenerateBit(training);
         Module module = training.CreateModuleFromBit(bit);
 
         training.SpawnModule(module, coord + new Vector3Int(0, 0, 0), objects.transform);
+        */
     }
 
     public void Observe(Vector3Int value)
@@ -326,7 +331,16 @@ public class PatternAllowanceTest : SerializedMonoBehaviour
 
         For3(wave, (x, y, z) =>
         {
-            if (wave.GetDataAt(x, y, z).AllowedCount() > allowedCount)
+            Coefficient Coefficient = wave.GetDataAt(x, y, z);
+
+            if (Coefficient.AllowedCount() == 0)
+            {
+                Initialize();
+                TestConstrainAll();
+                Debug.LogError("0 value found... Retrying WFC");
+            }
+
+            if (Coefficient.AllowedCount() > allowedCount)
             {
                 allowedCount = wave.GetDataAt(x, y, z).AllowedCount();
             }

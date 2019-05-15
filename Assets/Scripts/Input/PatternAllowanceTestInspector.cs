@@ -23,7 +23,7 @@ public class PatternAllowanceTestInspector : OdinEditor
         {
             patternTest.Initialize();
 
-           // patternTest.TestConstrainAll();
+            patternTest.TestConstrainAll();
 
         }
 

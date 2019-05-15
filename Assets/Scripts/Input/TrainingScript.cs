@@ -30,6 +30,11 @@ public class TrainingScriptInspector : OdinEditor
         {
             training.Train();
         }
+
+        if (GUILayout.Button("Clear"))
+        {
+            training.Clear();
+        }
     }
 }
 
@@ -69,6 +74,20 @@ public class TrainingScript : SerializedMonoBehaviour
     private void Update()
     {
         //Train();
+    }
+
+    public void Clear()
+    {
+        InitializeData();
+
+        if (displayPatternObject)
+        {
+            for (int i = displayPatternObject.transform.childCount; i > 0; --i)
+            {
+                DestroyImmediate(displayPatternObject.transform.GetChild(0).gameObject);
+            }
+        }
+
     }
 
     public void Train()
@@ -226,6 +245,7 @@ public class TrainingScript : SerializedMonoBehaviour
 
                 if (!PatternsNotToReflect.Contains(currentPattern))
                 {
+                    /*
 
                     for (int i = 0; i < 4; i++)
                     {
@@ -243,6 +263,8 @@ public class TrainingScript : SerializedMonoBehaviour
 
                         Patterns.Add(reflectedPattern);
                     }
+
+                    */
                 }
 
                 currentPattern++;
