@@ -29,30 +29,32 @@ UChildActorComponent* UWaveFunctionLibrary::CreateModule( UObject* WorldContextO
 
 		ChildActor->AttachToComponent( ParentActor->GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform );
 
- 		UTextRenderComponent* ChildActorBitRenderer = NewObject<UTextRenderComponent>( ChildActor, UTextRenderComponent::StaticClass() );
- 		ChildActorBitRenderer->RegisterComponent();
- 
- 		ChildActorBitRenderer->AttachToComponent( ChildActor, FAttachmentTransformRules::SnapToTargetIncludingScale );
- 		ChildActorBitRenderer->SetText( FText::FromString( ModuleData.Bit.ToString() ) );
- 
- 		ChildActorBitRenderer->SetXScale( 5 );
- 		ChildActorBitRenderer->SetYScale( 5 );
- 		ChildActorBitRenderer->SetHorizontalAlignment( EHorizTextAligment::EHTA_Center );
- 		ChildActorBitRenderer->SetVerticalAlignment( EVerticalTextAligment::EVRTA_TextCenter );
- 
- 		ChildActorBitRenderer->SetWorldLocation( ChildActorBitRenderer->GetComponentLocation() + FVector::UpVector * 250 );
- 		ChildActorBitRenderer->SetWorldRotation( FRotator( 0, -90, 0 ) );
- 		ChildActorBitRenderer->SetWorldScale3D( FVector(1, 1, -1) );
- 
- 		UMaterial * TextMaterial = LoadObjFromPath<UMaterial>( FName( TEXT( "/Game/Materials/M_Text_FacingCamera.M_Text_FacingCamera" ) ) );
+		/*
+		UTextRenderComponent* ChildActorBitRenderer = NewObject<UTextRenderComponent>( ChildActor, UTextRenderComponent::StaticClass() );
+		ChildActorBitRenderer->RegisterComponent();
+
+		ChildActorBitRenderer->AttachToComponent( ChildActor, FAttachmentTransformRules::SnapToTargetIncludingScale );
+		ChildActorBitRenderer->SetText( FText::FromString( ModuleData.Bit.ToString() ) );
+
+		ChildActorBitRenderer->SetXScale( 5 );
+		ChildActorBitRenderer->SetYScale( 5 );
+		ChildActorBitRenderer->SetHorizontalAlignment( EHorizTextAligment::EHTA_Center );
+		ChildActorBitRenderer->SetVerticalAlignment( EVerticalTextAligment::EVRTA_TextCenter );
+
+		ChildActorBitRenderer->SetWorldLocation( ChildActorBitRenderer->GetComponentLocation() + FVector::UpVector * 250 );
+		ChildActorBitRenderer->SetWorldRotation( FRotator( 0, -90, 0 ) );
+		ChildActorBitRenderer->SetWorldScale3D( FVector(1, 1, -1) );
+
+		UMaterial * TextMaterial = LoadObjFromPath<UMaterial>( FName( TEXT( "/Game/Materials/M_Text_FacingCamera.M_Text_FacingCamera" ) ) );
 
 		if ( TextMaterial ) {
- 			UMaterialInstanceDynamic* TextMaterialInstance = UMaterialInstanceDynamic::Create(TextMaterial, WorldContextObject);
- 
- 			if ( TextMaterialInstance ) {
- 				ChildActorBitRenderer->SetTextMaterial( TextMaterialInstance );
- 			}
- 		}
+			UMaterialInstanceDynamic* TextMaterialInstance = UMaterialInstanceDynamic::Create(TextMaterial, WorldContextObject);
+
+			if ( TextMaterialInstance ) {
+				ChildActorBitRenderer->SetTextMaterial( TextMaterialInstance );
+			}
+		}
+		*/
 
 		return ChildActor;
 	}
@@ -63,19 +65,21 @@ UChildActorComponent* UWaveFunctionLibrary::CreateModule( UObject* WorldContextO
 TArray<UChildActorComponent*> UWaveFunctionLibrary::CreatePatternIndex( UObject* WorldContextObject, AActor* ParentActor, AModuleAssignee* ModuleAssignee, int32 PatternIndex, FVector Location ) {
 	TArray<UChildActorComponent*> Components;
 
-	FModuleMatrix SelectedPatternMatrix = ModuleAssignee->Patterns.FindRef( PatternIndex );
+	if ( ModuleAssignee ) {
+		FModuleMatrix SelectedPatternMatrix = ModuleAssignee->Patterns.FindRef( PatternIndex );
+	
+		FIntVector Size = FIntVector( ForceInit );
 
-	FIntVector Size = FIntVector( ForceInit );
+		Size.X = SelectedPatternMatrix.SizeX;
+		Size.Y = SelectedPatternMatrix.SizeY;
+		Size.Z = SelectedPatternMatrix.SizeZ;
 
-	Size.X = SelectedPatternMatrix.SizeX;
-	Size.Y = SelectedPatternMatrix.SizeY;
-	Size.Z = SelectedPatternMatrix.SizeZ;
+		for3( Size.X, Size.Y, Size.Z, {
+			UChildActorComponent * NewModule = CreateModule( WorldContextObject, SelectedPatternMatrix.GetDataAt( FIntVector( X,Y,Z ) ), ParentActor, Location + FVector( X,Y,Z ) * 1000 );
+			Components.Add( NewModule );
+		} )
 
-	for3( Size.X, Size.Y, Size.Z, {
-		UChildActorComponent * NewModule = CreateModule( WorldContextObject, SelectedPatternMatrix.GetDataAt( FIntVector( X,Y,Z ) ), ParentActor, Location + FVector( X,Y,Z ) * 1000 );
-		Components.Add( NewModule );
-		  } )
-
+	}
 		return Components;
 }
 

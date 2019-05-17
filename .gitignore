@@ -25,9 +25,6 @@
 *.la
 *.a
 
-# Massive Unreal Binaries
-Binaries/Win64/*.pdb
-
 # Executables
 *.exe
 *.out
@@ -50,7 +47,7 @@ SourceArt/**/*.tga
 
 # Builds
 Build/*
-
+Binaries/*
 !Extras/*
 
 # Whitelist PakBlacklist-<BuildConfiguration>.txt files

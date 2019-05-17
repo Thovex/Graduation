@@ -253,12 +253,20 @@ void AWFC::Constrain( FIntVector Coord ) {
 void AWFC::SpawnMod( FIntVector Coord, int32 Selected ) {
 	if ( ModuleAssignee ) {
 		if ( ModuleAssignee->Patterns.Contains( Selected ) ) {
-			FModuleMatrix SelectedPattern = ModuleAssignee->Patterns.FindRef( Selected );
-			FModuleData SelectedPatternData = SelectedPattern.GetDataAt( FIntVector( 0, 0, 0 ) );
 
-			UChildActorComponent* NewChild = UWaveFunctionLibrary::CreateModule( GetWorld(), SelectedPatternData, this, GetActorLocation() + FVector( Coord ) * 1000 );
-			SpawnedComponents.Add( NewChild );
-		}
+			FModuleMatrix SelectedPattern = ModuleAssignee->Patterns.FindRef( Selected );
+
+
+			for3( SelectedPattern.SizeX, SelectedPattern.SizeY, SelectedPattern.SizeZ,
+				  {
+					  if (Wave.IsValidCoordinate(Coord + FIntVector(X,Y,Z)) ) {
+							const FModuleData SelectedPatternData = SelectedPattern.GetDataAt( FIntVector( X, Y, Z ) );
+
+							UChildActorComponent* NewChild = UWaveFunctionLibrary::CreateModule( GetWorld(), SelectedPatternData, this, GetActorLocation() + (FVector( Coord ) * 1000) + (FVector(X,Y,Z) * 1000) );
+							SpawnedComponents.Add( NewChild );
+					  }
+				}
+		})
 	}
 }
 

@@ -24,10 +24,14 @@ void ADataGrid::SetMatrix( FIntVector Size ) {
 	for ( auto& Pair : ModulesMap ) {
 		if ( Pair.Value ) {
 			if ( Pair.Value->ModuleAssignee ) {
-				FName ID = Pair.Value->ModuleAssignee->AssignedNames.FindRef( Pair.Value->GetClass() );
-				ModuleDataMap.Add( Pair.Key, FModuleData( Pair.Value, ID ) );
-			} else
-			{
+
+				if ( Pair.Value->ModuleAssignee->AssignedNames.Contains( Pair.Value->GetClass() ) ) {
+					FName ID = Pair.Value->ModuleAssignee->AssignedNames.FindRef( Pair.Value->GetClass() );
+					ModuleDataMap.Add( Pair.Key, FModuleData( Pair.Value, ID ) );
+				} else {
+					ModuleDataMap.Add( Pair.Key, FModuleData( true ) );
+				}
+			} else {
 				ModuleDataMap.Add( Pair.Key, FModuleData( true ) );
 			}
 		} else {
@@ -58,8 +62,25 @@ void ADataGrid::Training( bool bBeginPlay ) {
 	}
 }
 
+bool ADataGrid::SelectedCheck() {
+
+	if ( Errors.Num() > 0 ) return true;
+	if ( IsSelectedInEditor() ) return true;
+
+	TArray<AActor*> AttachedActors;
+	GetAttachedActors( AttachedActors );
+
+	for ( AActor* ChildActor : AttachedActors ) {
+		if ( ChildActor->IsSelectedInEditor() ) return true;
+	}
+
+	return false;
+}
+
 void ADataGrid::Tick( float DeltaTime ) {
 	Super::Tick( DeltaTime );
+
+	bEnabled = SelectedCheck();
 
 	if ( !bEnabled ) return;
 

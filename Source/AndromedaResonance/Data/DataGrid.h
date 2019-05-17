@@ -35,6 +35,9 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "Grid Settings" )
 		TMap<FIntVector, int32> PatternLocations;
 
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Grid Settings" )
+		int32 Weight = 100;
+
 	UPROPERTY ( EditAnywhere, BlueprintReadWrite, Category = "Grid Debug")
 		TArray<FModuleMatrix> RotatedPatterns;
 
@@ -82,5 +85,7 @@ private:
 	void UpdateMatrix();
 
 	void FillEmptyData();
+
+	bool SelectedCheck();
 
 };

@@ -19,21 +19,15 @@ void AModuleAssignee::BeginPlay() {
 
 	SetActorTickEnabled( false );
 
-	bEnabled = true;
-
 	Training();
 
 }
 
 void AModuleAssignee::Tick( float DeltaTime ) {
 	Super::Tick( DeltaTime );
-
-	Training();
-
 }
 
 void AModuleAssignee::Training() {
-	if ( !bEnabled ) return;
 
 	AssignedNames.Empty();
 	Patterns.Empty();
@@ -55,25 +49,33 @@ void AModuleAssignee::Training() {
 			}
 		}
 
+		int32 DataGridCount = 0;
 		for ( TActorIterator<ADataGrid> ActorItr( World ); ActorItr; ++ActorItr ) {
 			ADataGrid* DataGrid = *ActorItr;
 
 			if ( DataGrid ) {
 				DataGrid->ModuleAssignee = this;
 				DataGrid->Training( true );
+
+				DataGrid->SetActorLabel( FString::FromInt( DataGridCount ) );
+
+				DataGridCount++;
 			}
 		}
 
 		for ( TActorIterator<ADataGrid> ActorItr( World ); ActorItr; ++ActorItr ) {
 			ADataGrid* DataGrid = *ActorItr;
 
-			FModuleMatrix& CopyModuleData = DataGrid->ModuleData;
+			if ( DataGrid ) {
+				FModuleMatrix& CopyModuleData = DataGrid->ModuleData;
 
-			for ( int32 i = 0; i < 4; i++ ) {
-				FModuleMatrix RotationCopy = CopyModuleData;
-				RotationCopy.RotateCounterClockwise( i );
-				Patterns.Add( Patterns.Num(), RotationCopy );
+				for ( int32 i = 0; i < 4; i++ ) {
+					FModuleMatrix RotationCopy = CopyModuleData;
+					RotationCopy.RotateCounterClockwise( i );
 
+					Patterns.Add( Patterns.Num(), RotationCopy );
+					Weights.Add( Patterns.Num() - 1, DataGrid->Weight );
+				}
 			}
 		}
 
@@ -94,14 +96,8 @@ void AModuleAssignee::Training() {
 		}
 
 		for ( auto& Pattern : Patterns ) {
-
-			if ( !Weights.Contains( Pattern.Key ) ) {
-				Weights.Add( Pattern.Key, FMath::RandRange(1, 100) );
-			}
-
 			Pattern.Value.BuildPropagator( Patterns );
 		}
-
 	}
 }
 
