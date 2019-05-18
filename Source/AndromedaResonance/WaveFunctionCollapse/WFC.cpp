@@ -40,35 +40,7 @@ void AWFC::Tick( float DeltaTime ) {
 	}
 }
 
-void AWFC::CalculatePrimeNumbers() {
-	//Performing the prime numbers calculations in the game thread...
-
-	ThreadingTest::CalculatePrimeNumbers( MaxPrime );
-
-	GLog->Log( "--------------------------------------------------------------------" );
-	GLog->Log( "End of prime numbers calculation on game thread" );
-	GLog->Log( "--------------------------------------------------------------------" );
-
-}
-
-void AWFC::CalculatePrimeNumbersAsync()
-{
-	/*Create a new Task and pass as a parameter our MaxPrime
-	Then, tell that Task to execute in the background.
-
-	The FAutoDeleteAsyncTask will make sure to delete the task when it's finished.
-
-	Multithreading requires cautious handle of the available threads, in order to avoid
-	race conditions and strange bugs that are not easy to solve
-
-	Fortunately, UE4 contains a class (FAutoDeleteAsyncTask) which handles everything by itself
-	and the programmer is able to perform async operations without any real effort.*/
-
-	( new FAutoDeleteAsyncTask<PrimeCalculationAsyncTask>( MaxPrime ) )->StartBackgroundTask();
-}
-
 void AWFC::Initialize() {
-
 	for ( auto& Spawned : SpawnedComponents ) {
 		if ( Spawned ) {
 			if ( Spawned->IsValidLowLevel() ) {
@@ -92,12 +64,11 @@ void AWFC::Initialize() {
 	Wave = FWaveMatrix( OutputSize );
 
 	TMap<int32, bool> InitMap;
+	HasModule.Empty();
 
 	for ( auto& Pattern : ModuleAssignee->Patterns ) {
 		InitMap.Add( Pattern.Key, true );
 	}
-
-	UE_LOG( LogTemp, Warning, TEXT( "InitMap %d" ), InitMap.Num() );
 
 	for3( OutputSize.X, OutputSize.Y, OutputSize.Z,
 		  {
@@ -105,18 +76,18 @@ void AWFC::Initialize() {
 		  }
 	)
 
-	for3( OutputSize.X, OutputSize.Y, OutputSize.Z,
-		{
-			FCoefficient WaveDataAtCoord = Wave.GetDataAt( FIntVector( X, Y, Z ) );
+		for3( OutputSize.X, OutputSize.Y, OutputSize.Z,
+			  {
+				  FCoefficient WaveDataAtCoord = Wave.GetDataAt( FIntVector( X, Y, Z ) );
 
-			if ( WaveDataAtCoord.AllowedCount() == 0 ) {
-				UE_LOG( LogTemp, Error, TEXT( "Invalid construction in WFC... Retrying!" ) );
-				Initialize();
-			}
-		}
-	)
+				  if ( WaveDataAtCoord.AllowedCount() == 0 ) {
+					  UE_LOG( LogTemp, Error, TEXT( "Invalid construction in WFC... Retrying!" ) );
+					  Initialize();
+				  }
+			  }
+		)
 
-	bInitialized = true;
+			  bInitialized = true;
 }
 
 void AWFC::Observe( FIntVector ObserveValue, int32 Selected = -1 ) {
@@ -148,6 +119,11 @@ void AWFC::Observe( FIntVector ObserveValue, int32 Selected = -1 ) {
 	Propagate();
 }
 
+void AWFC::CreateFromJson( FString JsonObjectString )
+{
+	
+}
+
 void AWFC::Propagate() {
 
 	Updated.Empty();
@@ -171,18 +147,18 @@ void AWFC::Propagate() {
 }
 
 void AWFC::Constrain( FIntVector Coord ) {
-	TMap<EOrientations, FPatternIndexArray> NewValidData; 
+	TMap<EOrientations, FPatternIndexArray> NewValidData;
 
-	for ( auto& Direction : UOrientations::OrientationUnitVectors ) { 
+	for ( auto& Direction : UOrientations::OrientationUnitVectors ) {
 
-		if ( Direction.Key == EOrientations::NONE ) continue; 
+		if ( Direction.Key == EOrientations::NONE ) continue;
 
-		FIntVector NeighbourCoord = Coord + Direction.Value; 
+		FIntVector NeighbourCoord = Coord + Direction.Value;
 
-		if ( Wave.IsValidCoordinate( NeighbourCoord ) ) { 
-			for ( auto& AllowedPattern : Wave.GetDataAt( NeighbourCoord ).AllowedPatterns ) { 
-				if ( AllowedPattern.Value ) { 
-					FModulePropagator AllowedPatternByPropagator = ModuleAssignee->Patterns.FindRef( AllowedPattern.Key ).Propagator.FindRef( Direction.Value * -1 ); 
+		if ( Wave.IsValidCoordinate( NeighbourCoord ) ) {
+			for ( auto& AllowedPattern : Wave.GetDataAt( NeighbourCoord ).AllowedPatterns ) {
+				if ( AllowedPattern.Value ) {
+					FModulePropagator AllowedPatternByPropagator = ModuleAssignee->Patterns.FindRef( AllowedPattern.Key ).Propagator.FindRef( Direction.Value * -1 );
 
 					if ( NewValidData.Contains( Direction.Key ) ) {
 						FPatternIndexArray ValidHashSet = NewValidData.FindRef( Direction.Key );
@@ -199,23 +175,23 @@ void AWFC::Constrain( FIntVector Coord ) {
 							ValidHashSet.Array.AddUnique( Pattern );
 						}
 
-						NewValidData.Add( Direction.Key, ValidHashSet ); 
+						NewValidData.Add( Direction.Key, ValidHashSet );
 					}
 				}
 			}
 		}
 	}
 
-	TMap<int32, int32> PatternCounts; 
+	TMap<int32, int32> PatternCounts;
 
 	for ( auto& ValidData : NewValidData ) {
 		for ( int32 PatternIndex : ValidData.Value.Array ) {
 			if ( PatternCounts.Contains( PatternIndex ) ) {
-				int32 Count = PatternCounts.FindRef( PatternIndex ); 
-				Count++; 
+				int32 Count = PatternCounts.FindRef( PatternIndex );
+				Count++;
 				PatternCounts.Add( PatternIndex, Count );
-			} else { 
-				PatternCounts.Add( PatternIndex, 0 ); 
+			} else {
+				PatternCounts.Add( PatternIndex, 0 );
 			}
 		}
 	}
@@ -276,14 +252,16 @@ void AWFC::SpawnMod( FIntVector Coord, int32 Selected ) {
 
 			for3( SelectedPattern.SizeX, SelectedPattern.SizeY, SelectedPattern.SizeZ,
 				  {
-					  if (Wave.IsValidCoordinate(Coord + FIntVector(X,Y,Z)) ) {
+					  const FIntVector CoordAndPatternCoord = Coord + FIntVector( X,Y,Z );
+					  if ( Wave.IsValidCoordinate( CoordAndPatternCoord ) && !HasModule.Contains( CoordAndPatternCoord ) ) {
 							const FModuleData SelectedPatternData = SelectedPattern.GetDataAt( FIntVector( X, Y, Z ) );
 
-							UChildActorComponent* NewChild = UWaveFunctionLibrary::CreateModule( GetWorld(), SelectedPatternData, this, GetActorLocation() + (FVector( Coord ) * 1000) + (FVector(X,Y,Z) * 1000) );
+							UChildActorComponent* NewChild = UWaveFunctionLibrary::CreateModule( GetWorld(), SelectedPatternData, this, GetActorLocation() + ( FVector( Coord ) * 1000 ) + ( FVector( X,Y,Z ) * 1000 ) );
 							SpawnedComponents.Add( NewChild );
+							HasModule.Add( CoordAndPatternCoord, true );
 					  }
-				}
-		})
+				  }
+		} )
 	}
 }
 
@@ -294,7 +272,7 @@ bool AWFC::IsFullyCollapsed() {
 		  {
 				FCoefficient WaveDataAtCoord = Wave.GetDataAt( FIntVector( X, Y, Z ) );
 
-				if ( WaveDataAtCoord.AllowedCount() == 0) {
+				if ( WaveDataAtCoord.AllowedCount() == 0 ) {
 					UE_LOG( LogTemp, Error, TEXT( "Invalid construction in WFC... Retrying!" ) );
 
 					Initialize();
@@ -307,7 +285,7 @@ bool AWFC::IsFullyCollapsed() {
 		  }
 	)
 
-	return AllowedCount > 1 ? false : true;
+		return AllowedCount > 1 ? false : true;
 }
 
 void AWFC::StartWFC() {

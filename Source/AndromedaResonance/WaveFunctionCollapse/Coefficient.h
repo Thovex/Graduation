@@ -29,19 +29,16 @@ public:
 	}
 
 	int32 LastAllowedPatternIndex() {
-		//if ( AllowedCount() == 1 ) {
-			for( auto& Pair : AllowedPatterns ) {
-				if ( Pair.Value ) {
-					return Pair.Key;
-				}
+		for ( auto& Pair : AllowedPatterns ) {
+			if ( Pair.Value ) {
+				return Pair.Key;
 			}
-		//}
+		}
 
 		return -1;
 	}
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Coefficient" )
 		TMap<int32, bool> AllowedPatterns;
-
 
 };
