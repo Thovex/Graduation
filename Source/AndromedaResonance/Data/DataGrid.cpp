@@ -38,7 +38,7 @@ void ADataGrid::SetMatrix( FIntVector Size ) {
 			ModuleDataMap.Add( Pair.Key, FModuleData( true ) );
 		}
 	}
-
+		
 	NewModuleMatrix.Initialize( ModuleDataMap );
 
 	ModuleData = NewModuleMatrix;

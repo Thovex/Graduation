@@ -40,6 +40,33 @@ void AWFC::Tick( float DeltaTime ) {
 	}
 }
 
+void AWFC::CalculatePrimeNumbers() {
+	//Performing the prime numbers calculations in the game thread...
+
+	ThreadingTest::CalculatePrimeNumbers( MaxPrime );
+
+	GLog->Log( "--------------------------------------------------------------------" );
+	GLog->Log( "End of prime numbers calculation on game thread" );
+	GLog->Log( "--------------------------------------------------------------------" );
+
+}
+
+void AWFC::CalculatePrimeNumbersAsync()
+{
+	/*Create a new Task and pass as a parameter our MaxPrime
+	Then, tell that Task to execute in the background.
+
+	The FAutoDeleteAsyncTask will make sure to delete the task when it's finished.
+
+	Multithreading requires cautious handle of the available threads, in order to avoid
+	race conditions and strange bugs that are not easy to solve
+
+	Fortunately, UE4 contains a class (FAutoDeleteAsyncTask) which handles everything by itself
+	and the programmer is able to perform async operations without any real effort.*/
+
+	( new FAutoDeleteAsyncTask<PrimeCalculationAsyncTask>( MaxPrime ) )->StartBackgroundTask();
+}
+
 void AWFC::Initialize() {
 
 	for ( auto& Spawned : SpawnedComponents ) {
@@ -144,62 +171,52 @@ void AWFC::Propagate() {
 }
 
 void AWFC::Constrain( FIntVector Coord ) {
-	TMap<EOrientations, FPatternIndexArray> NewValidData; // +
+	TMap<EOrientations, FPatternIndexArray> NewValidData; 
 
-	for ( auto& Direction : UOrientations::OrientationUnitVectors ) { // +
+	for ( auto& Direction : UOrientations::OrientationUnitVectors ) { 
 
-		if ( Direction.Key == EOrientations::NONE ) continue; // +
+		if ( Direction.Key == EOrientations::NONE ) continue; 
 
-		FIntVector NeighbourCoord = Coord + Direction.Value; // +
+		FIntVector NeighbourCoord = Coord + Direction.Value; 
 
-		if ( Wave.IsValidCoordinate( NeighbourCoord ) ) { // +
-			for ( auto& AllowedPattern : Wave.GetDataAt( NeighbourCoord ).AllowedPatterns ) { //+
-				if ( AllowedPattern.Value ) { // +
-					FModulePropagator AllowedPatternByPropagator = ModuleAssignee->Patterns.FindRef( AllowedPattern.Key ).Propagator.FindRef( Direction.Value * -1 ); // ?
+		if ( Wave.IsValidCoordinate( NeighbourCoord ) ) { 
+			for ( auto& AllowedPattern : Wave.GetDataAt( NeighbourCoord ).AllowedPatterns ) { 
+				if ( AllowedPattern.Value ) { 
+					FModulePropagator AllowedPatternByPropagator = ModuleAssignee->Patterns.FindRef( AllowedPattern.Key ).Propagator.FindRef( Direction.Value * -1 ); 
 
-					if ( NewValidData.Contains( Direction.Key ) ) {//+
-						FPatternIndexArray ValidHashSet = NewValidData.FindRef( Direction.Key );//+
+					if ( NewValidData.Contains( Direction.Key ) ) {
+						FPatternIndexArray ValidHashSet = NewValidData.FindRef( Direction.Key );
 
-						for ( auto& Pattern : AllowedPatternByPropagator.Array ) {//+
-							ValidHashSet.Array.AddUnique( Pattern );//+
+						for ( auto& Pattern : AllowedPatternByPropagator.Array ) {
+							ValidHashSet.Array.AddUnique( Pattern );
 						}
 
-						NewValidData.Add( Direction.Key, ValidHashSet );//+
-					} else {//+
-						FPatternIndexArray ValidHashSet = FPatternIndexArray();//+
+						NewValidData.Add( Direction.Key, ValidHashSet );
+					} else {
+						FPatternIndexArray ValidHashSet = FPatternIndexArray();
 
-						for ( auto& Pattern : AllowedPatternByPropagator.Array ) {//+
-							ValidHashSet.Array.AddUnique( Pattern );//+
+						for ( auto& Pattern : AllowedPatternByPropagator.Array ) {
+							ValidHashSet.Array.AddUnique( Pattern );
 						}
 
-						NewValidData.Add( Direction.Key, ValidHashSet ); //+
+						NewValidData.Add( Direction.Key, ValidHashSet ); 
 					}
-
-
-					// 					FPatternIndexArray NewValidDataValue = NewValidData.FindOrAdd( Direction.Key );
-					// 					for ( int32 PatternIndex : AllowedPatternByPropagator.Array ) {
-					// 						NewValidDataValue.Array.AddUnique( PatternIndex );
-					// 					}
-					// 					NewValidData.Add( Direction.Key, NewValidDataValue );
 				}
 			}
 		}
 	}
 
-	TMap<int32, int32> PatternCounts; //+
+	TMap<int32, int32> PatternCounts; 
 
-	for ( auto& ValidData : NewValidData ) { //+
-		for ( int32 PatternIndex : ValidData.Value.Array ) { //+
-			if ( PatternCounts.Contains( PatternIndex ) ) { //+
-				int32 Count = PatternCounts.FindRef( PatternIndex ); //+
-				Count++; //+
-				PatternCounts.Add( PatternIndex, Count ); //+
-			} else { //+
-				PatternCounts.Add( PatternIndex, 0 ); //+
-			} //+
-
-			// 			int32 CountValue = PatternCounts.FindOrAdd( PatternIndex ) + 1;
-			// 			PatternCounts.Add( PatternIndex, CountValue );
+	for ( auto& ValidData : NewValidData ) {
+		for ( int32 PatternIndex : ValidData.Value.Array ) {
+			if ( PatternCounts.Contains( PatternIndex ) ) {
+				int32 Count = PatternCounts.FindRef( PatternIndex ); 
+				Count++; 
+				PatternCounts.Add( PatternIndex, Count );
+			} else { 
+				PatternCounts.Add( PatternIndex, 0 ); 
+			}
 		}
 	}
 
