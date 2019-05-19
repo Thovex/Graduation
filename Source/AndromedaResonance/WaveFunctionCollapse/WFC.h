@@ -10,14 +10,13 @@
 #include "Runtime/Engine/Classes/Components/TextRenderComponent.h"
 #include "WFC.generated.h"
 
-USTRUCT(BlueprintType)
-struct FPatternIndexArray
-{
+USTRUCT( BlueprintType )
+struct FPatternIndexArray {
 
 	GENERATED_USTRUCT_BODY()
 
 public:
-	FPatternIndexArray() { };
+	FPatternIndexArray() {};
 
 	UPROPERTY()
 		TArray<int32> Array;
@@ -28,40 +27,43 @@ class ANDROMEDARESONANCE_API AWFC : public AEditorTickActor {
 	GENERATED_BODY()
 
 public:
-	AWFC(const FObjectInitializer& ObjectInitializer);
+	AWFC( const FObjectInitializer& ObjectInitializer );
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Transform")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
 		USceneComponent* Transform;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WFC")
-		FIntVector OutputSize = FIntVector(5, 5, 5);
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "WFC" )
+		FIntVector OutputSize = FIntVector( 5, 5, 5 );
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WFC")
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "WFC" )
 		AModuleAssignee* ModuleAssignee;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WFC")
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "WFC" )
 		FWaveMatrix Wave;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "WFC" )
 		bool bInitialized = false;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawned")
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Spawned" )
 		TArray<UChildActorComponent*> SpawnedComponents;
 
 
 public:
 
-	UFUNCTION(BlueprintCallable, Category = "WFC")
+	UFUNCTION( BlueprintCallable, Category = "WFC" )
 		void Initialize();
-	
+
 	UFUNCTION( BlueprintCallable, Category = "WFC" )
 		void StartWFC();
 
-	UFUNCTION(BlueprintCallable, Category = "WFC" )
+	UFUNCTION( BlueprintCallable, Category = "WFC" )
 		void Observe( FIntVector ObserveValue, int32 Selected );
 
-	UFUNCTION(BlueprintCallable, Category = "WFC" )
-		void CreateFromJson(FWaveMatrix JsonWave );
+	UFUNCTION( BlueprintCallable, Category = "WFC" )
+		void CreateFromJson( FWaveMatrix JsonWave );
+
+	UFUNCTION( BlueprintCallable, Category = "WFC" )
+		void FillInitialData( FWaveMatrix JsonWave );
 
 	UFUNCTION( BlueprintCallable, Category = "WFC" )
 		FIntVector MinEntropyCoords();
@@ -69,7 +71,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick( float DeltaTime ) override;
 
 private:
 	TArray<FIntVector> Flag;
@@ -79,13 +81,13 @@ private:
 
 private:
 	void Propagate();
-	void Constrain(FIntVector Coord);
+	void Constrain( FIntVector Coord );
 
-	void SpawnMod(FIntVector Coord, int32 Selected);
+	void SpawnMod( FIntVector Coord, int32 Selected );
 
 	bool IsFullyCollapsed();
 
-	int32 GetWeightedPattern(TMap<int32, bool> InPatterns);
-	float ShannonEntropy(FIntVector CurrentCoordinates);
+	int32 GetWeightedPattern( TMap<int32, bool> InPatterns );
+	float ShannonEntropy( FIntVector CurrentCoordinates );
 
 };

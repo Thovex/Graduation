@@ -12,6 +12,14 @@ struct FCoefficient {
 public:
 	FCoefficient() {}
 
+	FCoefficient( int32 AllowedPattern)
+	{
+		TMap<int32, bool> NewAllowedPatterns;
+		NewAllowedPatterns.Add(AllowedPattern, true);
+
+		this->AllowedPatterns = NewAllowedPatterns;
+	}
+
 	FCoefficient( TMap<int32, bool> AllowedPatterns ) {
 		this->AllowedPatterns = AllowedPatterns;
 	}

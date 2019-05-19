@@ -76,18 +76,18 @@ void AWFC::Initialize() {
 		  }
 	)
 
-		for3( OutputSize.X, OutputSize.Y, OutputSize.Z,
-			  {
-				  FCoefficient WaveDataAtCoord = Wave.GetDataAt( FIntVector( X, Y, Z ) );
+	for3( OutputSize.X, OutputSize.Y, OutputSize.Z,
+		{
+			FCoefficient WaveDataAtCoord = Wave.GetDataAt( FIntVector( X, Y, Z ) );
 
-				  if ( WaveDataAtCoord.AllowedCount() == 0 ) {
-					  UE_LOG( LogTemp, Error, TEXT( "Invalid construction in WFC... Retrying!" ) );
-					  Initialize();
-				  }
-			  }
-		)
+			if ( WaveDataAtCoord.AllowedCount() == 0 ) {
+				UE_LOG( LogTemp, Error, TEXT( "Invalid construction in WFC... Retrying!" ) );
+				Initialize();
+			}
+		}
+	)
 
-			  bInitialized = true;
+	bInitialized = true;
 }
 
 void AWFC::Observe( FIntVector ObserveValue, int32 Selected = -1 ) {
@@ -127,9 +127,24 @@ void AWFC::CreateFromJson( FWaveMatrix JsonWave )
 	for3 ( OutputSize.X, OutputSize.Y, OutputSize.Z, {
 		FIntVector Coord = FIntVector( X,Y,Z );
 		SpawnMod(Coord, JsonWave.GetDataAt(Coord).LastAllowedPatternIndex());
-
-		UE_LOG( LogTemp, Warning, TEXT( "%s" ), *Coord.ToString());
 	})
+}
+
+void AWFC::FillInitialData( FWaveMatrix JsonWave)
+{
+	Initialize();
+
+	for3( JsonWave.SizeX, JsonWave.SizeY, JsonWave.SizeZ, {
+		FIntVector Coord = FIntVector( X,Y,Z );
+
+		if ( JsonWave.GetDataAt( Coord ).LastAllowedPatternIndex() != -1) {
+			Wave.AddData(Coord, FCoefficient( JsonWave.GetDataAt(Coord).LastAllowedPatternIndex()));
+			SpawnMod( Coord, JsonWave.GetDataAt( Coord ).LastAllowedPatternIndex() );
+			Flag.Push(Coord);
+		}
+	} )
+
+	Propagate();
 }
 
 void AWFC::Propagate() {

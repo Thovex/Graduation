@@ -52,16 +52,20 @@ void AJsonExporter::ParseData( FWaveMatrix Wave, AModuleAssignee* ModuleAssignee
 	}
 }
 
-FWaveMatrix AJsonExporter::RetrieveDataFileName( FString FileName ) {
+FWaveMatrix AJsonExporter::RetrieveDataFileName( FString FileName, bool IsPresetData ) {
 
-	const FString LoadDirectory = FPaths::ProjectDir() + FString( "WFC_Data/" );
+	const FString LoadDirectory = FPaths::ProjectDir() + (IsPresetData ? FString( "WFC_PresetInput/" ) : FString( "WFC_Data/" ));
 	FString FileData = "";
 
-	FFileHelper::LoadFileToString( FileData, *FString( FPaths::ProjectDir() + FString( "WFC_Data/" ) + FileName ) );
+	FFileHelper::LoadFileToString( FileData, *FString( FPaths::ProjectDir() + ( IsPresetData ? FString( "WFC_PresetInput/" ) : FString( "WFC_Data/" ) ) + FileName ) );
+	return JsonToWave(FileData);
+}
 
+FWaveMatrix AJsonExporter::JsonToWave(FString JsonString)
+{
 	FWFCJsonStruct JsonStruct = FWFCJsonStruct();
 
-	FJsonObjectConverter::JsonObjectStringToUStruct( FileData, &JsonStruct, 0, 0 );
+	FJsonObjectConverter::JsonObjectStringToUStruct( JsonString, &JsonStruct, 0, 0 );
 
 	FWaveMatrix Wave = FWaveMatrix();
 
@@ -75,7 +79,6 @@ FWaveMatrix AJsonExporter::RetrieveDataFileName( FString FileName ) {
 	Wave.SetSize( Wave.CalculateSize() );
 
 	return Wave;
-
 }
 
 FWaveMatrix AJsonExporter::RetrieveDataRandom( FIntVector Size, FString & OutFileName ) {
@@ -110,21 +113,6 @@ FWaveMatrix AJsonExporter::RetrieveDataRandom( FIntVector Size, FString & OutFil
 	OutFileName = FileName;
 	FFileHelper::LoadFileToString( FileData, *FString( FileName ) );
 
-	FWFCJsonStruct JsonStruct = FWFCJsonStruct();
-
-	FJsonObjectConverter::JsonObjectStringToUStruct( FileData, &JsonStruct, 0, 0 );
-
-	FWaveMatrix Wave = FWaveMatrix();
-
-	for ( auto& Elem : JsonStruct.Data ) {
-		TMap<int32, bool> AllowedPatterns;
-		AllowedPatterns.Add( Elem.Value, true );
-
-		Wave.AddData( Elem.Coord, FCoefficient( AllowedPatterns ) );
-	}
-
-	Wave.SetSize( Wave.CalculateSize() );
-
-	return Wave;
+	return JsonToWave( FileData );
 }
 

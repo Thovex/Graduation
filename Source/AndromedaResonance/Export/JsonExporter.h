@@ -23,7 +23,10 @@ protected:
 		void ParseData( FWaveMatrix Wave, AModuleAssignee* ModuleAssignee );
 
 	UFUNCTION( BlueprintCallable )
-		FWaveMatrix RetrieveDataFileName( FString FileName );
+		FWaveMatrix RetrieveDataFileName( FString FileName, bool IsPresetData );
+
+	UFUNCTION( BlueprintCallable )
+		FWaveMatrix JsonToWave( FString JsonString );
 
 	UFUNCTION( BlueprintCallable )
 		FWaveMatrix RetrieveDataRandom(FIntVector Size, FString& OutFileName );
