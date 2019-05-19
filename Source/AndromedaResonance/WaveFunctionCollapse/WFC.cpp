@@ -132,11 +132,6 @@ void AWFC::CreateFromJson( FWaveMatrix JsonWave )
 	})
 }
 
-void AWFC::FillData( FWaveMatrix JwonWave)
-{
-	
-}
-
 void AWFC::Propagate() {
 
 	Updated.Empty();
