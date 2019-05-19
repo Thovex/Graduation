@@ -42,7 +42,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "WFC")
 		FWaveMatrix Wave;
 
-
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "WFC" )
 		bool bInitialized = false;
 
@@ -62,7 +61,7 @@ public:
 		void Observe( FIntVector ObserveValue, int32 Selected );
 
 	UFUNCTION(BlueprintCallable, Category = "WFC" )
-		void CreateFromJson(FString JsonObjectString);
+		void CreateFromJson(FWaveMatrix JsonWave );
 
 	UFUNCTION( BlueprintCallable, Category = "WFC" )
 		FIntVector MinEntropyCoords();
@@ -87,7 +86,6 @@ private:
 	bool IsFullyCollapsed();
 
 	int32 GetWeightedPattern(TMap<int32, bool> InPatterns);
-
 	float ShannonEntropy(FIntVector CurrentCoordinates);
 
 };

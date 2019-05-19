@@ -27,51 +27,103 @@ void AJsonExporter::ParseData( FWaveMatrix Wave, AModuleAssignee* ModuleAssignee
 		NewCoordMap.Value = Coefficient.LastAllowedPatternIndex();
 
 		JsonStruct.Data.Add( NewCoordMap );
-	} )
+		  } )
 
-	FString JsonString;
+		FString JsonString;
 
-	
-	FJsonObjectConverter::UStructToJsonObjectString( FWFCJsonStruct::StaticStruct(), &JsonStruct, JsonString, 0, 0 );
+		  FJsonObjectConverter::UStructToJsonObjectString( FWFCJsonStruct::StaticStruct(), &JsonStruct, JsonString, 0, 0 );
 
-	FString SaveDirectory = FPaths::ProjectDir() + FString( "WFC_Data/" );
+		  FString SaveDirectory = FPaths::ProjectDir() + FString( "WFC_Data/" );
 
-	FString FileName = FString( "WFC_" + FString::FromInt( Wave.SizeX ) + "x" + FString::FromInt( Wave.SizeY ) + "x" + FString::FromInt( Wave.SizeZ ) + "_" + FDateTime::Now().ToString() + ".json" );
-	FString TextToSave = JsonString;
-	
-	bool AllowOverwriting = false;
+		  FString FileName = FString( "WFC_" + FString::FromInt( Wave.SizeX ) + "x" + FString::FromInt( Wave.SizeY ) + "x" + FString::FromInt( Wave.SizeZ ) + "_" + FDateTime::Now().ToString() + ".json" );
+		  FString TextToSave = JsonString;
 
-	IPlatformFile & PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+		  bool AllowOverwriting = false;
 
-	if ( PlatformFile.CreateDirectoryTree( *SaveDirectory ) ) {
-		FString AbsoluteFilePath = SaveDirectory + "/" + FileName;
+		  IPlatformFile & PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
-		if ( AllowOverwriting || !PlatformFile.FileExists( *AbsoluteFilePath ) ) {
-			FFileHelper::SaveStringToFile( TextToSave, *AbsoluteFilePath );
-		}
-	}
+		  if ( PlatformFile.CreateDirectoryTree( *SaveDirectory ) ) {
+			  FString AbsoluteFilePath = SaveDirectory + "/" + FileName;
 
-	
+			  if ( AllowOverwriting || !PlatformFile.FileExists( *AbsoluteFilePath ) ) {
+				  FFileHelper::SaveStringToFile( TextToSave, *AbsoluteFilePath );
+			  }
+		  }
 }
 
-FString AJsonExporter::RetrieveDataFileName( FString FileName ) {
-	
-	FString LoadDirectory = FPaths::ProjectDir() + FString( "WFC_Data/" );
+FWaveMatrix AJsonExporter::RetrieveDataFileName( FString FileName ) {
+
+	const FString LoadDirectory = FPaths::ProjectDir() + FString( "WFC_Data/" );
 	FString FileData = "";
 
 	FFileHelper::LoadFileToString( FileData, *FString( FPaths::ProjectDir() + FString( "WFC_Data/" ) + FileName ) );
 
-	return FileData;
+	FWFCJsonStruct JsonStruct = FWFCJsonStruct();
 
-	
+	FJsonObjectConverter::JsonObjectStringToUStruct( FileData, &JsonStruct, 0, 0 );
+
+	FWaveMatrix Wave = FWaveMatrix();
+
+	for ( auto& Elem : JsonStruct.Data ) {
+		TMap<int32, bool> AllowedPatterns;
+		AllowedPatterns.Add( Elem.Value, true );
+
+		Wave.AddData( Elem.Coord, FCoefficient( AllowedPatterns ) );
+	}
+
+	Wave.SetSize( Wave.CalculateSize() );
+
+	return Wave;
+
 }
 
-FString AJsonExporter::RetrieveDataRandom() {
-	return FString();
+FWaveMatrix AJsonExporter::RetrieveDataRandom( FIntVector Size, FString & OutFileName ) {
+	const FString LoadDirectory = FPaths::ProjectDir() + FString( "WFC_Data/" );
+	FString FileData = "";
+
+	TArray<FString> FileNames;
+
+	IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	PlatformFile.FindFiles( FileNames, *LoadDirectory, NULL );
+
+	FString FileName = "";
+
+	if ( Size.X > 0 || Size.Y > 0 || Size.Z > 0 ) {
+		TArray<FString> FileNamesMatchingSize;
+
+		for ( auto& LocalFileName : FileNames ) {
+			if ( LocalFileName.Contains( FString::FromInt( Size.X ) + "x" + FString::FromInt( Size.Y ) + "X" + FString::FromInt( Size.Z ) ) ) {
+				FileNamesMatchingSize.Add( LocalFileName );
+			}
+		}
+
+		if ( FileNamesMatchingSize.Num() > 0 ) {
+			FileName = FileNamesMatchingSize[FMath::RandRange( 0, FileNamesMatchingSize.Num() - 1 )];
+		} else {
+			UE_LOG( LogTemp, Error, TEXT( "No json found with size: %s" ), *Size.ToString() );
+		}
+	} else {
+		FileName = FileNames[FMath::RandRange( 0, FileNames.Num() - 1 )];
+	}
+
+	OutFileName = FileName;
+	FFileHelper::LoadFileToString( FileData, *FString( FileName ) );
+
+	FWFCJsonStruct JsonStruct = FWFCJsonStruct();
+
+	FJsonObjectConverter::JsonObjectStringToUStruct( FileData, &JsonStruct, 0, 0 );
+
+	FWaveMatrix Wave = FWaveMatrix();
+
+	for ( auto& Elem : JsonStruct.Data ) {
+		TMap<int32, bool> AllowedPatterns;
+		AllowedPatterns.Add( Elem.Value, true );
+
+		Wave.AddData( Elem.Coord, FCoefficient( AllowedPatterns ) );
+	}
+
+	Wave.SetSize( Wave.CalculateSize() );
+
+	return Wave;
 }
-
-void AJsonExporter::RetrieveData() {
-
-}
-
 

@@ -47,6 +47,13 @@ public:
 		this->SizeZ = Z;
 	}
 
+	void SetSize( const FIntVector Size ) {
+		this->SizeX = Size.X;
+		this->SizeY = Size.Y;
+		this->SizeZ = Size.Z;
+	}
+
+
 	// SEMI CHECKED
 	bool IsValidCoordinate( const FIntVector Coord ) {
 		if ( Coord.X < 0 ) return false;
@@ -59,7 +66,18 @@ public:
 		if ( Coord.Z >= SizeZ ) return false;
 
 		return true;
+	}
 
+	FIntVector CalculateSize() {
+		FIntVector Size = FIntVector( 0, 0, 0 );
+
+		for ( auto& Pair : Array3D ) {
+			if ( Pair.Key.X >Size.X ) Size.X = Pair.Key.X;
+			if ( Pair.Key.Y > Size.Y ) Size.Y = Pair.Key.Y;
+			if ( Pair.Key.Z > Size.Z ) Size.Z = Pair.Key.Z;
+		}
+
+		return Size;
 	}
 
 	FCoefficient GetDataAt( const FIntVector Coord ) {

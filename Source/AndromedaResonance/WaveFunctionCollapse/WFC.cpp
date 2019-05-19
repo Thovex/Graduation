@@ -119,9 +119,15 @@ void AWFC::Observe( FIntVector ObserveValue, int32 Selected = -1 ) {
 	Propagate();
 }
 
-void AWFC::CreateFromJson( FString JsonObjectString )
+void AWFC::CreateFromJson( FWaveMatrix JsonWave )
 {
-	
+	OutputSize = FIntVector(JsonWave.SizeX + 1, JsonWave.SizeY + 1, JsonWave.SizeZ + 1 );
+	Initialize();
+
+	for3 ( JsonWave.SizeX, JsonWave.SizeY, JsonWave.SizeZ, {
+		FIntVector Coord = FIntVector( X,Y,Z );
+		SpawnMod(Coord, JsonWave.GetDataAt(Coord).LastAllowedPatternIndex());
+	})
 }
 
 void AWFC::Propagate() {

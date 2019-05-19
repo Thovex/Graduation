@@ -23,11 +23,9 @@ protected:
 		void ParseData( FWaveMatrix Wave, AModuleAssignee* ModuleAssignee );
 
 	UFUNCTION( BlueprintCallable )
-		FString RetrieveDataFileName( FString FileName );
+		FWaveMatrix RetrieveDataFileName( FString FileName );
 
 	UFUNCTION( BlueprintCallable )
-		FString RetrieveDataRandom();
+		FWaveMatrix RetrieveDataRandom(FIntVector Size, FString& OutFileName );
 
-private:
-	void RetrieveData();
 };
