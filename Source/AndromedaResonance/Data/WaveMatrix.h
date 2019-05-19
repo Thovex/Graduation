@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Macros.h"
 #include "WaveFunctionCollapse/Coefficient.h"
+#include "ModuleData.h"
 #include "WaveMatrix.generated.h"
 
 /**
@@ -52,7 +53,6 @@ public:
 		this->SizeY = Size.Y;
 		this->SizeZ = Size.Z;
 	}
-
 
 	// SEMI CHECKED
 	bool IsValidCoordinate( const FIntVector Coord ) {

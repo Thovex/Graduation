@@ -191,9 +191,9 @@ public:
 			  CopyData.Add( FIntVector( X, Y, Z ), FModuleData( true ) );
 			}
 
-			  } )
+		} )
 
-			Array3D = CopyData;
+		Array3D = CopyData;
 	}
 
 	// CHECKED

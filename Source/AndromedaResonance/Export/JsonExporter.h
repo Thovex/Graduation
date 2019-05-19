@@ -23,7 +23,13 @@ protected:
 		void ParseData( FWaveMatrix Wave, AModuleAssignee* ModuleAssignee );
 
 	UFUNCTION( BlueprintCallable )
+		FString ParseDataLocal(FWaveMatrix Wave, AModuleAssignee* ModuleAssignee);
+
+	UFUNCTION( BlueprintCallable )
 		FWaveMatrix RetrieveDataFileName( FString FileName, bool IsPresetData );
+
+	UFUNCTION ( BlueprintCallable )
+		FWaveMatrix GetWaveSide( FWaveMatrix OriginalWave, EOrientations Side );
 
 	UFUNCTION( BlueprintCallable )
 		FWaveMatrix JsonToWave( FString JsonString );
