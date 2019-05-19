@@ -27,28 +27,29 @@ void AJsonExporter::ParseData( FWaveMatrix Wave, AModuleAssignee* ModuleAssignee
 		NewCoordMap.Value = Coefficient.LastAllowedPatternIndex();
 
 		JsonStruct.Data.Add( NewCoordMap );
-		  } )
+	} )
+	
 
-		FString JsonString;
+	FString JsonString;
 
-		  FJsonObjectConverter::UStructToJsonObjectString( FWFCJsonStruct::StaticStruct(), &JsonStruct, JsonString, 0, 0 );
+	FJsonObjectConverter::UStructToJsonObjectString( FWFCJsonStruct::StaticStruct(), &JsonStruct, JsonString, 0, 0 );
 
-		  FString SaveDirectory = FPaths::ProjectDir() + FString( "WFC_Data/" );
+	FString SaveDirectory = FPaths::ProjectDir() + FString( "WFC_Data/" );
 
-		  FString FileName = FString( "WFC_" + FString::FromInt( Wave.SizeX ) + "x" + FString::FromInt( Wave.SizeY ) + "x" + FString::FromInt( Wave.SizeZ ) + "_" + FDateTime::Now().ToString() + ".json" );
-		  FString TextToSave = JsonString;
+	FString FileName = FString( "WFC_" + FString::FromInt( Wave.SizeX ) + "x" + FString::FromInt( Wave.SizeY ) + "x" + FString::FromInt( Wave.SizeZ ) + "_" + FDateTime::Now().ToString() + ".json" );
+	FString TextToSave = JsonString;
 
-		  bool AllowOverwriting = false;
+	bool AllowOverwriting = false;
 
-		  IPlatformFile & PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+	IPlatformFile & PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
 
-		  if ( PlatformFile.CreateDirectoryTree( *SaveDirectory ) ) {
-			  FString AbsoluteFilePath = SaveDirectory + "/" + FileName;
+	if ( PlatformFile.CreateDirectoryTree( *SaveDirectory ) ) {
+		FString AbsoluteFilePath = SaveDirectory + "/" + FileName;
 
-			  if ( AllowOverwriting || !PlatformFile.FileExists( *AbsoluteFilePath ) ) {
-				  FFileHelper::SaveStringToFile( TextToSave, *AbsoluteFilePath );
-			  }
-		  }
+		if ( AllowOverwriting || !PlatformFile.FileExists( *AbsoluteFilePath ) ) {
+			FFileHelper::SaveStringToFile( TextToSave, *AbsoluteFilePath );
+		}
+	}
 }
 
 FWaveMatrix AJsonExporter::RetrieveDataFileName( FString FileName ) {

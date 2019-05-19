@@ -72,10 +72,12 @@ public:
 		FIntVector Size = FIntVector( 0, 0, 0 );
 
 		for ( auto& Pair : Array3D ) {
-			if ( Pair.Key.X >Size.X ) Size.X = Pair.Key.X;
+			if ( Pair.Key.X > Size.X ) Size.X = Pair.Key.X;
 			if ( Pair.Key.Y > Size.Y ) Size.Y = Pair.Key.Y;
 			if ( Pair.Key.Z > Size.Z ) Size.Z = Pair.Key.Z;
 		}
+
+		Size += FIntVector( 1, 1, 1 );
 
 		return Size;
 	}
