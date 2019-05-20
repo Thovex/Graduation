@@ -76,18 +76,12 @@ void AWFC::Initialize() {
 		  }
 	)
 
-	for3( OutputSize.X, OutputSize.Y, OutputSize.Z,
-		{
-			FCoefficient WaveDataAtCoord = Wave.GetDataAt( FIntVector( X, Y, Z ) );
-
-			if ( WaveDataAtCoord.AllowedCount() == 0 ) {
-				UE_LOG( LogTemp, Error, TEXT( "Invalid construction in WFC... Retrying!" ) );
-				Initialize();
-			}
-		}
-	)
-
 	bInitialized = true;
+
+	if ( HasPreInitializedData )
+	{
+		FillInitialData( PreInitializedWave );
+	}
 }
 
 void AWFC::Observe( FIntVector ObserveValue, int32 Selected = -1 ) {
@@ -132,7 +126,8 @@ void AWFC::CreateFromJson( FWaveMatrix JsonWave )
 
 void AWFC::FillInitialData( FWaveMatrix JsonWave)
 {
-	Initialize();
+	HasPreInitializedData = true;
+	PreInitializedWave = JsonWave;
 
 	for3( JsonWave.SizeX, JsonWave.SizeY, JsonWave.SizeZ, {
 		FIntVector Coord = FIntVector( X,Y,Z );

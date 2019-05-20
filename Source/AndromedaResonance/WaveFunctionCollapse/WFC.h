@@ -79,6 +79,9 @@ private:
 
 	TMap<FIntVector, bool> HasModule;
 
+	bool HasPreInitializedData = false;
+	FWaveMatrix PreInitializedWave;
+
 private:
 	void Propagate();
 	void Constrain( FIntVector Coord );

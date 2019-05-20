@@ -57,20 +57,22 @@ FString AJsonExporter::ParseDataLocal( FWaveMatrix Wave, AModuleAssignee* Module
 
 	FWFCJsonStruct JsonStruct = FWFCJsonStruct();
 
-	for3( Wave.SizeX, Wave.SizeY, Wave.SizeZ, {
-		FCoefficient Coefficient = Wave.GetDataAt( FIntVector( X,Y,Z ) );
+	for3( Wave.SizeX, Wave.SizeY, Wave.SizeZ, 
+		{
+			FCoefficient Coefficient = Wave.GetDataAt( FIntVector( X,Y,Z ) );
 
-		FWFCJsonModuleCoordPattern NewCoordMap = FWFCJsonModuleCoordPattern();
-		NewCoordMap.Coord = FIntVector( X,Y,Z );
-		NewCoordMap.Value = Coefficient.LastAllowedPatternIndex();
+			FWFCJsonModuleCoordPattern NewCoordMap = FWFCJsonModuleCoordPattern();
+			NewCoordMap.Coord = FIntVector( X,Y,Z );
+			NewCoordMap.Value = Coefficient.LastAllowedPatternIndex();
 
-		JsonStruct.Data.Add( NewCoordMap );
-		  } )
+			JsonStruct.Data.Add( NewCoordMap );
+		}
+	)
 
-		FString JsonString = "";
-		  FJsonObjectConverter::UStructToJsonObjectString( FWFCJsonStruct::StaticStruct(), &JsonStruct, JsonString, 0, 0 );
+	FString JsonString = "";
+	FJsonObjectConverter::UStructToJsonObjectString( FWFCJsonStruct::StaticStruct(), &JsonStruct, JsonString, 0, 0 );
 
-		  return JsonString;
+	return JsonString;
 }
 
 FWaveMatrix AJsonExporter::RetrieveDataFileName( FString FileName, bool IsPresetData ) {
@@ -83,27 +85,74 @@ FWaveMatrix AJsonExporter::RetrieveDataFileName( FString FileName, bool IsPreset
 }
 
 // Maybe this shouldn't be in the json exporter, but for now lets keep it
-FWaveMatrix AJsonExporter::GetWaveSide( FWaveMatrix OriginalWave, EOrientations Side ) {
-	FWaveMatrix Wave = FWaveMatrix();
+FWaveMatrix AJsonExporter::GetWaveSide( FWaveMatrix OriginalWave, EOrientations Side, bool KeepExisting ) {
+	FWaveMatrix Wave = KeepExisting ? OriginalWave : FWaveMatrix();
 
 	switch ( Side ) {
 		case EOrientations::FORWARD:
-		{
-			for ( auto& Elem : OriginalWave.Array3D ) {
+			{
+				for ( auto& Elem : OriginalWave.Array3D ) 
+				{
+					if ( Elem.Key.X == OriginalWave.SizeX - 1 ) 
+					{
+						TMap<int32, bool> AllowedPatterns;
+						AllowedPatterns.Add( Elem.Value.LastAllowedPatternIndex(), true );
 
-				if ( Elem.Key.X == OriginalWave.SizeX - 1 ) {
-					TMap<int32, bool> AllowedPatterns;
-					AllowedPatterns.Add( Elem.Value.LastAllowedPatternIndex(), true );
+						FIntVector ElemKeyAdjusted = Elem.Key;
+						ElemKeyAdjusted.X = 0;
 
-					FIntVector ElemKeyAdjusted = Elem.Key;
-					ElemKeyAdjusted.X = 0;
-
-					Wave.AddData( ElemKeyAdjusted, FCoefficient( AllowedPatterns ) );
+						Wave.AddData( ElemKeyAdjusted, FCoefficient( AllowedPatterns ) );
+					}
 				}
+			} break;
+		case EOrientations::BACK:
+			{
+				for ( auto& Elem : OriginalWave.Array3D )
+				{
+					if ( Elem.Key.X == 0 ) 
+					{
+						TMap<int32, bool> AllowedPatterns;
+						AllowedPatterns.Add( Elem.Value.LastAllowedPatternIndex(), true );
 
-			}
+						FIntVector ElemKeyAdjusted = Elem.Key;
+						ElemKeyAdjusted.X = OriginalWave.SizeX - 1;
 
-		} break;
+						Wave.AddData( ElemKeyAdjusted, FCoefficient( AllowedPatterns ) );
+					}
+				}
+			} break;
+		case EOrientations::RIGHT:
+			{
+				for ( auto& Elem : OriginalWave.Array3D ) 
+				{
+					if ( Elem.Key.Y == OriginalWave.SizeY - 1 ) 
+					{
+						TMap<int32, bool> AllowedPatterns;
+						AllowedPatterns.Add( Elem.Value.LastAllowedPatternIndex(), true );
+
+						FIntVector ElemKeyAdjusted = Elem.Key;
+						ElemKeyAdjusted.Y = 0;
+
+						Wave.AddData( ElemKeyAdjusted, FCoefficient( AllowedPatterns ) );
+					} 
+				}
+			} break;
+		case EOrientations::LEFT:	
+			{
+				for ( auto& Elem : OriginalWave.Array3D ) 
+				{
+					if ( Elem.Key.Y == 0 ) 
+					{
+						TMap<int32, bool> AllowedPatterns;
+						AllowedPatterns.Add( Elem.Value.LastAllowedPatternIndex(), true );
+
+						FIntVector ElemKeyAdjusted = Elem.Key;
+						ElemKeyAdjusted.Y = OriginalWave.SizeY - 1;
+
+						Wave.AddData( ElemKeyAdjusted, FCoefficient( AllowedPatterns ) );
+					}
+				}
+			} break;
 		default: { } break;
 	}
 

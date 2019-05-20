@@ -29,7 +29,7 @@ protected:
 		FWaveMatrix RetrieveDataFileName( FString FileName, bool IsPresetData );
 
 	UFUNCTION ( BlueprintCallable )
-		FWaveMatrix GetWaveSide( FWaveMatrix OriginalWave, EOrientations Side );
+		FWaveMatrix GetWaveSide( FWaveMatrix OriginalWave, EOrientations Side, bool KeepExisting );
 
 	UFUNCTION( BlueprintCallable )
 		FWaveMatrix JsonToWave( FString JsonString );
