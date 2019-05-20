@@ -122,7 +122,7 @@ FWaveMatrix AJsonExporter::GetWaveSide( FWaveMatrix OriginalWave, EOrientations 
 				}
 			} break;
 		case EOrientations::RIGHT:
-			{
+			{	
 				for ( auto& Elem : OriginalWave.Array3D ) 
 				{
 					if ( Elem.Key.Y == OriginalWave.SizeY - 1 ) 
