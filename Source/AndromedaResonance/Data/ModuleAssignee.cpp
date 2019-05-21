@@ -46,6 +46,7 @@ void AModuleAssignee::Training() {
 
 			if ( !Module->ModuleAssignee ) {
 				Module->ModuleAssignee = this;
+				Module->bConstructionObject = true;
 			}
 		}
 

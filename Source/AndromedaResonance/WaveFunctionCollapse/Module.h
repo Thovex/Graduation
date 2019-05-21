@@ -26,4 +26,7 @@ public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Module Data" )
 		AModuleAssignee* ModuleAssignee;
 
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Module Data" )
+		bool bConstructionObject = false;
+
 };
