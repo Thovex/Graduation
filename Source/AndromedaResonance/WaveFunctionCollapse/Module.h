@@ -20,13 +20,13 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
 		USceneComponent* Transform;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
-		bool Symmetrical = false;
-
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Module Data" )
 		AModuleAssignee* ModuleAssignee;
 
-	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Module Data" )
-		bool bConstructionObject = false;
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "IMPORTANT Module Data " )
+		int32 ConstructId = -1;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "IMPORTANT Module Data" )
+		bool Symmetrical = false;
 
 };
