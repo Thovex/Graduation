@@ -69,3 +69,4 @@ Plugins/*/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 Content/StarterContent/
+Content/ChameleonDemo/ChameleonDemoHall_BuiltData.uasset
