@@ -10,6 +10,9 @@
 #include "Runtime/Engine/Classes/Components/TextRenderComponent.h"
 #include "WFC.generated.h"
 
+DECLARE_STATS_GROUP(TEXT("WFC"), STATGROUP_WFC, STATCAT_Advanced);
+
+
 USTRUCT( BlueprintType )
 struct FPatternIndexArray {
 

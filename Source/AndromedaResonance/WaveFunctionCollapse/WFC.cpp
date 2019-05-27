@@ -7,6 +7,30 @@
 #include "Data/ModulePropagator.h"
 #include "Utility/WaveFunctionLibrary.h"
 
+DECLARE_CYCLE_STAT(TEXT("WFC - OBSERVE"), STAT_Observe, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - PROPAGATE"), STAT_Propagate, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - CONSTRAIN"), STAT_Constrain, STATGROUP_WFC);
+
+DECLARE_CYCLE_STAT(TEXT("WFC - CONSTRAIN - Internal 1"), STAT_Constrain_Internal_One, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - CONSTRAIN - Internal 2"), STAT_Constrain_Internal_Two, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - CONSTRAIN - Internal 3"), STAT_Constrain_Internal_Three, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - CONSTRAIN - Internal 4"), STAT_Constrain_Internal_Four, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - CONSTRAIN - Internal 5"), STAT_Constrain_Internal_Five, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - CONSTRAIN - Internal 6"), STAT_Constrain_Internal_Six, STATGROUP_WFC);
+
+DECLARE_CYCLE_STAT(TEXT("WFC - CONSTRAIN - Internal 1 - Internal 1"), STAT_Constrain_Internal_One_One, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - CONSTRAIN - Internal 1 - Internal 2"), STAT_Constrain_Internal_One_Two, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - CONSTRAIN - Internal 1 - Internal 3"), STAT_Constrain_Internal_One_Three, STATGROUP_WFC);
+
+
+
+DECLARE_CYCLE_STAT(TEXT("WFC - ENTROPY"), STAT_Entropy, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - SHANNONENTROPY"), STAT_ShannonEntropy, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - WHILENOTDONE"), STAT_WhileNotDone, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - INITIALIZE"), STAT_Initialize, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - SPAWNMOD"), STAT_SpawnMod, STATGROUP_WFC);
+DECLARE_CYCLE_STAT(TEXT("WFC - WEIGHTEDPATTERN"), STAT_WeightedPattern, STATGROUP_WFC);
+
 AWFC::AWFC( const FObjectInitializer& ObjectInitializer ) {
 
 	Transform = ObjectInitializer.CreateDefaultSubobject<USceneComponent>( this, TEXT( "Transform" ) );
@@ -41,6 +65,8 @@ void AWFC::Tick( float DeltaTime ) {
 }
 
 void AWFC::Initialize() {
+	SCOPE_CYCLE_COUNTER(STAT_Initialize);
+
 	for ( auto& Spawned : SpawnedComponents ) {
 		if ( Spawned ) {
 			if ( Spawned->IsValidLowLevel() ) {
@@ -85,6 +111,8 @@ void AWFC::Initialize() {
 }
 
 void AWFC::Observe( FIntVector ObserveValue, int32 Selected = -1 ) {
+	SCOPE_CYCLE_COUNTER(STAT_Observe);
+
 	FIntVector Coord = ObserveValue == FIntVector::ZeroValue ? ObserveValue : MinEntropyCoords();
 	FCoefficient Coefficient = Wave.GetDataAt( Coord );
 
@@ -143,6 +171,7 @@ void AWFC::FillInitialData( FWaveMatrix JsonWave)
 }
 
 void AWFC::Propagate() {
+	SCOPE_CYCLE_COUNTER(STAT_Propagate);
 
 	Updated.Empty();
 
@@ -165,35 +194,59 @@ void AWFC::Propagate() {
 }
 
 void AWFC::Constrain( FIntVector Coord ) {
+	SCOPE_CYCLE_COUNTER(STAT_Constrain);
+
 	TMap<EOrientations, FPatternIndexArray> NewValidData;
 
-	for ( auto& Direction : UOrientations::OrientationUnitVectors ) {
+	{
+		SCOPE_CYCLE_COUNTER(STAT_Constrain_Internal_One);
 
-		if ( Direction.Key == EOrientations::NONE ) continue;
+		for (auto& Direction : UOrientations::OrientationUnitVectors) {
 
-		FIntVector NeighbourCoord = Coord + Direction.Value;
+			if (Direction.Key == EOrientations::NONE) continue;
 
-		if ( Wave.IsValidCoordinate( NeighbourCoord ) ) {
-			for ( auto& AllowedPattern : Wave.GetDataAt( NeighbourCoord ).AllowedPatterns ) {
-				if ( AllowedPattern.Value ) {
-					FModulePropagator AllowedPatternByPropagator = ModuleAssignee->Patterns.FindRef( AllowedPattern.Key ).Propagator.FindRef( Direction.Value * -1 );
+			FIntVector NeighbourCoord = Coord + Direction.Value;
 
-					if ( NewValidData.Contains( Direction.Key ) ) {
-						FPatternIndexArray ValidHashSet = NewValidData.FindRef( Direction.Key );
+			if (Wave.IsValidCoordinate(NeighbourCoord)) {
+				for (auto& AllowedPattern : Wave.GetDataAt(NeighbourCoord).AllowedPatterns) {
+					if (AllowedPattern.Value) {
+						FModulePropagator AllowedPatternByPropagator;
+						{
+							SCOPE_CYCLE_COUNTER(STAT_Constrain_Internal_One_One);
 
-						for ( auto& Pattern : AllowedPatternByPropagator.Array ) {
-							ValidHashSet.Array.AddUnique( Pattern );
+							AllowedPatternByPropagator = ModuleAssignee->Patterns.FindRef(AllowedPattern.Key).Propagator.FindRef(Direction.Value * -1);
+
 						}
 
-						NewValidData.Add( Direction.Key, ValidHashSet );
-					} else {
-						FPatternIndexArray ValidHashSet = FPatternIndexArray();
+						if (NewValidData.Contains(Direction.Key)) {
+							FPatternIndexArray ValidHashSet;
 
-						for ( auto& Pattern : AllowedPatternByPropagator.Array ) {
-							ValidHashSet.Array.AddUnique( Pattern );
+							{
+								SCOPE_CYCLE_COUNTER(STAT_Constrain_Internal_One_Two);
+
+								ValidHashSet = NewValidData.FindRef(Direction.Key);
+
+								for (auto& Pattern : AllowedPatternByPropagator.Array) {
+									ValidHashSet.Array.AddUnique(Pattern);
+								}
+
+
+								NewValidData.Add(Direction.Key, ValidHashSet);
+							}
 						}
+						else {
+							FPatternIndexArray ValidHashSet;
+							{
+								SCOPE_CYCLE_COUNTER(STAT_Constrain_Internal_One_Three);
+								ValidHashSet = FPatternIndexArray();
 
-						NewValidData.Add( Direction.Key, ValidHashSet );
+								for (auto& Pattern : AllowedPatternByPropagator.Array) {
+									ValidHashSet.Array.AddUnique(Pattern);
+								}
+
+								NewValidData.Add(Direction.Key, ValidHashSet);
+							}
+						}
 					}
 				}
 			}
@@ -202,66 +255,91 @@ void AWFC::Constrain( FIntVector Coord ) {
 
 	TMap<int32, int32> PatternCounts;
 
-	for ( auto& ValidData : NewValidData ) {
-		for ( int32 PatternIndex : ValidData.Value.Array ) {
-			if ( PatternCounts.Contains( PatternIndex ) ) {
-				int32 Count = PatternCounts.FindRef( PatternIndex );
-				Count++;
-				PatternCounts.Add( PatternIndex, Count );
-			} else {
-				PatternCounts.Add( PatternIndex, 0 );
+	{
+		SCOPE_CYCLE_COUNTER(STAT_Constrain_Internal_Two);
+
+		for (auto& ValidData : NewValidData) {
+			for (int32 PatternIndex : ValidData.Value.Array) {
+				if (PatternCounts.Contains(PatternIndex)) {
+					int32 Count = PatternCounts.FindRef(PatternIndex);
+					Count++;
+					PatternCounts.Add(PatternIndex, Count);
+				}
+				else {
+					PatternCounts.Add(PatternIndex, 0);
+				}
 			}
 		}
 	}
 
-	TMap<int32, bool> NewAllowedPatterns = Wave.GetDataAt( Coord ).AllowedPatterns;
+	TMap<int32, bool> NewAllowedPatterns = Wave.GetDataAt(Coord).AllowedPatterns;
 	TMap<int32, bool> TempNewAllowedPatterns = NewAllowedPatterns;
 
 	int32 ChangedCount = 0;
 
-	for ( auto& PatternAllowed : NewAllowedPatterns ) {
-		if ( PatternAllowed.Value ) {
-			ChangedCount++;
-		}
+	{
+		SCOPE_CYCLE_COUNTER(STAT_Constrain_Internal_Three);
 
-		TempNewAllowedPatterns.Add( PatternAllowed.Key, false );
-	}
+		for (auto& PatternAllowed : NewAllowedPatterns) {
+			if (PatternAllowed.Value) {
+				ChangedCount++;
+			}
 
-	NewAllowedPatterns = TempNewAllowedPatterns;
-
-	for ( auto& PatternCount : PatternCounts ) {
-		if ( PatternCount.Value == NewValidData.Num() - 1 ) {
-			NewAllowedPatterns.Add( PatternCount.Key, true );
-			ChangedCount--;
+			TempNewAllowedPatterns.Add(PatternAllowed.Key, false);
 		}
 	}
 
-	for ( auto& Direction : UOrientations::OrientationUnitVectors ) {
-		if ( Direction.Key == EOrientations::NONE ) continue;
 
-		FIntVector NeighbourCoord = Coord + Direction.Value;
+	{
+		SCOPE_CYCLE_COUNTER(STAT_Constrain_Internal_Four);
 
-		if ( Wave.IsValidCoordinate( NeighbourCoord ) ) {
-			if ( ChangedCount > 0 && !Updated.Contains( NeighbourCoord ) ) {
-				Flag.Push( NeighbourCoord );
+		NewAllowedPatterns = TempNewAllowedPatterns;
+
+		for (auto& PatternCount : PatternCounts) {
+			if (PatternCount.Value == NewValidData.Num() - 1) {
+				NewAllowedPatterns.Add(PatternCount.Key, true);
+				ChangedCount--;
 			}
 		}
 	}
 
-	FCoefficient Coefficient = Wave.GetDataAt( Coord );
-	Coefficient.AllowedPatterns = NewAllowedPatterns;
-	Wave.AddData( Coord, Coefficient );
+	{
+		SCOPE_CYCLE_COUNTER(STAT_Constrain_Internal_Five);
 
-	if ( Wave.GetDataAt( Coord ).AllowedCount() == 1 ) {
-		int32 PatternIndexSelected = Wave.GetDataAt( Coord ).LastAllowedPatternIndex();
-		SpawnMod( Coord, PatternIndexSelected );
+		for (auto& Direction : UOrientations::OrientationUnitVectors) {
+			if (Direction.Key == EOrientations::NONE) continue;
+
+			FIntVector NeighbourCoord = Coord + Direction.Value;
+
+			if (Wave.IsValidCoordinate(NeighbourCoord)) {
+				if (ChangedCount > 0 && !Updated.Contains(NeighbourCoord)) {
+					Flag.Push(NeighbourCoord);
+				}
+			}
+		}
 	}
 
-	Updated.Add( Coord );
+	{
+		SCOPE_CYCLE_COUNTER(STAT_Constrain_Internal_Six);
+
+		FCoefficient Coefficient = Wave.GetDataAt(Coord);
+		Coefficient.AllowedPatterns = NewAllowedPatterns;
+		Wave.AddData(Coord, Coefficient);
+
+		if (Wave.GetDataAt(Coord).AllowedCount() == 1) {
+			int32 PatternIndexSelected = Wave.GetDataAt(Coord).LastAllowedPatternIndex();
+			SpawnMod(Coord, PatternIndexSelected);
+		}
+
+		Updated.Add(Coord);
+
+	}
 
 }
 
 void AWFC::SpawnMod( FIntVector Coord, int32 Selected ) {
+	SCOPE_CYCLE_COUNTER(STAT_SpawnMod);
+
 	if ( ModuleAssignee ) {
 		if ( ModuleAssignee->Patterns.Contains( Selected ) ) {
 
@@ -284,6 +362,8 @@ void AWFC::SpawnMod( FIntVector Coord, int32 Selected ) {
 }
 
 bool AWFC::IsFullyCollapsed() {
+	SCOPE_CYCLE_COUNTER(STAT_WhileNotDone);
+
 	int32 AllowedCount = 0;
 
 	for3( OutputSize.X, OutputSize.Y, OutputSize.Z,
@@ -316,6 +396,8 @@ void AWFC::StartWFC() {
 }
 
 int32 AWFC::GetWeightedPattern( TMap<int32, bool> InPatterns ) {
+	SCOPE_CYCLE_COUNTER(STAT_WeightedPattern);
+
 	TArray<int32> WeightedPatterns;
 
 	for ( auto& Pair : InPatterns ) {
@@ -337,6 +419,8 @@ int32 AWFC::GetWeightedPattern( TMap<int32, bool> InPatterns ) {
 }
 
 FIntVector AWFC::MinEntropyCoords() {
+	SCOPE_CYCLE_COUNTER(STAT_Entropy);
+
 	float MinEntropy = 0;
 
 	FRandomStream RandomStream = FRandomStream( FMath::RandRange( 0.F, MAX_FLT ) );
@@ -362,6 +446,8 @@ FIntVector AWFC::MinEntropyCoords() {
 }
 
 float AWFC::ShannonEntropy( FIntVector CurrentCoordinates ) {
+	SCOPE_CYCLE_COUNTER(STAT_ShannonEntropy);
+
 	int32 SumOfWeights = 0;
 	int32 SumOfWeightsLogWeights = 0;
 
