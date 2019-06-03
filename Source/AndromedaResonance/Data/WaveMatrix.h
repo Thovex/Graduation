@@ -32,6 +32,12 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
 		TMap<FIntVector, FCoefficient> Array3D;
 
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
+		TMap<FIntVector, FModuleData> WaveValues;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Matrix Data" )
+		TMap<FIntVector, int32> WaveCycle;
+
 	FWaveMatrix() {}
 
 	FWaveMatrix( const FIntVector Size ) {

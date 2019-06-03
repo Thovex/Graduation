@@ -19,7 +19,6 @@ UChildActorComponent* UWaveFunctionLibrary::CreateModule( UObject* WorldContextO
 		ChildActor->SetChildActorClass( ModuleData.Module );
 		ChildActor->RegisterComponent();
 
-
 		ChildActor->SetWorldLocation( Location );
 		ChildActor->SetWorldRotation( UUtilityLibrary::Conv_IntVectorToRotator( ModuleData.RotationEuler ) );
 

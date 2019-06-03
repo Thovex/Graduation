@@ -66,10 +66,16 @@ public:
 		void CreateFromJson( FWaveMatrix JsonWave );
 
 	UFUNCTION( BlueprintCallable, Category = "WFC" )
+		void CreateFromJsonIndex( FWaveMatrix JsonWave, int32 Index );
+
+	UFUNCTION( BlueprintCallable, Category = "WFC" )
 		void FillInitialData( FWaveMatrix JsonWave );
 
 	UFUNCTION( BlueprintCallable, Category = "WFC" )
 		FIntVector MinEntropyCoords();
+
+	UFUNCTION( BlueprintCallable, Category = "WFC" )
+		void SpawnMod( FIntVector Coord, int32 Selected );
 
 
 protected:
@@ -89,11 +95,10 @@ private:
 	void Propagate();
 	void Constrain( FIntVector Coord );
 
-	void SpawnMod( FIntVector Coord, int32 Selected );
-
 	bool IsFullyCollapsed();
 
 	int32 GetWeightedPattern( TMap<int32, bool> InPatterns );
 	float ShannonEntropy( FIntVector CurrentCoordinates );
 
+	int32 Cycle = 0;
 };

@@ -26,15 +26,15 @@ protected:
 		FString ParseDataLocal(FWaveMatrix Wave, AModuleAssignee* ModuleAssignee);
 
 	UFUNCTION( BlueprintCallable )
-		FWaveMatrix RetrieveDataFileName( FString FileName, bool IsPresetData );
+		FWaveMatrix RetrieveDataFileName( FString FileName, bool IsPresetData, AModuleAssignee* ModuleAssignee );
 
 	UFUNCTION ( BlueprintCallable )
 		FWaveMatrix GetWaveSide( FWaveMatrix OriginalWave, EOrientations Side, bool KeepExisting );
 
 	UFUNCTION( BlueprintCallable )
-		FWaveMatrix JsonToWave( FString JsonString );
+		FWaveMatrix JsonToWave( FString JsonString, AModuleAssignee* ModuleAssignee );
 
 	UFUNCTION( BlueprintCallable )
-		FWaveMatrix RetrieveDataRandom(FIntVector Size, FString& OutFileName );
+		FWaveMatrix RetrieveDataRandom(FIntVector Size, FString& OutFileName, AModuleAssignee* ModuleAssignee );
 
 };
