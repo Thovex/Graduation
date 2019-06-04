@@ -8,16 +8,16 @@
 				"y": 0,
 				"z": 0
 			},
-			"value": 55,
+			"value": 80,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_Corner_C",
-				"moduleId": "0",
+				"tSubClassOfAModule": "BP_M_StraightWall_C",
+				"moduleId": "1",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": 180
+					"z": -180
 				},
 				"scale":
 				{
@@ -27,7 +27,7 @@
 				},
 				"symmetrical": false,
 				"empty": false,
-				"bit": "0BN"
+				"bit": "1BN"
 			}
 		},
 		{
@@ -38,16 +38,16 @@
 				"y": 0,
 				"z": 1
 			},
-			"value": 55,
+			"value": 80,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_Corner_C",
-				"moduleId": "0",
+				"tSubClassOfAModule": "BP_M_StraightWall_C",
+				"moduleId": "1",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": 180
+					"z": -180
 				},
 				"scale":
 				{
@@ -57,7 +57,7 @@
 				},
 				"symmetrical": false,
 				"empty": false,
-				"bit": "0BN"
+				"bit": "1BN"
 			}
 		},
 		{
@@ -68,16 +68,16 @@
 				"y": 0,
 				"z": 2
 			},
-			"value": 55,
+			"value": 84,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_Corner_C",
-				"moduleId": "0",
+				"tSubClassOfAModule": "BP_M_StraightWall_C",
+				"moduleId": "1",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": 180
+					"z": -180
 				},
 				"scale":
 				{
@@ -87,7 +87,7 @@
 				},
 				"symmetrical": false,
 				"empty": false,
-				"bit": "0BN"
+				"bit": "1BN"
 			}
 		},
 		{
@@ -98,7 +98,7 @@
 				"y": 1,
 				"z": 0
 			},
-			"value": 62,
+			"value": 3,
 			"moduleData":
 			{
 				"tSubClassOfAModule": "BP_M_StraightWall_C",
@@ -128,7 +128,7 @@
 				"y": 1,
 				"z": 1
 			},
-			"value": 62,
+			"value": 3,
 			"moduleData":
 			{
 				"tSubClassOfAModule": "BP_M_StraightWall_C",
@@ -151,14 +151,14 @@
 			}
 		},
 		{
-			"index": 12,
+			"index": 8,
 			"coord":
 			{
 				"x": 0,
 				"y": 1,
 				"z": 2
 			},
-			"value": 62,
+			"value": 100,
 			"moduleData":
 			{
 				"tSubClassOfAModule": "BP_M_StraightWall_C",
@@ -188,16 +188,16 @@
 				"y": 2,
 				"z": 0
 			},
-			"value": 54,
+			"value": 32,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_StraightWall_C",
-				"moduleId": "1",
+				"tSubClassOfAModule": "BP_M_Corner_C",
+				"moduleId": "0",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": 180
+					"z": 90
 				},
 				"scale":
 				{
@@ -207,7 +207,7 @@
 				},
 				"symmetrical": false,
 				"empty": false,
-				"bit": "1BN"
+				"bit": "0RN"
 			}
 		},
 		{
@@ -218,16 +218,16 @@
 				"y": 2,
 				"z": 1
 			},
-			"value": 54,
+			"value": 32,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_StraightWall_C",
-				"moduleId": "1",
+				"tSubClassOfAModule": "BP_M_Corner_C",
+				"moduleId": "0",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": 180
+					"z": 90
 				},
 				"scale":
 				{
@@ -237,27 +237,27 @@
 				},
 				"symmetrical": false,
 				"empty": false,
-				"bit": "1BN"
+				"bit": "0RN"
 			}
 		},
 		{
-			"index": 13,
+			"index": 9,
 			"coord":
 			{
 				"x": 0,
 				"y": 2,
 				"z": 2
 			},
-			"value": 54,
+			"value": 116,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_StraightWall_C",
-				"moduleId": "1",
+				"tSubClassOfAModule": "BP_M_Corner_C",
+				"moduleId": "0",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": 180
+					"z": 90
 				},
 				"scale":
 				{
@@ -267,7 +267,7 @@
 				},
 				"symmetrical": false,
 				"empty": false,
-				"bit": "1BN"
+				"bit": "0RN"
 			}
 		},
 		{
@@ -278,16 +278,16 @@
 				"y": 0,
 				"z": 0
 			},
-			"value": 52,
+			"value": 208,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_StraightWall_C",
-				"moduleId": "1",
+				"tSubClassOfAModule": "BP_M_Inside_C",
+				"moduleId": "2",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": -90
+					"z": 0
 				},
 				"scale":
 				{
@@ -295,9 +295,9 @@
 					"y": 1,
 					"z": 1
 				},
-				"symmetrical": false,
+				"symmetrical": true,
 				"empty": false,
-				"bit": "1LN"
+				"bit": "2SN"
 			}
 		},
 		{
@@ -308,16 +308,16 @@
 				"y": 0,
 				"z": 1
 			},
-			"value": 52,
+			"value": 208,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_StraightWall_C",
-				"moduleId": "1",
+				"tSubClassOfAModule": "BP_M_Inside_C",
+				"moduleId": "2",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": -90
+					"z": 0
 				},
 				"scale":
 				{
@@ -325,9 +325,9 @@
 					"y": 1,
 					"z": 1
 				},
-				"symmetrical": false,
+				"symmetrical": true,
 				"empty": false,
-				"bit": "1LN"
+				"bit": "2SN"
 			}
 		},
 		{
@@ -338,16 +338,16 @@
 				"y": 0,
 				"z": 2
 			},
-			"value": 52,
+			"value": 212,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_StraightWall_C",
-				"moduleId": "1",
+				"tSubClassOfAModule": "BP_M_Inside_C",
+				"moduleId": "2",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": -90
+					"z": 0
 				},
 				"scale":
 				{
@@ -355,9 +355,9 @@
 					"y": 1,
 					"z": 1
 				},
-				"symmetrical": false,
+				"symmetrical": true,
 				"empty": false,
-				"bit": "1LN"
+				"bit": "2SN"
 			}
 		},
 		{
@@ -368,7 +368,7 @@
 				"y": 1,
 				"z": 0
 			},
-			"value": 60,
+			"value": 83,
 			"moduleData":
 			{
 				"tSubClassOfAModule": "BP_M_Inside_C",
@@ -377,7 +377,7 @@
 				{
 					"x": 0,
 					"y": 0,
-					"z": 180
+					"z": 270
 				},
 				"scale":
 				{
@@ -398,7 +398,7 @@
 				"y": 1,
 				"z": 1
 			},
-			"value": 60,
+			"value": 83,
 			"moduleData":
 			{
 				"tSubClassOfAModule": "BP_M_Inside_C",
@@ -407,7 +407,7 @@
 				{
 					"x": 0,
 					"y": 0,
-					"z": 180
+					"z": 270
 				},
 				"scale":
 				{
@@ -421,14 +421,14 @@
 			}
 		},
 		{
-			"index": 14,
+			"index": 10,
 			"coord":
 			{
 				"x": 1,
 				"y": 1,
 				"z": 2
 			},
-			"value": 60,
+			"value": 130,
 			"moduleData":
 			{
 				"tSubClassOfAModule": "BP_M_Inside_C",
@@ -437,7 +437,7 @@
 				{
 					"x": 0,
 					"y": 0,
-					"z": 180
+					"z": 270
 				},
 				"scale":
 				{
@@ -458,16 +458,16 @@
 				"y": 2,
 				"z": 0
 			},
-			"value": 53,
+			"value": 178,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_Inside_C",
-				"moduleId": "2",
+				"tSubClassOfAModule": "BP_M_StraightWall_C",
+				"moduleId": "1",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": 180
+					"z": 90
 				},
 				"scale":
 				{
@@ -475,9 +475,9 @@
 					"y": 1,
 					"z": 1
 				},
-				"symmetrical": true,
+				"symmetrical": false,
 				"empty": false,
-				"bit": "2SN"
+				"bit": "1RN"
 			}
 		},
 		{
@@ -488,16 +488,16 @@
 				"y": 2,
 				"z": 1
 			},
-			"value": 53,
+			"value": 178,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_Inside_C",
-				"moduleId": "2",
+				"tSubClassOfAModule": "BP_M_StraightWall_C",
+				"moduleId": "1",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": 180
+					"z": 90
 				},
 				"scale":
 				{
@@ -505,29 +505,29 @@
 					"y": 1,
 					"z": 1
 				},
-				"symmetrical": true,
+				"symmetrical": false,
 				"empty": false,
-				"bit": "2SN"
+				"bit": "1RN"
 			}
 		},
 		{
-			"index": 15,
+			"index": 11,
 			"coord":
 			{
 				"x": 1,
 				"y": 2,
 				"z": 2
 			},
-			"value": 53,
+			"value": 244,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_Inside_C",
-				"moduleId": "2",
+				"tSubClassOfAModule": "BP_M_StraightWall_C",
+				"moduleId": "1",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": 180
+					"z": 90
 				},
 				"scale":
 				{
@@ -535,9 +535,9 @@
 					"y": 1,
 					"z": 1
 				},
-				"symmetrical": true,
+				"symmetrical": false,
 				"empty": false,
-				"bit": "2SN"
+				"bit": "1RN"
 			}
 		},
 		{
@@ -548,16 +548,16 @@
 				"y": 0,
 				"z": 0
 			},
-			"value": 40,
+			"value": 82,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_Corner_C",
-				"moduleId": "0",
+				"tSubClassOfAModule": "BP_M_Inside_C",
+				"moduleId": "2",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": -90
+					"z": 0
 				},
 				"scale":
 				{
@@ -565,9 +565,9 @@
 					"y": 1,
 					"z": 1
 				},
-				"symmetrical": false,
+				"symmetrical": true,
 				"empty": false,
-				"bit": "0LN"
+				"bit": "2SN"
 			}
 		},
 		{
@@ -578,16 +578,16 @@
 				"y": 0,
 				"z": 1
 			},
-			"value": 40,
+			"value": 82,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_Corner_C",
-				"moduleId": "0",
+				"tSubClassOfAModule": "BP_M_Inside_C",
+				"moduleId": "2",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": -90
+					"z": 0
 				},
 				"scale":
 				{
@@ -595,9 +595,9 @@
 					"y": 1,
 					"z": 1
 				},
-				"symmetrical": false,
+				"symmetrical": true,
 				"empty": false,
-				"bit": "0LN"
+				"bit": "2SN"
 			}
 		},
 		{
@@ -608,41 +608,11 @@
 				"y": 0,
 				"z": 2
 			},
-			"value": 40,
+			"value": 82,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_Corner_C",
-				"moduleId": "0",
-				"rotationEuler":
-				{
-					"x": 0,
-					"y": 0,
-					"z": -90
-				},
-				"scale":
-				{
-					"x": 1,
-					"y": 1,
-					"z": 1
-				},
-				"symmetrical": false,
-				"empty": false,
-				"bit": "0LN"
-			}
-		},
-		{
-			"index": 8,
-			"coord":
-			{
-				"x": 2,
-				"y": 1,
-				"z": 0
-			},
-			"value": 32,
-			"moduleData":
-			{
-				"tSubClassOfAModule": "BP_M_StraightWall_C",
-				"moduleId": "1",
+				"tSubClassOfAModule": "BP_M_Inside_C",
+				"moduleId": "2",
 				"rotationEuler":
 				{
 					"x": 0,
@@ -655,39 +625,9 @@
 					"y": 1,
 					"z": 1
 				},
-				"symmetrical": false,
+				"symmetrical": true,
 				"empty": false,
-				"bit": "1FN"
-			}
-		},
-		{
-			"index": 9,
-			"coord":
-			{
-				"x": 2,
-				"y": 1,
-				"z": 1
-			},
-			"value": 32,
-			"moduleData":
-			{
-				"tSubClassOfAModule": "BP_M_StraightWall_C",
-				"moduleId": "1",
-				"rotationEuler":
-				{
-					"x": 0,
-					"y": 0,
-					"z": 0
-				},
-				"scale":
-				{
-					"x": 1,
-					"y": 1,
-					"z": 1
-				},
-				"symmetrical": false,
-				"empty": false,
-				"bit": "1FN"
+				"bit": "2SN"
 			}
 		},
 		{
@@ -696,48 +636,18 @@
 			{
 				"x": 2,
 				"y": 1,
-				"z": 2
-			},
-			"value": 32,
-			"moduleData":
-			{
-				"tSubClassOfAModule": "BP_M_StraightWall_C",
-				"moduleId": "1",
-				"rotationEuler":
-				{
-					"x": 0,
-					"y": 0,
-					"z": 0
-				},
-				"scale":
-				{
-					"x": 1,
-					"y": 1,
-					"z": 1
-				},
-				"symmetrical": false,
-				"empty": false,
-				"bit": "1FN"
-			}
-		},
-		{
-			"index": 10,
-			"coord":
-			{
-				"x": 2,
-				"y": 2,
 				"z": 0
 			},
-			"value": 36,
+			"value": 2,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_StraightWall_C",
-				"moduleId": "1",
+				"tSubClassOfAModule": "BP_M_Inside_C",
+				"moduleId": "2",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": 0
+					"z": 270
 				},
 				"scale":
 				{
@@ -745,29 +655,29 @@
 					"y": 1,
 					"z": 1
 				},
-				"symmetrical": false,
+				"symmetrical": true,
 				"empty": false,
-				"bit": "1FN"
+				"bit": "2SN"
 			}
 		},
 		{
-			"index": 11,
+			"index": 14,
 			"coord":
 			{
 				"x": 2,
-				"y": 2,
+				"y": 1,
 				"z": 1
 			},
-			"value": 36,
+			"value": 2,
 			"moduleData":
 			{
-				"tSubClassOfAModule": "BP_M_StraightWall_C",
-				"moduleId": "1",
+				"tSubClassOfAModule": "BP_M_Inside_C",
+				"moduleId": "2",
 				"rotationEuler":
 				{
 					"x": 0,
 					"y": 0,
-					"z": 0
+					"z": 270
 				},
 				"scale":
 				{
@@ -775,9 +685,39 @@
 					"y": 1,
 					"z": 1
 				},
-				"symmetrical": false,
+				"symmetrical": true,
 				"empty": false,
-				"bit": "1FN"
+				"bit": "2SN"
+			}
+		},
+		{
+			"index": 12,
+			"coord":
+			{
+				"x": 2,
+				"y": 1,
+				"z": 2
+			},
+			"value": 2,
+			"moduleData":
+			{
+				"tSubClassOfAModule": "BP_M_Inside_C",
+				"moduleId": "2",
+				"rotationEuler":
+				{
+					"x": 0,
+					"y": 0,
+					"z": 180
+				},
+				"scale":
+				{
+					"x": 1,
+					"y": 1,
+					"z": 1
+				},
+				"symmetrical": true,
+				"empty": false,
+				"bit": "2SN"
 			}
 		},
 		{
@@ -786,9 +726,9 @@
 			{
 				"x": 2,
 				"y": 2,
-				"z": 2
+				"z": 0
 			},
-			"value": 36,
+			"value": 50,
 			"moduleData":
 			{
 				"tSubClassOfAModule": "BP_M_StraightWall_C",
@@ -797,7 +737,7 @@
 				{
 					"x": 0,
 					"y": 0,
-					"z": 0
+					"z": 90
 				},
 				"scale":
 				{
@@ -807,7 +747,67 @@
 				},
 				"symmetrical": false,
 				"empty": false,
-				"bit": "1FN"
+				"bit": "1RN"
+			}
+		},
+		{
+			"index": 15,
+			"coord":
+			{
+				"x": 2,
+				"y": 2,
+				"z": 1
+			},
+			"value": 50,
+			"moduleData":
+			{
+				"tSubClassOfAModule": "BP_M_StraightWall_C",
+				"moduleId": "1",
+				"rotationEuler":
+				{
+					"x": 0,
+					"y": 0,
+					"z": 90
+				},
+				"scale":
+				{
+					"x": 1,
+					"y": 1,
+					"z": 1
+				},
+				"symmetrical": false,
+				"empty": false,
+				"bit": "1RN"
+			}
+		},
+		{
+			"index": 13,
+			"coord":
+			{
+				"x": 2,
+				"y": 2,
+				"z": 2
+			},
+			"value": 50,
+			"moduleData":
+			{
+				"tSubClassOfAModule": "BP_M_StraightWall_C",
+				"moduleId": "1",
+				"rotationEuler":
+				{
+					"x": 0,
+					"y": 0,
+					"z": 90
+				},
+				"scale":
+				{
+					"x": 1,
+					"y": 1,
+					"z": 1
+				},
+				"symmetrical": false,
+				"empty": false,
+				"bit": "1RN"
 			}
 		}
 	]
