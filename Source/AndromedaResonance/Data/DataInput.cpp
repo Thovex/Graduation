@@ -9,7 +9,6 @@
 #include "WaveFunctionCollapse/Module.h"
 #include "Data/ModuleAssignee.h"
 
-// Sets default values
 ADataInput::ADataInput( const FObjectInitializer& ObjectInitializer ) {
 	Transform = ObjectInitializer.CreateDefaultSubobject<USceneComponent>( this, TEXT( "Transform" ) );
 	RootComponent = Transform;
@@ -18,19 +17,21 @@ ADataInput::ADataInput( const FObjectInitializer& ObjectInitializer ) {
 
 }
 
-// Called when the game starts or when spawned
 void ADataInput::BeginPlay() {
 	Super::BeginPlay();
 
+	Training();
+
 }
 
-// Called every frame
 void ADataInput::Tick( float DeltaTime ) {
 	Super::Tick( DeltaTime );
 
 	if ( !SelectedCheck() ) return;
 
 	Errors.Empty();
+
+	PatternLocations.Empty();
 
 	Patterns.Empty();
 	ModulesMap.Empty();
@@ -92,6 +93,8 @@ void ADataInput::ValidateCoordCount( AActor * &Child, FIntVector Coord ) {
 		if ( Count > 1 ) {
 			Errors.Add( Child, TEXT( "Multiple Modules on One Location" ) );
 		}
+	} else {
+		PatternLocations.Add( Coord, 1 );
 	}
 }
 
