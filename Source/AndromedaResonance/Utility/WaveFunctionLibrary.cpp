@@ -97,7 +97,7 @@ TArray<UChildActorComponent*> UWaveFunctionLibrary::CreatePatternData( UObject *
 		Components.Add( NewModule );
 		  } )
 
-		return Components;
+	return Components;
 }
 
 

@@ -47,12 +47,25 @@ public:
 		}
 	}
 
-	FModuleMatrix( const FIntVector Size ) {
+	FModuleMatrix( const FIntVector Size ) : SizeX( 0 ), SizeY( 0 ), SizeZ( 0 ) {
 		SetSize( Size.X, Size.Y, Size.Z );
+
+		for3( SizeX, SizeY, SizeZ,
+			  {
+				  Array3D.Add( FIntVector( X, Y, Z ), FModuleData(true) );
+			  }
+		)
 	}
 
-	FModuleMatrix( const int32 X, const int32 Y, const int32 Z ) {
-		SetSize( X, Y, Z );
+	FModuleMatrix( const int32 SizeX, const int32 SizeY, const int32 SizeZ ): SizeX(0), SizeY(0), SizeZ(0)
+	{
+		SetSize(SizeX, SizeY, SizeZ);
+
+		for3(this->SizeX, this->SizeY, this->SizeZ,
+		     {
+			     Array3D.Add( FIntVector( X, Y, Z ), FModuleData(true) );
+		     }
+		)
 	}
 
 	FORCEINLINE bool operator==( const FModuleMatrix& Other ) const {
@@ -191,9 +204,9 @@ public:
 			  CopyData.Add( FIntVector( X, Y, Z ), FModuleData( true ) );
 			}
 
-		} )
+			  } )
 
-		Array3D = CopyData;
+			Array3D = CopyData;
 	}
 
 	// CHECKED

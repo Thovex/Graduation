@@ -5,6 +5,7 @@
 #include "Data/DataGrid.h"
 #include "EngineUtils.h"
 #include "Engine/Engine.h"
+#include "DataInput.h"
 
 
 AModuleAssignee::AModuleAssignee( const FObjectInitializer& ObjectInitializer ) {
@@ -49,43 +50,18 @@ void AModuleAssignee::Training() {
 			}
 		}
 
-		int32 DataGridCount = 0;
-		for ( TActorIterator<ADataGrid> ActorItr( World ); ActorItr; ++ActorItr ) {
-			ADataGrid* DataGrid = *ActorItr;
+		for ( TActorIterator<ADataInput> ActorItr( World ); ActorItr; ++ActorItr ) {
+			ADataInput* DataInput = *ActorItr;
 
-			if ( DataGrid ) {
-				DataGrid->ModuleAssignee = this;
-				DataGrid->Training( true );
+			if ( DataInput ) {
+				DataInput->Training();
 
-				DataGridCount++;
-			}
-		}
+				for ( auto& Pattern : DataInput->Patterns ) {
+					Weights.Add(Patterns.Num(), 100);
+					Patterns.Add( Patterns.Num(), Pattern );
+				}
 
-		TMap<int32, ADataGrid*> DataGridSorted;
-
-		for ( TActorIterator<ADataGrid> ActorItr( World ); ActorItr; ++ActorItr ) {
-			ADataGrid* DataGrid = *ActorItr;
-
-			if ( DataGrid ) {
-				int32 ID = FCString::Atoi( *DataGrid->GetActorLabel());
-				DataGridSorted.Add(ID, DataGrid);
-			}
-		}
-
-		DataGridSorted.KeySort( [] ( int32 A, int32 B ) {
-			return A < B; 
-		} );
-
-		for (auto& Pair : DataGridSorted)
-		{
-			FModuleMatrix& CopyModuleData = Pair.Value->ModuleData;
-
-			for ( int32 i = 0; i < 4; i++ ) {
-				FModuleMatrix RotationCopy = CopyModuleData;
-				RotationCopy.RotateCounterClockwise( i );
-
-				Patterns.Add( Patterns.Num(), RotationCopy );
-				Weights.Add( Patterns.Num() - 1, Pair.Value->Weight );
+				DataInput->Patterns.Empty();
 			}
 		}
 

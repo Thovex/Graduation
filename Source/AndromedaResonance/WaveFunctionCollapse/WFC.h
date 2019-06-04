@@ -101,4 +101,7 @@ private:
 	float ShannonEntropy( FIntVector CurrentCoordinates );
 
 	int32 Cycle = 0;
+	int32 Tries = 0;
+
+	bool DoOnceInitialize = false;
 };

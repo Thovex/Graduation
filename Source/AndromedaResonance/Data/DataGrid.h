@@ -52,7 +52,6 @@ public:
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Grid Debug" )
 		TMap<const AActor*, FString> Errors;
-
 public:
 	UFUNCTION( BlueprintCallable, Category = "Matrix Calls" )
 		void SetMatrix( FIntVector SetMatrix );

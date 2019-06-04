@@ -19,7 +19,6 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Transform" )
 		USceneComponent* Transform;
 
-
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Assignee" )
 		TMap<TSubclassOf<AModule>, FName> AssignedNames;
 

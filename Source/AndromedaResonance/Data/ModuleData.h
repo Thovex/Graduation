@@ -104,7 +104,7 @@ public:
 		}
 	}
 
-	FModuleData( bool Empty ) {
+	FModuleData( bool Empty ) : Module(nullptr), ModuleID(TEXT("-1")), RotationEuler(FIntVector(0)), Scale(FIntVector(0)), Symmetrical(false) {
 		this->Empty = Empty;
 		this->Bit = FName( TEXT( "Null" ) );
 	}
@@ -181,10 +181,8 @@ public:
 			return FString::Printf( TEXT( "[Bit:%s][Module:%s][ID:%s][RotationEuler:%s][Scale:%s][Symmetrical:%s]" ),
 									*Bit.ToString(), *Module->GetFName().ToString(), *ModuleID.ToString(), *RotationEuler.ToString(), *Scale.ToString(),
 									Symmetrical ? TEXT( "TRUE" ) : TEXT( "FALSE" ) );
-		} else {
-			return FString::Printf( TEXT( "[Bit:%s]" ),
-									 *Bit.ToString() );
-		}
-
+		} 
+		
+		return FString::Printf( TEXT( "[Bit:%s]" ), *Bit.ToString() );
 	}
 };

@@ -67,6 +67,11 @@ void AWFC::Initialize() {
 
 	Cycle = 0;
 
+	if ( !DoOnceInitialize ) {
+		Tries = 0;
+		DoOnceInitialize = true;
+	}
+
 	for ( auto& Spawned : SpawnedComponents ) {
 		if ( Spawned ) {
 			if ( Spawned->IsValidLowLevel() ) {
@@ -144,11 +149,11 @@ void AWFC::CreateFromJson( FWaveMatrix JsonWave ) {
 	OutputSize = FIntVector( JsonWave.SizeX, JsonWave.SizeY, JsonWave.SizeZ );
 	Initialize();
 
-	for3( OutputSize.X, OutputSize.Y, OutputSize.Z, 
-		{
-			const FIntVector Coord = FIntVector( X,Y,Z );
-			SpawnMod( Coord, JsonWave.GetDataAt( Coord ).LastAllowedPatternIndex() );
-		} 
+	for3( OutputSize.X, OutputSize.Y, OutputSize.Z,
+		  {
+			  const FIntVector Coord = FIntVector( X,Y,Z );
+			  SpawnMod( Coord, JsonWave.GetDataAt( Coord ).LastAllowedPatternIndex() );
+		  }
 	)
 }
 
@@ -167,19 +172,19 @@ void AWFC::FillInitialData( FWaveMatrix JsonWave ) {
 	HasPreInitializedData = true;
 	PreInitializedWave = JsonWave;
 
-	for3( JsonWave.SizeX, JsonWave.SizeY, JsonWave.SizeZ, 
-		{
-			FIntVector Coord = FIntVector( X,Y,Z );
+	for3( JsonWave.SizeX, JsonWave.SizeY, JsonWave.SizeZ,
+		  {
+			  FIntVector Coord = FIntVector( X,Y,Z );
 
-			if ( JsonWave.GetDataAt( Coord ).LastAllowedPatternIndex() != -1 ) {
-				Wave.AddData( Coord, FCoefficient( JsonWave.GetDataAt( Coord ).LastAllowedPatternIndex() ) );
-				SpawnMod( Coord, JsonWave.GetDataAt( Coord ).LastAllowedPatternIndex() );
-				Flag.Push( Coord );
-			}
-		} 
+			  if ( JsonWave.GetDataAt( Coord ).LastAllowedPatternIndex() != -1 ) {
+				  Wave.AddData( Coord, FCoefficient( JsonWave.GetDataAt( Coord ).LastAllowedPatternIndex() ) );
+				  SpawnMod( Coord, JsonWave.GetDataAt( Coord ).LastAllowedPatternIndex() );
+				  Flag.Push( Coord );
+			  }
+		  }
 	)
 
-	Propagate();
+		Propagate();
 }
 
 void AWFC::Propagate() {
@@ -383,6 +388,12 @@ bool AWFC::IsFullyCollapsed() {
 
 				if ( WaveDataAtCoord.AllowedCount() == 0 ) {
 					UE_LOG( LogTemp, Error, TEXT( "Invalid construction in WFC... Retrying!" ) );
+					Tries++;
+
+					if ( Tries > 10 ) {
+						UE_LOG( LogTemp, Error, TEXT( "10 invalid constructions... Stopping retry!" ) );
+						return true;
+					}
 
 					Initialize();
 					StartWFC();
@@ -402,6 +413,8 @@ void AWFC::StartWFC() {
 	while ( !IsFullyCollapsed() ) {
 		Observe( MinEntropyCoords() );
 	}
+
+	//Tries = 0;
 }
 
 int32 AWFC::GetWeightedPattern( TMap<int32, bool> InPatterns ) {
