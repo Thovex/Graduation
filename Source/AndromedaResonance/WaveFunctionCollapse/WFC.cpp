@@ -73,17 +73,17 @@ void AWFC::Initialize() {
 	}
 
 	for ( auto& Spawned : SpawnedComponents ) {
-		if ( Spawned ) {
-			if ( Spawned->IsValidLowLevel() ) {
+		if ( Spawned.Value ) {
+			if (Spawned.Value->IsValidLowLevel() ) {
 
 				TArray<USceneComponent*> ChildComponents;
-				Spawned->GetChildrenComponents( true, ChildComponents );
+				Spawned.Value->GetChildrenComponents( true, ChildComponents );
 
 				for ( USceneComponent* ChildComponent : ChildComponents ) {
 					ChildComponent->DestroyComponent();
 				}
 
-				Spawned->DestroyComponent();
+				Spawned.Value->DestroyComponent();
 			}
 		}
 	}
@@ -367,7 +367,7 @@ void AWFC::SpawnMod( FIntVector Coord, int32 Selected ) {
 							UChildActorComponent* NewChild = UWaveFunctionLibrary::CreateModule( GetWorld(), SelectedPatternData, this, GetActorLocation() + ( FVector( Coord ) * 1000 ) + ( FVector( X,Y,Z ) * 1000 ) );
 							Wave.WaveValues.Add( CoordAndPatternCoord, SelectedPatternData );
 							Wave.WaveCycle.Add( CoordAndPatternCoord, Cycle );
-							SpawnedComponents.Add( NewChild );
+							SpawnedComponents.Add( CoordAndPatternCoord, NewChild );
 							HasModule.Add( CoordAndPatternCoord, true );
 
 							Cycle++;

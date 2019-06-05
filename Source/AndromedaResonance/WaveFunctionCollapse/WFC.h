@@ -48,7 +48,7 @@ public:
 		bool bInitialized = false;
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Spawned" )
-		TArray<UChildActorComponent*> SpawnedComponents;
+		TMap<FIntVector, UChildActorComponent*> SpawnedComponents;
 
 
 public:
