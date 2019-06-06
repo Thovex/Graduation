@@ -9,7 +9,7 @@ public class AndromedaResonanceTarget : TargetRules
 	{
 		Type = TargetType.Game;
 
-        CppStandard = CppStandardVersion.Cpp17;
+        //CppStandard = CppStandardVersion.Cpp17;
 
         ExtraModuleNames.AddRange( new string[] { "AndromedaResonance" } );
 	}

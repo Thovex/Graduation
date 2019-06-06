@@ -8,5 +8,8 @@
 AModule::AModule( const FObjectInitializer& ObjectInitializer ) {
 	Transform = ObjectInitializer.CreateDefaultSubobject<USceneComponent>( this, TEXT( "Transform" ) );
 	RootComponent = Transform;
+
+	PrimaryActorTick.bCanEverTick = false;
+
 }
 
