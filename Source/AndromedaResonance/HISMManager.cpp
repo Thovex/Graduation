@@ -28,8 +28,6 @@ void AHISMManager::AppendMesh( FTransform Transform, UStaticMesh* Mesh, TArray<U
 		NewHISM->SetMaterial(index, Materials[index]);
 	}
 	NewHISM->AddInstance( Transform );
-
-	UE_LOG( LogTemp, Warning, TEXT( "added new boi" ) );
 	HISMs.Add( NewHISM );
 }
 
