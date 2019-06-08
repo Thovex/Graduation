@@ -3,44 +3,43 @@
 
 #include "HISMManager.h"
 
-AHISMManager::AHISMManager()
-{
+AHISMManager::AHISMManager() {
 	PrimaryActorTick.bCanEverTick = true;
 
 }
 
-void AHISMManager::AppendMesh(FTransform Transform, UStaticMesh* Mesh)
-{
-	if (!Mesh) return;
+void AHISMManager::AppendMesh( FTransform Transform, UStaticMesh* Mesh, TArray<UMaterialInterface*> Materials ) {
+	if ( !Mesh ) return;
 
-	for (auto& HISM : HISMs)
-	{
-		if (HISM->GetStaticMesh() == Mesh)
-		{
-			HISM->AddInstance(Transform);
+	for ( auto& HISM : HISMs ) {
+		if ( HISM->GetStaticMesh() == Mesh ) {
+			HISM->AddInstance( Transform );
 			return;
 		}
 	}
 
-	UHierarchicalInstancedStaticMeshComponent* NewHISM = NewObject<UHierarchicalInstancedStaticMeshComponent>(this, UHierarchicalInstancedStaticMeshComponent::StaticClass());
+	UHierarchicalInstancedStaticMeshComponent* NewHISM = NewObject<UHierarchicalInstancedStaticMeshComponent>( this, UHierarchicalInstancedStaticMeshComponent::StaticClass() );
 	NewHISM->RegisterComponent();
 
-	NewHISM->SetStaticMesh(Mesh);
-	NewHISM->AddInstance(Transform);
+	NewHISM->SetStaticMesh( Mesh );
 
-	UE_LOG(LogTemp, Warning, TEXT("added new boi"));
-	HISMs.Add(NewHISM);
+
+	for ( int32 index = 0; index < Materials.Num(); index++) {
+		NewHISM->SetMaterial(index, Materials[index]);
+	}
+	NewHISM->AddInstance( Transform );
+
+	UE_LOG( LogTemp, Warning, TEXT( "added new boi" ) );
+	HISMs.Add( NewHISM );
 }
 
-void AHISMManager::BeginPlay()
-{
+void AHISMManager::BeginPlay() {
 	Super::BeginPlay();
 
 }
 
-void AHISMManager::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+void AHISMManager::Tick( float DeltaTime ) {
+	Super::Tick( DeltaTime );
 
 }
 
