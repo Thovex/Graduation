@@ -77,6 +77,9 @@ public:
 	UFUNCTION( BlueprintCallable, Category = "WFC" )
 		void SpawnMod( FIntVector Coord, int32 Selected );
 
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC" )
+	FORCEINLINE bool IsValidCoordinate (FWaveMatrix WaveMatrix, const FIntVector Coordinate) { return Wave.IsValidCoordinate( Coordinate ); }
+
 
 protected:
 	virtual void BeginPlay() override;
