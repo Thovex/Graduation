@@ -67,3 +67,13 @@ float UUtilityLibrary::SetScalePure( float CurrentValue, float OldMinScale, floa
 	return SetScale( CurrentValue, OldMinScale, OldMaxScale, NewMinScale, NewMaxScale );
 }
 
+bool UUtilityLibrary::EqualByteArray( TArray<uint8> A, TArray<uint8> B ) {
+	if ( A.Num() != B.Num() ) return false;
+
+	for ( int32 i = 0; i < A.Num(); i++ ) {
+		if ( !B.Contains( A[i] ) ) return false;
+	}
+
+	return true;
+}
+

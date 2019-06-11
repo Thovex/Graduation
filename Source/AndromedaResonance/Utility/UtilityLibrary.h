@@ -9,6 +9,16 @@
 /**
  *
  */
+
+UENUM( BlueprintType )
+enum class ERoadSide : uint8 {
+	ERS_Forward 	UMETA( DisplayName = "Forward" ),
+	ERS_Right 		UMETA( DisplayName = "Right" ),
+	ERS_Back		UMETA( DisplayName = "Back" ),
+	ERS_Left		UMETA( DisplayName = "Left" )
+};
+
+
 UCLASS()
 class ANDROMEDARESONANCE_API UUtilityLibrary : public UBlueprintFunctionLibrary {
 	GENERATED_BODY()
@@ -35,5 +45,8 @@ public:
 
 	UFUNCTION( BlueprintCallable, BlueprintPure, meta = ( BlueprintThreadSafe ), Category = "Math", meta = ( WorldContext = "WorldContextObject" ) )
 		static float SetScalePure( float CurrentValue, float OldMinScale, float OldMaxScale, float NewMinScale, float NewMaxScale );
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Road Conversion")
+		static bool EqualByteArray(  TArray<uint8> A,  TArray<uint8> B );
 
 };
