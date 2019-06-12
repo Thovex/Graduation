@@ -25,8 +25,6 @@ void AHISMManager::AppendMesh( FTransform Transform, UStaticMesh* Mesh, TArray<U
 
 	NewHISM->SetStaticMesh( Mesh );
 
-	UE_LOG( LogTemp, Warning, TEXT( "ADD %s" ), *Mesh->GetName() );
-
 	for ( int32 index = 0; index < Materials.Num(); index++) {
 		NewHISM->SetMaterial(index, Materials[index]);
 	}
