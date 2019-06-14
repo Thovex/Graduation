@@ -62,35 +62,45 @@ public:
 		static TArray<FIntVector> GetCoordinatesByModuleIDQuery( bool& HasResults, int32 & ResultCount, const FWaveMatrix Wave, const FName ModuleIDQuery );
 
 	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries | Coord", meta = ( WorldContext = "WorldContextObject" ) )
-		static TArray<FIntVector> GetCoordinatesByXRowQuery( bool& HasResults, int32 & ResultCount, const FWaveMatrix Wave, const int32 XRowQuery );
+		static TArray<FIntVector> GetCoordinatesByXRowQuery( bool& HasResults, int32 & ResultCount, const FWaveMatrix Wave,
+		const bool Equal, const bool BiggerThan, const bool SmallerThan, const int32 XRowQuery );
 
 	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries | Coord", meta = ( WorldContext = "WorldContextObject" ) )
-		static TArray<FIntVector> GetCoordinatesByYRowQuery( bool& HasResults, int32 & ResultCount, const FWaveMatrix Wave, const int32 YRowQuery );
+		static TArray<FIntVector> GetCoordinatesByYRowQuery( bool& HasResults, int32 & ResultCount, const FWaveMatrix Wave,
+		const bool Equal, const bool BiggerThan, const bool SmallerThan, const int32 YRowQuery );
 	
 	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries | Coord", meta = ( WorldContext = "WorldContextObject" ) )
-		static TArray<FIntVector> GetCoordinatesByZRowQuery( bool& HasResults, int32 & ResultCount, const FWaveMatrix Wave, const int32 ZRowQuery );
-	
+		static TArray<FIntVector> GetCoordinatesByZRowQuery( bool& HasResults, int32 & ResultCount, const FWaveMatrix Wave, 
+		const bool Equal, const bool BiggerThan, const bool SmallerThan, const int32 ZRowQuery );
+
 	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries", meta = ( WorldContext = "WorldContextObject" ) )
+		static AActor* GetActorByCoordinate( bool& HasResults, TSubclassOf<AActor>& ResultClass, const FIntVector Coord, const TMap<FIntVector, UChildActorComponent*> SpawnedComponents );
+
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries | Appending", meta = ( WorldContext = "WorldContextObject" ) )
+		static TArray<FIntVector> GetCoordinatesAppendedUniqueTwo( bool& HasResults, int32 & ResultCount,
+															  const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo );
+
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries | Validations", meta = ( WorldContext = "WorldContextObject" ) )
 		static TArray<FIntVector> GetCoordinatesValidatedTwo( bool& HasResults, int32& ResultCount, 
 		const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo );
 
-	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries", meta = ( WorldContext = "WorldContextObject" ) )
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries | Validations", meta = ( WorldContext = "WorldContextObject" ) )
 		static TArray<FIntVector> GetCoordinatesValidatedThree( bool& HasResults, int32 & ResultCount, 
 		const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo, 
 		const TArray<FIntVector> CoordinateSetThree );
 
-	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries", meta = ( WorldContext = "WorldContextObject" ) )
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries | Validations", meta = ( WorldContext = "WorldContextObject" ) )
 		static TArray<FIntVector> GetCoordinatesValidatedFour( bool& HasResults, int32 & ResultCount, 
 		const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo, 
 		const TArray<FIntVector> CoordinateSetThree, const TArray<FIntVector> CoordinateSetFour );
 
-	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries", meta = ( WorldContext = "WorldContextObject" ) )
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries | Validations", meta = ( WorldContext = "WorldContextObject" ) )
 		static TArray<FIntVector> GetCoordinatesValidatedFive( bool& HasResults, int32 & ResultCount, 
 		const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo, 
 		const TArray<FIntVector> CoordinateSetThree, const TArray<FIntVector> CoordinateSetFour,
 		const TArray<FIntVector> CoordinateSetFive );
 
-	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries", meta = ( WorldContext = "WorldContextObject" ) )
+	UFUNCTION( BlueprintCallable, BlueprintPure, Category = "WFC | Queries | Validations", meta = ( WorldContext = "WorldContextObject" ) )
 		static TArray<FIntVector> GetCoordinatesValidatedSix( bool& HasResults, int32 & ResultCount, 
 		const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo, 
 		const TArray<FIntVector> CoordinateSetThree, const TArray<FIntVector> CoordinateSetFour,

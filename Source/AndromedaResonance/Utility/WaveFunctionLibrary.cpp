@@ -192,12 +192,35 @@ TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByZRotationQuery( bool& H
 	return Coordinates;
 }
 
-TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByXRowQuery( bool& HasResults, int32 & ResultCount, FWaveMatrix Wave, int32 XRowQuery ) {
+TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByXRowQuery( bool& HasResults, int32 & ResultCount, FWaveMatrix Wave,
+																	const bool Equal, const bool BiggerThan, const bool SmallerThan, const int32 XRowQuery ) {
 	TArray<FIntVector> Coordinates;
 
 	for ( auto& Pair : Wave.WaveValues ) {
-		if ( Pair.Key.X == XRowQuery ) {
-			Coordinates.Add( Pair.Key );
+		if ( Equal ) {
+			if ( Pair.Key.X == XRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( Equal && BiggerThan ) {
+			if ( Pair.Key.X >= XRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( Equal && SmallerThan ) {
+			if ( Pair.Key.X <= XRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( !Equal && BiggerThan ) {
+			if ( Pair.Key.X > XRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( !Equal && SmallerThan ) {
+			if ( Pair.Key.X < XRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( BiggerThan && SmallerThan || !Equal ) {
+			if ( Pair.Key.X != XRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
 		}
 	}
 
@@ -205,12 +228,35 @@ TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByXRowQuery( bool& HasRes
 	return Coordinates;
 }
 
-TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByYRowQuery( bool& HasResults, int32 & ResultCount, FWaveMatrix Wave, int32 YRowQuery ) {
+TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByYRowQuery( bool& HasResults, int32 & ResultCount, FWaveMatrix Wave,
+																	const bool Equal, const bool BiggerThan, const bool SmallerThan, const int32 YRowQuery ) {
 	TArray<FIntVector> Coordinates;
 
 	for ( auto& Pair : Wave.WaveValues ) {
-		if ( Pair.Key.Y == YRowQuery ) {
-			Coordinates.Add( Pair.Key );
+		if ( Equal ) {
+			if ( Pair.Key.Y == YRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( Equal && BiggerThan ) {
+			if ( Pair.Key.Y >= YRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( Equal && SmallerThan ) {
+			if ( Pair.Key.Y <= YRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( !Equal && BiggerThan ) {
+			if ( Pair.Key.Y > YRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( !Equal && SmallerThan ) {
+			if ( Pair.Key.Y < YRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( BiggerThan && SmallerThan || !Equal ) {
+			if ( Pair.Key.Y != YRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
 		}
 	}
 
@@ -218,12 +264,34 @@ TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByYRowQuery( bool& HasRes
 	return Coordinates;
 }
 
-TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByZRowQuery( bool& HasResults, int32 & ResultCount, FWaveMatrix Wave, int32 ZRowQuery ) {
+TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByZRowQuery( bool& HasResults, int32 & ResultCount, FWaveMatrix Wave,
+																	const bool Equal, const bool BiggerThan, const bool SmallerThan, const int32 ZRowQuery ) {
 	TArray<FIntVector> Coordinates;
-
 	for ( auto& Pair : Wave.WaveValues ) {
-		if ( Pair.Key.Z == ZRowQuery ) {
-			Coordinates.Add( Pair.Key );
+		if ( Equal ) {
+			if ( Pair.Key.Z == ZRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( Equal && BiggerThan ) {
+			if ( Pair.Key.Z >= ZRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( Equal && SmallerThan ) {
+			if ( Pair.Key.Z <= ZRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( !Equal && BiggerThan ) {
+			if ( Pair.Key.Z > ZRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( !Equal && SmallerThan ) {
+			if ( Pair.Key.Z < ZRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
+		} else if ( BiggerThan && SmallerThan || !Equal ) {
+			if ( Pair.Key.Z != ZRowQuery ) {
+				Coordinates.Add( Pair.Key );
+			}
 		}
 	}
 
@@ -231,8 +299,45 @@ TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByZRowQuery( bool& HasRes
 	return Coordinates;
 }
 
-TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedTwo( bool& HasResults, int32 & ResultCount, 
-	const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo ) {
+AActor* UWaveFunctionLibrary::GetActorByCoordinate( bool& HasResults, TSubclassOf<AActor>& ResultClass, const FIntVector Coord, const TMap<FIntVector, UChildActorComponent*> SpawnedComponents ) {
+	const UChildActorComponent* ChildActorComponent = SpawnedComponents.FindRef( Coord );
+	
+	if ( !ChildActorComponent ) {
+		HasResults = false;
+		ResultClass = nullptr;
+		return nullptr;
+	}
+
+	AActor* ChildActor = ChildActorComponent->GetChildActor();
+
+	if ( !ChildActor ) {
+		HasResults = false;
+		ResultClass = nullptr;
+		return nullptr;
+	}
+
+	HasResults = true;
+	ResultClass = ChildActorComponent->GetChildActorClass();
+	return ChildActor;
+}
+
+TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesAppendedUniqueTwo( bool& HasResults, int32 & ResultCount,
+																		  const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo ) {
+	TArray<FIntVector> Coordinates;
+
+	for ( auto& Coords : CoordinateSetOne ) {
+		Coordinates.AddUnique( Coords );
+	}
+	for ( auto& Coords : CoordinateSetTwo ) {
+		Coordinates.AddUnique( Coords );
+	}
+
+	QuerySetReferenceValues( HasResults, ResultCount, Coordinates );
+	return Coordinates;
+}
+
+TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedTwo( bool& HasResults, int32 & ResultCount,
+																	 const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo ) {
 	TArray<FIntVector> Coordinates;
 
 	const int32 CheckCount = 2;
@@ -258,10 +363,9 @@ TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedTwo( bool& HasRe
 
 }
 
-TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedThree(bool& HasResults, int32& ResultCount,
-	const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo,
-	const TArray<FIntVector> CoordinateSetThree)
-{
+TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedThree( bool& HasResults, int32 & ResultCount,
+																	   const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo,
+																	   const TArray<FIntVector> CoordinateSetThree ) {
 	TArray<FIntVector> Coordinates;
 
 	const int32 CheckCount = 3;
@@ -291,10 +395,9 @@ TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedThree(bool& HasR
 	return Coordinates;
 }
 
-TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedFour(bool& HasResults, int32& ResultCount,
-	const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo,
-	const TArray<FIntVector> CoordinateSetThree, const TArray<FIntVector> CoordinateSetFour)
-{
+TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedFour( bool& HasResults, int32 & ResultCount,
+																	  const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo,
+																	  const TArray<FIntVector> CoordinateSetThree, const TArray<FIntVector> CoordinateSetFour ) {
 	TArray<FIntVector> Coordinates;
 
 	const int32 CheckCount = 4;
@@ -329,11 +432,10 @@ TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedFour(bool& HasRe
 	return Coordinates;
 }
 
-TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedFive(bool& HasResults, int32& ResultCount,
-	const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo,
-	const TArray<FIntVector> CoordinateSetThree, const TArray<FIntVector> CoordinateSetFour,
-	const TArray<FIntVector> CoordinateSetFive)
-{
+TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedFive( bool& HasResults, int32 & ResultCount,
+																	  const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo,
+																	  const TArray<FIntVector> CoordinateSetThree, const TArray<FIntVector> CoordinateSetFour,
+																	  const TArray<FIntVector> CoordinateSetFive ) {
 	TArray<FIntVector> Coordinates;
 
 	const int32 CheckCount = 5;
@@ -373,11 +475,10 @@ TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedFive(bool& HasRe
 	return Coordinates;
 }
 
-TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedSix(bool& HasResults, int32& ResultCount,
-	const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo,
-	const TArray<FIntVector> CoordinateSetThree, const TArray<FIntVector> CoordinateSetFour,
-	const TArray<FIntVector> CoordinateSetFive, const TArray<FIntVector> CoordinateSetSix)
-{
+TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedSix( bool& HasResults, int32 & ResultCount,
+																	 const TArray<FIntVector> CoordinateSetOne, const TArray<FIntVector> CoordinateSetTwo,
+																	 const TArray<FIntVector> CoordinateSetThree, const TArray<FIntVector> CoordinateSetFour,
+																	 const TArray<FIntVector> CoordinateSetFive, const TArray<FIntVector> CoordinateSetSix ) {
 	TArray<FIntVector> Coordinates;
 
 	const int32 CheckCount = 6;
@@ -422,7 +523,7 @@ TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesValidatedSix(bool& HasRes
 	return Coordinates;
 }
 
-void UWaveFunctionLibrary::QuerySetReferenceValues( bool& HasResults, int32& ResultCount, const TArray<FIntVector> Coordinates ) {
+void UWaveFunctionLibrary::QuerySetReferenceValues( bool& HasResults, int32 & ResultCount, const TArray<FIntVector> Coordinates ) {
 	if ( Coordinates.Num() > 0 ) {
 		HasResults = true;
 		ResultCount = Coordinates.Num();
