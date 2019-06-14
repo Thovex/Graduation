@@ -52,7 +52,7 @@ public:
 
 
 public:
-
+	
 	UFUNCTION( BlueprintCallable, Category = "WFC" )
 		void Initialize();
 
