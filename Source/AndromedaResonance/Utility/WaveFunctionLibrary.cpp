@@ -138,7 +138,7 @@ TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByModuleClassQuery( bool&
 	return Coordinates;
 }
 
-TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByModuleIDQuery( bool& HasResults, int32 & ResultCount, const FWaveMatrix Wave, const FName ModuleIDQuery ) {
+TArray<FIntVector> UWaveFunctionLibrary::GetCoordinatesByModuleIdQuery( bool& HasResults, int32 & ResultCount, const FWaveMatrix Wave, const FName ModuleIDQuery ) {
 	TArray<FIntVector> Coordinates;
 
 	for ( auto& Pair : Wave.WaveValues ) {
