@@ -62,6 +62,7 @@ void AWFC::Tick( float DeltaTime ) {
 	}
 }
 
+
 void AWFC::Initialize() {
 	SCOPE_CYCLE_COUNTER( STAT_Initialize );
 
@@ -74,7 +75,7 @@ void AWFC::Initialize() {
 
 	for ( auto& Spawned : SpawnedComponents ) {
 		if ( Spawned.Value ) {
-			if (Spawned.Value->IsValidLowLevel() ) {
+			if ( Spawned.Value->IsValidLowLevel() ) {
 
 				TArray<USceneComponent*> ChildComponents;
 				Spawned.Value->GetChildrenComponents( true, ChildComponents );
