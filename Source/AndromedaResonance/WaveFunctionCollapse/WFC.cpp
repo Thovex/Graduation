@@ -185,7 +185,7 @@ void AWFC::FillInitialData( FWaveMatrix JsonWave ) {
 		  }
 	)
 
-		Propagate();
+	Propagate();
 }
 
 void AWFC::Propagate() {
@@ -233,7 +233,6 @@ void AWFC::Constrain( FIntVector Coord ) {
 							SCOPE_CYCLE_COUNTER( STAT_Constrain_Internal_One_One );
 
 							AllowedPatternByPropagator = ModuleAssignee->Patterns.FindRef( AllowedPattern.Key ).Propagator.FindRef( Direction.Value * -1 );
-
 						}
 
 						if ( NewValidData.Contains( Direction.Key ) ) {
