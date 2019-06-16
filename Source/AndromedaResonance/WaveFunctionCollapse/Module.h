@@ -29,4 +29,7 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "IMPORTANT Module Data" )
 		bool Symmetrical = false;
 
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
+		int32 ModuleWeight = 100;
+
 };

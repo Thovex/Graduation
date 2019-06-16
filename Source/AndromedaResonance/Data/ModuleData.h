@@ -16,12 +16,11 @@ struct FModuleData {
 	GENERATED_USTRUCT_BODY()
 
 public:
-	FModuleData() {}
+	FModuleData() : Symmetrical( false ), Empty( false ) {}
 
 	FModuleData( AModule* Module, FName ModuleID ) {
 		if ( Module ) {
 			if ( Module->IsValidLowLevel() ) {
-
 				this->Module = Module->GetClass();
 				this->ModuleID = ModuleID;
 				this->RotationEuler = UUtilityLibrary::Conv_RotatorToIntVector( Module->GetActorRotation() );
@@ -34,8 +33,7 @@ public:
 	}
 
 	FModuleData( FName Bit, TMap<TSubclassOf<AModule>, FName> AssigneeMap, bool Log = false ) {
-
-		int32 Length = Bit.ToString().Len();
+		const int32 Length = Bit.ToString().Len();
 
 		if ( Length < 3 || Length > 4 ) {
 			UE_LOG( LogModuleData, Warning, TEXT( "INVALID MODULE BIT" ) );
@@ -48,7 +46,7 @@ public:
 		} else {
 			this->Empty = false;
 
-			FString BitString = Bit.ToString();
+			const FString BitString = Bit.ToString();
 			FString ModuleIDString = BitString;
 			ModuleIDString.RemoveAt( 1, 2, true );
 
@@ -65,14 +63,13 @@ public:
 			RotationEulerString.RemoveAt( 0, 1, true );
 			RotationEulerString.RemoveAt( 1, 1, true );
 
-			FName RotationEulerChar = FName( *RotationEulerString );
+			const FName RotationEulerChar = FName( *RotationEulerString );
 
 			if ( RotationEulerChar == FName( TEXT( "S" ) ) ) {
 				this->RotationEuler = FIntVector( 0, 0, 0 );
 				this->Symmetrical = true;
 			} else {
-
-				EOrientations RotationOrientation = UOrientations::OrientationByFName.FindRef( RotationEulerChar );
+				const EOrientations RotationOrientation = UOrientations::OrientationByFName.FindRef( RotationEulerChar );
 				this->RotationEuler = UOrientations::OrientationEulers.FindRef( RotationOrientation );
 				this->Symmetrical = false;
 			}
@@ -104,9 +101,21 @@ public:
 		}
 	}
 
-	FModuleData( bool Empty ) : Module(nullptr), ModuleID(TEXT("-1")), RotationEuler(FIntVector(0)), Scale(FIntVector(0)), Symmetrical(false) {
+	FModuleData( bool Empty ) : Module( nullptr ), ModuleID( TEXT( "-1" ) ), RotationEuler( FIntVector( 0 ) ), Scale( FIntVector( 0 ) ), Symmetrical( false ) {
 		this->Empty = Empty;
 		this->Bit = FName( TEXT( "Null" ) );
+	}
+
+	int32 GetWeight() const
+	{
+
+		if ( !Empty ) {
+			if ( Module ) {
+				return Module->GetDefaultObject<AModule>()->ModuleWeight;
+			}
+		}
+
+		return 100;
 	}
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
@@ -130,7 +139,7 @@ public:
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Module Data" )
 		FName Bit;
 
-	FORCEINLINE FName GenerateBit() {
+	FORCEINLINE FName GenerateBit() const {
 
 		if ( Empty ) {
 			return FName( TEXT( "Null" ) );
@@ -141,7 +150,7 @@ public:
 		if ( Symmetrical ) {
 			GeneratedBit.Append( "S" );
 		} else {
-			EOrientations Orientation = UOrientations::EulerToOrientation( RotationEuler );
+			const EOrientations Orientation = UOrientations::EulerToOrientation( RotationEuler );
 			const FName* EulerFName = UOrientations::OrientationByFName.FindKey( Orientation );
 
 			if ( EulerFName != nullptr ) {
@@ -162,7 +171,7 @@ public:
 	}
 
 	FORCEINLINE void SetRotationEuler( EOrientations Rotation ) {
-		FIntVector RotationDirection = UOrientations::OrientationEulers.FindRef( Rotation );
+		const FIntVector RotationDirection = UOrientations::OrientationEulers.FindRef( Rotation );
 		RotationEuler += RotationDirection;
 		Bit = GenerateBit();
 	}
@@ -181,8 +190,8 @@ public:
 			return FString::Printf( TEXT( "[Bit:%s][Module:%s][ID:%s][RotationEuler:%s][Scale:%s][Symmetrical:%s]" ),
 									*Bit.ToString(), *Module->GetFName().ToString(), *ModuleID.ToString(), *RotationEuler.ToString(), *Scale.ToString(),
 									Symmetrical ? TEXT( "TRUE" ) : TEXT( "FALSE" ) );
-		} 
-		
+		}
+
 		return FString::Printf( TEXT( "[Bit:%s]" ), *Bit.ToString() );
 	}
 };

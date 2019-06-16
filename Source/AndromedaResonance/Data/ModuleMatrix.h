@@ -38,7 +38,7 @@ public:
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Matrix Data" )
 		TMap < FIntVector, FModulePropagator > Propagator;
 
-	FModuleMatrix() {}
+	FModuleMatrix() : SizeX( 0 ), SizeY( 0 ), SizeZ( 0 ){}
 
 	FModuleMatrix( FModuleMatrix* ModuleMatrix ) {
 		if ( ModuleMatrix ) {
@@ -52,20 +52,31 @@ public:
 
 		for3( SizeX, SizeY, SizeZ,
 			  {
-				  Array3D.Add( FIntVector( X, Y, Z ), FModuleData(true) );
+				  Array3D.Add( FIntVector( X, Y, Z ), FModuleData( true ) );
+			  }
+		)
+
+	}
+
+	FModuleMatrix( const int32 SizeX, const int32 SizeY, const int32 SizeZ ) : SizeX( 0 ), SizeY( 0 ), SizeZ( 0 ) {
+		SetSize( SizeX, SizeY, SizeZ );
+
+		for3( this->SizeX, this->SizeY, this->SizeZ,
+			  {
+
+				  Array3D.Add( FIntVector( X, Y, Z ), FModuleData( true ) );
 			  }
 		)
 	}
 
-	FModuleMatrix( const int32 SizeX, const int32 SizeY, const int32 SizeZ ): SizeX(0), SizeY(0), SizeZ(0)
-	{
-		SetSize(SizeX, SizeY, SizeZ);
+	int32 GetWeight() {
+		int32 Weight = 0;
 
-		for3(this->SizeX, this->SizeY, this->SizeZ,
-		     {
-			     Array3D.Add( FIntVector( X, Y, Z ), FModuleData(true) );
-		     }
-		)
+		for ( auto& Pair : Array3D ) {
+			Weight += Pair.Value.GetWeight();
+		}
+
+		return Weight /= Array3D.Num();
 	}
 
 	FORCEINLINE bool operator==( const FModuleMatrix& Other ) const {
@@ -87,10 +98,10 @@ public:
 	void Initialize( const TMap<FIntVector, FModuleData> InitializeMap ) {
 		if ( SizeX < 1 && SizeY < 1 && SizeZ < 1 ) {
 			UE_LOG( LogModuleMatrix, Error, TEXT( "Initializing FModuleMatrix with < (0, 0, 0) size." ) );
+			return;
 		}
 
 		Array3D = InitializeMap;
-
 	}
 
 	FModuleData GetDataAt( const FIntVector Coord ) {

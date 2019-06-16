@@ -57,7 +57,7 @@ void AModuleAssignee::Training() {
 				DataInput->Training();
 
 				for ( auto& Pattern : DataInput->Patterns ) {
-					Weights.Add(Patterns.Num(), 100);
+					Weights.Add(Patterns.Num(), Pattern.GetWeight() );
 					Patterns.Add( Patterns.Num(), Pattern );
 				}
 
@@ -79,6 +79,7 @@ void AModuleAssignee::Training() {
 
 		for ( int32 Similar : SimilarityIndices ) {
 			Patterns.Remove( Similar );
+			Weights.Remove(Similar);
 		}
 
 		for ( auto& Pattern : Patterns ) {
