@@ -20,8 +20,6 @@ void AModuleAssignee::BeginPlay() {
 
 	SetActorTickEnabled( false );
 
-	Training();
-
 }
 
 void AModuleAssignee::Tick( float DeltaTime ) {
