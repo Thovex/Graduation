@@ -20,7 +20,6 @@ void AModuleAssignee::BeginPlay() {
 
 	SetActorTickEnabled( false );
 
-	Training();
 
 }
 
